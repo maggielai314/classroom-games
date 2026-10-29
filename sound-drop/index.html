@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box;height:100%}body{margin:0}[hidden]{display:none!important}*,*::before,*::after{box-sizing:border-box}</style>
+<title>Sound Drop 排位賽</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif:ital,wght@1,700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+/* Layout: one-screen game console — HUD strip, drop field ending in a line, a row of baskets below. Bright, single deliberate light look. */
+:root{
+  --bg:#F6F2FF;        /* soft lilac paper */
+  --card:#FFFFFF;
+  --plum:#3B2F5A;      /* PPT purple: text & headers */
+  --lilac:#CDB8FF;     /* PPT lilac */
+  --pink:#FFC9DE;      /* PPT pink */
+  --sky:#CFE2FF;
+  --butter:#FFE7AE;
+  --ink:#2A2140;
+  --muted:#6E6490;
+  --rule:#E4DCF7;
+  --line:#E5487A;
+  --good:#1F9D62;
+  --bad:#D63C5E;
+  --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-hud:"Chakra Petch","Noto Sans TC",ui-monospace,monospace;
+  --f-dyn:"Noto Serif","Times New Roman",Georgia,serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+input{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.scroll{overflow-y:auto;padding-block:20px 28px;gap:20px}
+
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand h1{margin:0;font-family:var(--f-hud);font-weight:700;font-size:clamp(34px,7vw,60px);line-height:.95;color:var(--plum)}
+.brand h1 small{display:block;font-family:var(--f-ui);font-weight:900;font-size:.42em;color:#B4528A;letter-spacing:.08em;margin-top:6px}
+.meter{display:flex;gap:4px;align-items:flex-end;height:44px}
+.meter i{width:7px;border-radius:2px;background:var(--lilac);animation:bounce 1.1s ease-in-out infinite}
+.meter i:nth-child(3n){background:var(--pink)}.meter i:nth-child(4n){background:#9DBDF0}
+@keyframes bounce{0%,100%{height:18%}50%{height:100%}}
+.lede{margin:0;color:var(--muted);max-width:62ch;line-height:1.6}
+.label{font-family:var(--f-hud);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.group{display:grid;gap:10px}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.path{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.path h2{margin:0;font-size:20px;color:var(--plum)}
+.path p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.path.main{border:2px solid var(--plum)}
+.txt{min-height:54px;width:100%;border-radius:12px;border:1.5px solid #CFC4EC;background:#FBF9FF;color:var(--ink);padding:0 14px;font:700 20px var(--f-ui)}
+.txt.pin{font-family:var(--f-hud);font-size:28px;letter-spacing:.3em;text-align:center}
+.txt::placeholder{color:#A69DC4;font-weight:400;letter-spacing:normal}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:48px;padding:0 16px;border-radius:12px;background:#FBF9FF;border:1.5px solid #CFC4EC;font-weight:700;font-size:16px}
+.seg button[aria-pressed="true"]{background:var(--plum);color:#fff;border-color:var(--plum)}
+.btn{min-height:54px;padding:0 24px;border-radius:12px;font-weight:900;font-size:19px}
+.btn-main{background:var(--plum);color:#fff}
+.btn-main:disabled{opacity:.4;cursor:default}
+.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.err{color:var(--bad);font-size:14px;min-height:1.2em;margin:0}
+.load{font-family:var(--f-hud);font-size:14px;color:var(--muted)}
+.credits{color:var(--muted);font-size:12px;line-height:1.5;border-top:1px solid var(--rule);padding-top:12px;margin:0}
+
+/* ---------- game ---------- */
+.game{padding-block:10px 12px;gap:10px}
+.hud{display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center}
+.score{font-family:var(--f-hud);font-weight:700;font-size:40px;line-height:1;font-variant-numeric:tabular-nums;min-width:3ch;color:var(--plum)}
+.score small{display:block;font-size:11px;letter-spacing:.18em;color:var(--muted);font-weight:500}
+.lvbox{display:grid;gap:6px;min-width:0}
+.lv-top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-hud)}
+.lv-top b{font-size:22px;color:var(--plum)}
+.lv-top span{font-size:14px;color:var(--muted)}
+.segs{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.segs i{height:10px;border-radius:3px;background:var(--rule);overflow:hidden;position:relative}
+.segs i.done{background:var(--plum)}
+.segs i.now::after{content:"";position:absolute;inset:0;background:#B4528A;transform-origin:left;transform:scaleX(var(--p,0))}
+.lives{display:flex;gap:6px}
+.life{width:26px;height:26px}
+.life path{fill:var(--line)}
+.life.off path{fill:var(--rule)}
+.stage{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:6px}
+.drop{position:relative;flex:1;min-height:170px;border-radius:16px;background:
+  repeating-linear-gradient(90deg,transparent 0 79px,rgba(59,47,90,.05) 79px 80px),var(--card);border:1px solid var(--rule);overflow:hidden}
+.dead-line{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line)}
+.setname{position:absolute;left:12px;top:10px;font-family:var(--f-hud);font-size:12px;letter-spacing:.14em;color:var(--muted)}
+.speed{position:absolute;right:12px;top:8px;font-family:var(--f-hud);font-weight:700;font-size:14px;color:#B4528A}
+.card{position:absolute;left:0;top:0;width:min(270px,72%);min-height:100px;border-radius:14px;background:#FFFFFF;border:2px solid var(--plum);
+  box-shadow:0 8px 22px rgba(59,47,90,.18);will-change:transform;z-index:5;display:flex;flex-direction:column;overflow:hidden}
+.card .strip{display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:var(--plum);font-family:var(--f-hud);font-size:11px;letter-spacing:.14em;color:#fff}
+.card .body{flex:1;display:flex;align-items:center;justify-content:center;padding:10px 12px;text-align:center}
+.term{font-weight:900;font-size:30px;line-height:1.15;color:var(--ink)}
+.term.latin{font-family:var(--f-hud);font-weight:700;font-size:36px}
+.term.dyn{font-family:var(--f-dyn);font-style:italic;font-weight:700;font-size:52px}
+.wave{display:flex;align-items:center;gap:4px;height:44px}
+.wave i{width:6px;border-radius:3px;background:#7F95D6;height:30%}
+.card.playing .wave i{animation:bounce .9s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:-.2s}.wave i:nth-child(3){animation-delay:-.5s}.wave i:nth-child(4){animation-delay:-.1s}.wave i:nth-child(5){animation-delay:-.7s}.wave i:nth-child(6){animation-delay:-.35s}.wave i:nth-child(7){animation-delay:-.6s}
+.replay{font-size:13px;color:var(--muted);margin-left:12px;line-height:1.3;text-align:left;white-space:pre-line}
+.card.into{transition:transform .26s cubic-bezier(.5,0,.9,.6),opacity .26s ease-in;opacity:.0}
+.card.ng{animation:shake .35s ease-in-out;border-color:var(--bad)}
+@keyframes shake{0%,100%{translate:0}20%{translate:-10px}40%{translate:10px}60%{translate:-6px}80%{translate:6px}}
+
+/* baskets */
+.baskets{display:grid;gap:10px;grid-template-columns:repeat(var(--n,3),1fr);padding-top:4px}
+.basket{--c:var(--lilac);--d:#8E75D6;position:relative;height:116px;display:flex;flex-direction:column;align-items:center}
+.basket .rim{width:100%;height:16px;border-radius:9px;background:var(--d);box-shadow:inset 0 -3px 0 rgba(0,0,0,.12);position:relative;z-index:2}
+.basket .body{width:92%;flex:1;margin-top:-4px;clip-path:polygon(0 0,100% 0,88% 100%,12% 100%);
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 6px,transparent 6px 12px),repeating-linear-gradient(-45deg,rgba(0,0,0,.05) 0 6px,transparent 6px 12px),var(--c);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 14%}
+.basket b{font-size:clamp(17px,2.6vw,24px);font-weight:900;line-height:1.15;text-align:center;color:var(--ink)}
+.basket small{font-family:var(--f-hud);font-size:11px;letter-spacing:.12em;color:#4E4570;text-transform:uppercase}
+.basket kbd{position:absolute;right:6px;bottom:4px;font-family:var(--f-hud);font-size:11px;color:#4E4570}
+.basket:active .body{filter:brightness(.95)}
+.basket.catch{animation:catch .35s ease-out}
+.basket.miss .body{background:var(--bad)}
+.basket.miss b,.basket.miss small{color:#fff}
+@keyframes catch{40%{transform:translateY(6px) scaleY(.94)}}
+.basket:nth-child(1){--c:var(--lilac);--d:#8E75D6}.basket:nth-child(2){--c:var(--pink);--d:#D9779F}.basket:nth-child(3){--c:var(--sky);--d:#7F9FD8}.basket:nth-child(4){--c:var(--butter);--d:#D3A647}
+.toast{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:30;width:90%;
+  font-weight:900;font-size:clamp(20px,3.6vw,30px);opacity:0;transition:opacity .12s}
+.toast.show{opacity:1}
+.toast .sub{display:block;font-size:.62em;font-weight:700;color:var(--muted);margin-top:4px}
+.toast.ok{color:var(--good)}.toast.ng{color:var(--bad)}.toast.lv{color:#B4528A;font-family:var(--f-hud);font-size:clamp(36px,6vw,56px)}
+.pausebtn{width:52px;height:52px;border-radius:12px;background:var(--card);border:1.5px solid #CFC4EC;display:flex;align-items:center;justify-content:center}
+.pausebtn svg{width:24px;height:24px;fill:var(--plum)}
+.pause{position:fixed;inset:0;background:rgba(42,33,64,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+.pause .sheet{width:min(420px,100%);background:var(--card);border-radius:18px;padding:24px;display:grid;gap:12px;text-align:center}
+.pause h2{margin:0 0 4px;font-family:var(--f-hud);font-size:30px;color:var(--plum)}
+.pause p{margin:0 0 6px;color:var(--muted)}
+.countdown{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-hud);font-weight:700;font-size:96px;color:var(--plum);z-index:25;pointer-events:none}
+
+/* results / host */
+.big{font-family:var(--f-hud);font-weight:700;font-size:clamp(64px,12vw,110px);line-height:.9;font-variant-numeric:tabular-nums;color:var(--plum)}
+.res-head{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.stats{display:flex;gap:24px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}.stat b{font-family:var(--f-hud);font-size:28px;font-variant-numeric:tabular-nums;color:var(--plum)}.stat span{font-size:13px;color:var(--muted)}
+.status{font-size:15px;color:var(--muted);margin:0}.status.ok{color:var(--good)}.status.warn{color:#A2601A}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;min-width:0;display:grid;gap:10px;align-content:start}
+.panel h3{margin:0;font-size:17px;color:var(--plum)}
+.review{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.review li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:6px}
+.review li span:last-child{color:#B4528A;font-weight:700;white-space:nowrap}
+.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.lb td,.lb th{padding:8px 6px;text-align:left;border-bottom:1px solid var(--rule)}
+.lb th{font-family:var(--f-hud);font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.lb td.r{font-family:var(--f-hud);font-weight:700;color:var(--muted);width:2.5em}
+.lb td.s{font-family:var(--f-hud);font-weight:700;font-size:20px;text-align:right;color:var(--plum)}
+.lb td.st{color:var(--muted);font-size:14px}
+.lb tr.me td{background:#FFF1D2}
+.lb tr:nth-child(2) td.r{color:#C08A12}
+.empty{color:var(--muted);font-size:15px;line-height:1.6;margin:0}
+.host-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.pinbig{font-family:var(--f-hud);font-weight:700;font-size:clamp(56px,10vw,104px);letter-spacing:.12em;color:var(--plum);line-height:1}
+.qr{background:#fff;border-radius:12px;padding:8px;border:1px solid var(--rule);width:clamp(120px,18vw,180px)}
+.qr svg{display:block;width:100%;height:auto}
+.joinurl{font-size:15px;color:var(--muted);word-break:break-all}
+.host .lb td{font-size:clamp(17px,2.2vw,26px);padding:10px 8px}
+.host .lb td.s{font-size:clamp(20px,2.8vw,32px)}
+@media (max-width:560px){.score{font-size:32px}.basket{height:100px}.term.dyn{font-size:44px}.host-top{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <!-- HOME -->
+  <section class="screen scroll" id="scHome">
+    <div class="brand">
+      <h1>SOUND DROP<small>排位賽</small></h1>
+      <div class="meter" aria-hidden="true"><i></i><i style="animation-delay:-.3s"></i><i style="animation-delay:-.7s"></i><i style="animation-delay:-.1s"></i><i style="animation-delay:-.5s"></i><i style="animation-delay:-.9s"></i><i style="animation-delay:-.2s"></i></div>
+    </div>
+    <p class="lede">卡片或聲音由上方跌落，在過線前撳正確的籃。共 10 關，每關 12 秒，越後越快。答得越快，分數越高。答錯或漏接失一條命。</p>
+    <div class="paths">
+      <div class="path main">
+        <h2>加入遊戲</h2>
+        <p>輸入老師畫面上的 PIN 碼。</p>
+        <input class="txt pin" id="pinInput" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" aria-label="PIN 碼">
+        <input class="txt" id="nameInput" maxlength="12" autocomplete="off" placeholder="暱稱" aria-label="暱稱">
+        <button class="btn btn-main" id="joinBtn" disabled>加入</button>
+        <p class="err" id="joinErr"></p>
+      </div>
+      <div class="path">
+        <h2>老師開局</h2>
+        <p>揀關卡，取得 PIN 碼和即時排行榜。每次開局都是新的一局。</p>
+        <div class="seg" id="hostStage"></div>
+        <button class="btn btn-soft" id="hostBtn">開局</button>
+        <p class="err" id="hostErr"></p>
+      </div>
+      <div class="path">
+        <h2>自己練習</h2>
+        <p>不用 PIN，分數不會上排行榜。</p>
+        <div class="seg" id="practiceStage"></div>
+        <button class="btn btn-soft" id="practiceBtn" disabled>開始練習</button>
+      </div>
+    </div>
+    <p class="load" id="loadMsg">載入錄音中…</p>
+    <p class="credits">用 iPad 玩：請關掉側面靜音掣並調高音量。錄音：VSCO-2 Community Edition（Versilian Studios，CC0 公有領域），剪輯成短樂句。</p>
+  </section>
+
+  <!-- HOST -->
+  <section class="screen scroll host" id="scHost" hidden>
+    <div class="host-top">
+      <div class="group">
+        <span class="label" id="hostStageLbl">PIN</span>
+        <div class="pinbig" id="hostPin">——</div>
+        <div class="joinurl" id="hostUrl"></div>
+      </div>
+      <div class="qr" id="hostQr" aria-label="加入遊戲二維碼"></div>
+    </div>
+    <div class="row">
+      <button class="btn btn-soft" id="hostNew">新一局（新 PIN）</button>
+      <button class="btn btn-soft" id="hostExit">返回主頁</button>
+      <span class="status" id="hostStatus"></span>
+    </div>
+    <div class="panel"><div id="hostTable"></div></div>
+  </section>
+
+  <!-- GAME -->
+  <section class="screen game" id="scGame" hidden>
+    <div class="hud">
+      <div class="score" id="hudScore">0<small>SCORE</small></div>
+      <div class="lvbox">
+        <div class="lv-top"><b id="hudLvl">LEVEL 1/10</b><span id="hudMode"></span></div>
+        <div class="segs" id="hudSegs"></div>
+      </div>
+      <div class="lives" id="hudLives" aria-label="生命"></div>
+      <button class="pausebtn" id="pauseBtn" aria-label="暫停"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="drop" id="drop">
+        <span class="setname" id="setName"></span>
+        <span class="speed" id="hudSpeed"></span>
+        <div class="dead-line"></div>
+      </div>
+      <div class="baskets" id="baskets"></div>
+      <div class="toast" id="toast"></div>
+    </div>
+  </section>
+
+  <div class="pause" id="pauseBox" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+      <h2 id="pTitle">暫停</h2>
+      <p id="pInfo"></p>
+      <button class="btn btn-main" id="resumeBtn">繼續</button>
+      <button class="btn btn-soft" id="restartBtn">重新開始</button>
+      <button class="btn btn-soft" id="quitBtn">退出遊戲</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <section class="screen scroll" id="scResults" hidden>
+    <div class="res-head">
+      <div><span class="label" id="resMode"></span><div class="big" id="resScore">0</div></div>
+      <div class="stats">
+        <div class="stat"><b id="resLvl">1</b><span>到達關數</span></div>
+        <div class="stat"><b id="resCorrect">0</b><span>答對</span></div>
+        <div class="stat"><b id="resAcc">—</b><span>準確率</span></div>
+        <div class="stat"><b id="resRank">—</b><span>排名</span></div>
+      </div>
+    </div>
+    <p class="status" id="resStatus"></p>
+    <div class="row">
+      <button class="btn btn-main" id="againBtn">再玩一次</button>
+      <button class="btn btn-soft" id="homeBtn">返回主頁</button>
+    </div>
+    <div class="two">
+      <div class="panel"><h3 id="resTopTitle">排行榜</h3><div id="resTop"></div></div>
+      <div class="panel"><h3>要溫習</h3><ul class="review" id="resReview"></ul></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* ================= CONFIG ================= */
+// Google Apps Script web app URL for rooms & leaderboard (filled in at deploy time).
+const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
+const LEVELS = 10, LEVEL_SEC = 12;
+
+/* ================= DATA ================= */
+const BINSETS = {
+  terms: {name:"力度／速度／織體", bins:[["dyn","力度","Dynamics"],["tempo","速度","Tempo"],["tex","織體","Texture"]]},
+  fam:   {name:"四大家族", bins:[["str","弦樂","Strings"],["ww","木管","Woodwind"],["br","銅管","Brass"],["pc","敲擊","Percussion"]]},
+};
+const STAGES = [
+  {id:"terms", name:"張力術語"},
+  {id:"fam",   name:"四大家族"},
+  {id:"mix",   name:"混合關"},
+];
+// [category, card, style, hard]
+const T = [
+ ["dyn","pp","dyn"],["dyn","p","dyn"],["dyn","mp","dyn",1],["dyn","mf","dyn"],["dyn","f","dyn"],["dyn","ff","dyn"],
+ ["dyn","＜ cresc.","latin"],["dyn","＞ dim.","latin"],["dyn","越來越大聲","zh"],["dyn","越來越小聲","zh"],["dyn","非常大聲","zh",1],
+ ["tempo","Adagio","latin"],["tempo","Andante","latin"],["tempo","Allegro","latin"],["tempo","accel.","latin"],["tempo","rit.","latin"],
+ ["tempo","BPM","latin"],["tempo","越來越快","zh"],["tempo","越來越慢","zh"],["tempo","BPM 140","latin",1],["tempo","BPM 70","latin",1],
+ ["tex","solo","latin"],["tex","tutti","latin"],["tex","+1","latin"],["tex","G.P.","latin"],["tex","薄織體","zh"],["tex","厚織體","zh"],
+ ["tex","樂器逐一加入","zh"],["tex","單一旋律","zh",1],["tex","旋律＋伴奏","zh",1],["tex","多條旋律交織","zh",1],
+];
+// [id, name, family, hard]
+const S = [
+ ["violin","小提琴","str"],["viola","中提琴","str"],["cello","大提琴","str"],["doublebass","低音大提琴","str"],["harp","豎琴","str",1],
+ ["flute","長笛","ww"],["piccolo","短笛","ww",1],["oboe","雙簧管","ww"],["clarinet","單簧管","ww"],["bassoon","巴松管","ww"],
+ ["trumpet","小號","br"],["horn","圓號","br"],["trombone","長號","br"],["tuba","大號","br"],
+ ["timpani","定音鼓","pc"],["xylophone","木琴","pc"],["glockenspiel","鐘琴","pc"],["marimba","馬林巴琴","pc",1],
+ ["snare","小鼓","pc"],["bassdrum","大鼓","pc"],["cymbal","鈸","pc"],["triangle","三角鐵","pc"],
+ ["tambourine","鈴鼓","pc"],["shaker","沙鈴","pc"],["claves","響棒","pc",1],["cowbell","牛鈴","pc",1],["guiro","刮瓜","pc",1],
+];
+const FAMNAME = {str:"弦樂",ww:"木管",br:"銅管",pc:"敲擊"}, TERMNAME = {dyn:"力度",tempo:"速度",tex:"織體"};
+const terms = T.map(t => ({kind:"term", set:"terms", ans:t[0], card:t[1], style:t[2], hard:!!t[3], key:"t:"+t[1]}));
+const fam = S.map(s => ({kind:"sound", set:"fam", ans:s[2], id:s[0], name:s[1], hard:!!s[3], key:"f:"+s[0]}));
+const ITEMS = {terms, fam, mix:[...terms, ...fam]};
+
+/* ================= HELPERS ================= */
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
+const stageName = id => (STAGES.find(s=>s.id===id)||{}).name || id;
+function show(id){ for (const s of document.querySelectorAll(".screen")) s.hidden = s.id !== id; }
+function seg(el, items, getSel, onPick){
+  el.textContent = "";
+  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.textContent = it.name; b.setAttribute("aria-pressed", String(getSel()===it.id));
+    b.onclick = () => { onPick(it.id); for (const x of el.children) x.setAttribute("aria-pressed", String(x===b)); }; el.appendChild(b); }
+}
+const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+
+/* ================= NETWORK ================= */
+async function api(params){
+  if (!API) throw new Error("noapi");
+  const qs = new URLSearchParams(params).toString();
+  let lastErr;
+  for (let i = 0; i < 2; i++) {
+    try {
+      const r = await fetch(API + "?" + qs, {method:"GET", redirect:"follow"});
+      const j = await r.json(); if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j;
+    } catch (e) { lastErr = e; if (e.server) break; await new Promise(r => setTimeout(r, 600 + Math.random()*600)); }
+  }
+  throw lastErr;
+}
+
+/* ================= AUDIO ================= */
+const AC = window.AudioContext || window.webkitAudioContext;
+const ctx = AC ? new AC() : null;
+const buffers = {}; let current = null, audioReady = false;
+async function loadAudio(){
+  const ids = S.map(s=>s[0]); let done = 0; const msg = $("loadMsg");
+  await Promise.all(ids.map(async id => {
+    try { const ab = await (await fetch("audio/" + id + ".mp3")).arrayBuffer();
+          buffers[id] = await new Promise((ok,no) => { const p = ctx.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); }); } catch {}
+    done++; msg.textContent = `載入錄音中… ${done}/${ids.length}`;
+  }));
+  const n = Object.keys(buffers).length;
+  msg.textContent = n === ids.length ? "錄音已準備好" : `有 ${ids.length-n} 段錄音未能載入，會略過`;
+}
+function unlockAudio(){
+  if (!ctx) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  ctx.resume(); const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1,1,22050); s.connect(ctx.destination); s.start(0);
+}
+function playClip(id, onEnd){
+  stopClip(); const buf = buffers[id]; if (!ctx || !buf) return;
+  const src = ctx.createBufferSource(), g = ctx.createGain(); src.buffer = buf; src.connect(g); g.connect(ctx.destination);
+  src.onended = () => { if (current && current.src === src) { current = null; onEnd && onEnd(); } };
+  src.start(); current = {src, g};
+}
+function stopClip(fade = .1){ if (!current) return; const {src,g} = current; current = null; try { g.gain.setTargetAtTime(0, ctx.currentTime, fade/3); src.stop(ctx.currentTime + fade); } catch {} }
+function blip(ok){
+  if (!ctx) return; const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = ok ? "triangle" : "sine";
+  if (ok) { o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1320,t+.06); } else { o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(90,t+.25); }
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(ok?.1:.18,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+(ok?.2:.3));
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.35);
+}
+
+/* ================= HOME ================= */
+const prefs = store.get("sounddrop.v2", {name:"", practice:"terms", host:"terms"});
+let practiceStage = prefs.practice, hostStage = prefs.host;
+seg($("practiceStage"), STAGES, () => practiceStage, v => practiceStage = v);
+seg($("hostStage"), STAGES, () => hostStage, v => hostStage = v);
+const pinInput = $("pinInput"), nameInput = $("nameInput");
+nameInput.value = prefs.name || "";
+const urlPin = new URLSearchParams(location.search).get("pin");
+if (urlPin && /^\d{6}$/.test(urlPin)) pinInput.value = urlPin;
+function checkHome(){
+  $("joinBtn").disabled = !(audioReady && /^\d{6}$/.test(pinInput.value) && nameInput.value.trim());
+  $("practiceBtn").disabled = !audioReady;
+}
+pinInput.addEventListener("input", () => { pinInput.value = pinInput.value.replace(/\D/g,"").slice(0,6); checkHome(); });
+nameInput.addEventListener("input", checkHome);
+const savePrefs = () => store.set("sounddrop.v2", {name:nameInput.value.trim(), practice:practiceStage, host:hostStage});
+if (!API) { $("joinErr").textContent = "這個版本只可以練習。正式網址才可以加入房間。"; $("hostErr").textContent = "正式網址才可以開局。"; }
+
+$("practiceBtn").onclick = () => { unlockAudio(); savePrefs(); startGame({stage:practiceStage, room:null}); };
+$("joinBtn").onclick = async () => {
+  unlockAudio(); savePrefs();
+  const err = $("joinErr"), btn = $("joinBtn"); err.textContent = ""; btn.disabled = true; btn.textContent = "加入中…";
+  try {
+    const pin = pinInput.value, name = nameInput.value.trim().slice(0,12), pid = pidMake();
+    const room = await api({a:"join", pin, pid, name});
+    startGame({stage: room.stage, room: {pin, pid, name}});
+  } catch (e) {
+    err.textContent = e.message === "noapi" ? "這個版本只可以練習。" : e.message === "noroom" ? "找不到這個 PIN，請再檢查。" : "連線失敗，請再試一次。";
+  } finally { btn.textContent = "加入"; checkHome(); }
+};
+
+/* ================= HOST ================= */
+let H = null;
+async function openRoom(){
+  const err = $("hostErr"); err.textContent = "";
+  try {
+    const r = await api({a:"create", stage: hostStage});
+    H && clearInterval(H.iv);
+    H = {pin:r.pin, stage:hostStage, iv:null};
+    $("hostPin").textContent = r.pin.replace(/(\d{3})(\d{3})/, "$1 $2");
+    $("hostStageLbl").textContent = "PIN · " + stageName(hostStage);
+    const url = location.origin + location.pathname + "?pin=" + r.pin;
+    $("hostUrl").textContent = url;
+    const q = $("hostQr"); q.textContent = "";
+    if (window.qrcode) { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); q.innerHTML = qr.createSvgTag({cellSize:5, margin:1, scalable:true}); } else q.hidden = true;
+    show("scHost"); renderHost([]);
+    pollHost(); H.iv = setInterval(pollHost, 3000);
+  } catch (e) { err.textContent = e.message === "noapi" ? "正式網址才可以開局。" : "開局失敗，請再試一次。"; }
+}
+async function pollHost(){
+  if (!H || $("scHost").hidden) return;
+  try { const r = await api({a:"board", pin:H.pin}); renderHost(r.rows); $("hostStatus").textContent = "即時更新中"; }
+  catch { $("hostStatus").textContent = "連線不穩定，稍後自動重試"; }
+}
+function renderHost(rows){
+  const playing = rows.filter(r => r.status !== "done").length, done = rows.length - playing;
+  renderTable($("hostTable"), rows, null, 50, true, rows.length ? `${rows.length} 人加入 · ${playing} 人遊戲中 · ${done} 人完成` : "");
+  if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "等待學生加入…學生輸入上面的 PIN 碼或掃描二維碼即可。"; $("hostTable").replaceChildren(p); }
+}
+$("hostBtn").onclick = () => { savePrefs(); openRoom(); };
+$("hostNew").onclick = () => openRoom();
+$("hostExit").onclick = () => { if (H) clearInterval(H.iv); H = null; show("scHome"); };
+
+function renderTable(el, rows, meId, limit, showStatus, caption){
+  el.textContent = "";
+  if (caption) { const c = document.createElement("p"); c.className = "status"; c.textContent = caption; el.appendChild(c); }
+  if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "未有分數。"; el.appendChild(p); return; }
+  const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
+  const t = document.createElement("table"); t.className = "lb";
+  const head = t.insertRow(); for (const h of ["#","暱稱","關數", ...(showStatus?["狀態"]:[]), "分數"]) { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); }
+  let shown = sorted.slice(0, limit); const mi = sorted.findIndex(r => r.pid === meId); if (mi >= limit) shown.push(sorted[mi]);
+  for (const r of shown) {
+    const tr = t.insertRow(); if (r.pid === meId) tr.className = "me";
+    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[String(r.level||1),""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
+    for (const [v,c] of cells) { const td = tr.insertCell(); td.textContent = v; if (c) td.className = c; }
+  }
+  el.appendChild(t);
+}
+
+/* ================= GAME ================= */
+const drop = $("drop"), stage = $("stage"), basketsEl = $("baskets"), toastEl = $("toast");
+let G = null;
+const fallDur = (it, L) => it.kind === "sound" ? Math.max(1.7, 5.0 - .37*(L-1)) : Math.max(1.3, 4.2 - .32*(L-1));
+
+function startGame(opts){
+  stopClip();
+  G = { ...opts, score:0, lives:3, level:1, levelT:0, correct:0, answered:0, misses:[], bag:[], item:null, card:null,
+        state:"countdown", last:performance.now(), binset:null, cardNo:0 };
+  $("hudMode").textContent = stageName(G.stage) + (G.room ? " · PIN " + G.room.pin : " · 練習");
+  const segs = $("hudSegs"); segs.textContent = ""; for (let i=0;i<LEVELS;i++) segs.appendChild(document.createElement("i"));
+  renderHud(); show("scGame");
+  setBaskets(G.stage === "mix" ? "terms" : G.stage);
+  let n = 3; const cd = document.createElement("div"); cd.className = "countdown"; cd.textContent = n; drop.appendChild(cd);
+  const iv = setInterval(() => { n--; if (n > 0) cd.textContent = n; else { clearInterval(iv); cd.remove(); G.state = "play"; G.last = performance.now(); nextCard(); const me = G; requestAnimationFrame(t => loop(t, me)); } }, 700);
+}
+function setBaskets(setId){
+  if (G.binset === setId) return; G.binset = setId;
+  const def = BINSETS[setId]; $("setName").textContent = "分類：" + def.name;
+  basketsEl.style.setProperty("--n", def.bins.length); basketsEl.textContent = "";
+  def.bins.forEach(([key, zh, en], i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "basket"; b.dataset.key = key; b.setAttribute("aria-label", zh);
+    const rim = document.createElement("span"); rim.className = "rim";
+    const body = document.createElement("span"); body.className = "body";
+    const z = document.createElement("b"); z.textContent = zh; const e = document.createElement("small"); e.textContent = en;
+    const k = document.createElement("kbd"); k.textContent = i+1;
+    body.append(z, e); b.append(rim, body, k);
+    b.addEventListener("pointerdown", ev => { ev.preventDefault(); answer(key, b); });
+    b.addEventListener("click", ev => { if (ev.detail === 0) answer(key, b); }); // keyboard activation
+    basketsEl.appendChild(b);
+  });
+}
+function draw(){
+  if (!G.bag.length) { let pool = ITEMS[G.stage].filter(it => it.kind !== "sound" || buffers[it.id]); if (G.level < 4) pool = pool.filter(it => !it.hard); G.bag = shuffle(pool); }
+  let it = G.bag.pop(); if (G.item && it.key === G.item.key && G.bag.length) { G.bag.unshift(it); it = G.bag.pop(); }
+  return it;
+}
+function nextCard(){
+  if (!G || G.state !== "play") return;
+  const it = draw(); G.item = it; G.cardNo++; setBaskets(it.set);
+  const c = document.createElement("div"); c.className = "card";
+  const strip = document.createElement("div"); strip.className = "strip";
+  const s1 = document.createElement("span"); s1.textContent = (it.kind==="sound"?"AUDIO ":"CLIP ") + String(G.cardNo).padStart(2,"0");
+  const s2 = document.createElement("span"); s2.textContent = it.kind==="sound" ? "♪" : "TXT"; strip.append(s1, s2);
+  const body = document.createElement("div"); body.className = "body";
+  if (it.kind === "term") { const t = document.createElement("span"); t.className = "term " + (it.style==="dyn"?"dyn":it.style==="latin"?"latin":""); t.textContent = it.card; body.appendChild(t); }
+  else { const w = document.createElement("div"); w.className = "wave"; for (let i=0;i<7;i++) w.appendChild(document.createElement("i"));
+         const r = document.createElement("span"); r.className = "replay"; r.textContent = "撳卡片\n再聽一次"; body.append(w, r); }
+  c.append(strip, body); stage.appendChild(c);
+  const cw = c.offsetWidth, sw = drop.clientWidth;
+  G.card = {el:c, x: 8 + Math.random()*Math.max(0, sw - cw - 16), y: -c.offsetHeight*.3, t:0, dur:fallDur(it, G.level)};
+  placeCard();
+  if (it.kind === "sound") {
+    const replay = () => { c.classList.add("playing"); playClip(it.id, () => c.classList.remove("playing")); };
+    c.addEventListener("pointerdown", e => { e.preventDefault(); if (G.state === "play" && G.card && G.card.el === c) replay(); });
+    replay();
+  }
+}
+const lineY = () => drop.offsetTop + drop.offsetHeight;
+function placeCard(){ const k = G.card; k.el.style.transform = `translate(${k.x}px,${k.y}px)`; }
+function loop(now, me){
+  if (!G || G !== me || G.state === "over") return;
+  if (G.state === "paused" || G.state === "countdown") { G.last = now; requestAnimationFrame(t => loop(t, me)); return; }
+  const dt = Math.min(.1, (now - G.last)/1000); G.last = now;
+  G.levelT += dt;
+  if (G.levelT >= LEVEL_SEC) {
+    if (G.level >= LEVELS) { renderHud(); return endGame("完成 10 關！"); }
+    G.level++; G.levelT = 0; renderHud(); toast("lv", "LEVEL " + G.level, "更快了！", 800);
+  }
+  if (G.state === "play" && G.card) {
+    const k = G.card, h = k.el.offsetHeight, y0 = -h*.3, yEnd = lineY() - h;
+    k.t += dt; const p = k.t / k.dur; k.y = y0 + p*(yEnd - y0); placeCard();
+    if (p >= 1) wrong(null, "漏接了");
+  }
+  const cur = $("hudSegs").children[G.level-1]; if (cur) cur.style.setProperty("--p", Math.min(1, G.levelT/LEVEL_SEC));
+  requestAnimationFrame(t => loop(t, me));
+}
+const HEART = '<svg viewBox="0 0 24 24" class="life{c}" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+function renderHud(){
+  $("hudScore").firstChild.nodeValue = G.score;
+  $("hudLvl").textContent = `LEVEL ${G.level}/${LEVELS}`;
+  $("hudSpeed").textContent = "速度 ×" + (fallDur({kind:"term"},1) / fallDur({kind:"term"},G.level)).toFixed(1);
+  $("hudLives").innerHTML = [0,1,2].map(i => HEART.replace("{c}", i < G.lives ? "" : " off")).join("");
+  [...$("hudSegs").children].forEach((s,i) => { s.className = i < G.level-1 ? "done" : i === G.level-1 ? "now" : ""; });
+}
+function toast(cls, main, sub, ms){
+  toastEl.className = "toast " + cls; toastEl.textContent = main;
+  if (sub) { const s = document.createElement("span"); s.className = "sub"; s.textContent = sub; toastEl.appendChild(s); }
+  requestAnimationFrame(() => toastEl.classList.add("show"));
+  clearTimeout(toast._t); toast._t = setTimeout(() => toastEl.classList.remove("show"), ms);
+}
+const ansName = it => it.kind === "sound" ? FAMNAME[it.ans] : TERMNAME[it.ans];
+const reveal = it => it.kind === "sound" ? `${it.name} · ${ansName(it)}` : `${it.card} → ${ansName(it)}`;
+function flyInto(basket){
+  const k = G.card; if (!k) return; const el = k.el; G.card = null;
+  const sr = stage.getBoundingClientRect(), br = basket.getBoundingClientRect();
+  const tx = br.left - sr.left + br.width/2 - el.offsetWidth*.2, ty = br.top - sr.top - el.offsetHeight*.1;
+  el.classList.add("into"); el.style.transform = `translate(${tx}px,${ty}px) scale(.4)`;
+  setTimeout(() => el.remove(), 300);
+}
+function answer(key, basket){
+  if (!G || G.state !== "play" || !G.card) return;
+  const it = G.item, p = G.card.t / G.card.dur; G.answered++;
+  if (key === it.ans) {
+    const pts = 10 + Math.max(0, Math.round(10*(1 - p)));
+    G.correct++; G.score += pts; blip(true); stopClip(.25);
+    basket.classList.remove("catch"); void basket.offsetWidth; basket.classList.add("catch");
+    flyInto(basket); renderHud(); toast("ok", "+" + pts, reveal(it), 600);
+    G.state = "feedback"; setTimeout(() => { if (G && G.state === "feedback") { G.state = "play"; nextCard(); } }, 280);
+  } else wrong(basket, "答錯了");
+}
+function wrong(basket, why){
+  const it = G.item; G.state = "feedback"; blip(false); if (!basket) G.answered++;
+  if (basket) { basket.classList.add("miss"); setTimeout(() => basket.classList.remove("miss"), 600); }
+  if (G.card) G.card.el.classList.add("ng");
+  if (!G.misses.some(m => m.key === it.key)) G.misses.push(it);
+  G.lives--; renderHud();
+  toast("ng", why, "正確：" + reveal(it), 1000);
+  setTimeout(() => {
+    if (!G || G.state !== "feedback") return;
+    stopClip(.15); if (G.card) { G.card.el.remove(); G.card = null; }
+    if (G.lives <= 0) return endGame("沒有命了");
+    G.state = "play"; nextCard();
+  }, 850);
+}
+
+/* ---------- end ---------- */
+let pollRes = null;
+async function endGame(reason){
+  if (G.state === "over") return; G.state = "over"; stopClip(); if (G.card) { G.card.el.remove(); G.card = null; }
+  toast("lv", reason, "", 1000);
+  await new Promise(r => setTimeout(r, 1000));
+  const g = G;
+  $("resMode").textContent = stageName(g.stage) + (g.room ? " · " + g.room.name : " · 練習");
+  $("resScore").textContent = g.score; $("resLvl").textContent = g.level; $("resCorrect").textContent = g.correct;
+  $("resAcc").textContent = g.answered ? Math.round(g.correct/g.answered*100) + "%" : "—";
+  const rv = $("resReview"); rv.textContent = "";
+  if (!g.misses.length) { const li = document.createElement("li"); li.textContent = "全部答對，厲害！"; rv.appendChild(li); }
+  for (const it of g.misses.slice(0, 10)) { const li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
+    a.textContent = it.kind==="sound" ? "♪ " + it.name : it.card; b.textContent = ansName(it); li.append(a, b); rv.appendChild(li); }
+  show("scResults");
+  const st = $("resStatus"); clearInterval(pollRes);
+  if (g.room) {
+    st.className = "status"; st.textContent = "上傳分數中…"; $("resTopTitle").textContent = "房間排行榜 · PIN " + g.room.pin;
+    try {
+      await api({a:"finish", pin:g.room.pin, pid:g.room.pid, name:g.room.name, score:g.score, level:g.level, correct:g.correct, answered:g.answered});
+      st.className = "status ok"; st.textContent = "已上排行榜。";
+    } catch { st.className = "status warn"; st.textContent = "分數未能上傳，請告訴老師你的分數。"; }
+    const refresh = async () => { try { const r = await api({a:"board", pin:g.room.pin}); showRoomRank(r.rows, g); } catch {} };
+    refresh(); let n = 0; pollRes = setInterval(() => { if (++n > 20 || $("scResults").hidden) clearInterval(pollRes); else refresh(); }, 6000);
+  } else {
+    const best = store.get("sounddrop.best", {}); const k = g.stage; const prev = best[k] || 0;
+    if (g.score > prev) { best[k] = g.score; store.set("sounddrop.best", best); }
+    st.className = "status"; st.textContent = g.score > prev ? "新的個人最佳！" : `個人最佳：${prev}`;
+    $("resRank").textContent = "—"; $("resTopTitle").textContent = "練習模式";
+    const p = document.createElement("p"); p.className = "empty"; p.textContent = "練習分數只儲存在這部裝置。想比賽，請用老師畫面上的 PIN 加入。"; $("resTop").replaceChildren(p);
+  }
+}
+function showRoomRank(rows, g){
+  const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
+  const i = sorted.findIndex(r => r.pid === g.room.pid); $("resRank").textContent = i >= 0 ? `${i+1}/${sorted.length}` : "—";
+  renderTable($("resTop"), rows, g.room.pid, 8, false, "");
+}
+$("againBtn").onclick = async () => {
+  unlockAudio();
+  if (G.room) { const pid = pidMake(); try { await api({a:"join", pin:G.room.pin, pid, name:G.room.name}); startGame({stage:G.stage, room:{...G.room, pid}}); } catch { startGame({stage:G.stage, room:null}); } }
+  else startGame({stage:G.stage, room:null});
+};
+$("homeBtn").onclick = () => { clearInterval(pollRes); show("scHome"); };
+document.addEventListener("keydown", e => { if (!G || G.state !== "play") return; const b = basketsEl.children[parseInt(e.key,10)-1]; if (b) answer(b.dataset.key, b); });
+document.addEventListener("visibilitychange", () => { if (!G) return; if (document.hidden) pauseGame(); else G.last = performance.now(); });
+
+/* ---------- pause ---------- */
+let pausedFrom = null;
+function pauseGame(){
+  if (!G || (G.state !== "play" && G.state !== "feedback")) return;
+  pausedFrom = G.state; G.state = "paused"; stopClip(.05);
+  if (G.card) G.card.el.classList.remove("playing");
+  $("pInfo").textContent = `LEVEL ${G.level}/${LEVELS} · ${G.score} 分`;
+  $("pauseBox").hidden = false;
+}
+function resumeGame(){
+  if (!G || G.state !== "paused") return;
+  $("pauseBox").hidden = true; G.state = "play"; G.last = performance.now();
+  if (pausedFrom === "feedback") {
+    if (G.card) { G.card.el.remove(); G.card = null; }
+    if (G.lives <= 0) return endGame("沒有命了");
+    nextCard();
+  }
+  else if (G.card && G.item.kind === "sound") { const c = G.card.el; c.classList.add("playing"); playClip(G.item.id, () => c.classList.remove("playing")); }
+}
+function quitGame(){
+  if (!G) return; G.state = "over"; stopClip(); if (G.card) { G.card.el.remove(); G.card = null; }
+  $("pauseBox").hidden = true; show("scHome");
+}
+$("pauseBtn").addEventListener("click", pauseGame);
+$("resumeBtn").onclick = resumeGame;
+$("restartBtn").onclick = () => { const g = G; quitGame(); unlockAudio(); startGame({stage:g.stage, room:g.room}); };
+$("quitBtn").onclick = quitGame;
+
+/* ================= BOOT ================= */
+if (ctx) loadAudio().then(() => { audioReady = true; checkHome(); });
+else { $("loadMsg").textContent = "這個瀏覽器不支援網頁音訊"; audioReady = true; checkHome(); }
+checkHome();
+})();
+</script>
+
+</body>
+</html>
