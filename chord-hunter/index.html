@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>和弦獵人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#F6F2FF; --card:#FFFFFF; --plum:#3B2F5A; --lilac:#CDB8FF; --pink:#FFC9DE; --sky:#CFE2FF;
+  --ink:#2A2140; --muted:#6E6490; --rule:#E4DCF7; --hot:#B4528A; --good:#1F9D62; --bad:#D63C5E;
+  --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-hud:"Chakra Petch","Noto Sans TC",ui-monospace,monospace;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;overflow:hidden;
+  padding:env(safe-area-inset-top,0) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0) max(16px,env(safe-area-inset-left,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+input{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto}
+.screen{flex:1;min-height:0;display:flex;flex-direction:column}
+.scroll{overflow-y:auto;padding-block:20px 28px;gap:18px}
+.brand h1{margin:0;font-family:var(--f-hud);font-weight:700;font-size:clamp(34px,7vw,58px);line-height:.95;color:var(--plum)}
+.brand h1 small{display:block;font-family:var(--f-ui);font-weight:900;font-size:.42em;color:var(--hot);letter-spacing:.08em;margin-top:6px}
+.lede{margin:0;color:var(--muted);max-width:64ch;line-height:1.6}
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.path{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.path h2{margin:0;font-size:20px;color:var(--plum)}
+.path p{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.path.main{border:2px solid var(--plum)}
+.txt{min-height:54px;width:100%;border-radius:12px;border:1.5px solid #CFC4EC;background:#FBF9FF;color:var(--ink);padding:0 14px;font:700 20px var(--f-ui)}
+.txt.pin{font-family:var(--f-hud);font-size:28px;letter-spacing:.3em;text-align:center}
+.txt::placeholder{color:#A69DC4;font-weight:400;letter-spacing:normal}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{min-height:48px;padding:0 14px;border-radius:12px;background:#FBF9FF;border:1.5px solid #CFC4EC;font-weight:700;font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--plum);color:#fff;border-color:var(--plum)}
+.btn{min-height:54px;padding:0 24px;border-radius:12px;font-weight:900;font-size:19px}
+.btn-main{background:var(--plum);color:#fff}.btn-main:disabled{opacity:.4;cursor:default}
+.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.err{color:var(--bad);font-size:14px;min-height:1.2em;margin:0}
+.load{font-family:var(--f-hud);font-size:14px;color:var(--muted);margin:0}
+.credits{color:var(--muted);font-size:12px;line-height:1.5;border-top:1px solid var(--rule);padding-top:12px;margin:0}
+
+/* game */
+.game{padding-block:10px 12px;gap:10px}
+.hud{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}
+.score{font-family:var(--f-hud);font-weight:700;font-size:40px;line-height:1;font-variant-numeric:tabular-nums;color:var(--plum)}
+.score small{display:block;font-size:11px;letter-spacing:.18em;color:var(--muted);font-weight:500}
+.prog{display:grid;gap:6px;min-width:0}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--f-hud)}
+.prog-top b{font-size:20px;color:var(--plum)}.prog-top span{font-size:14px;color:var(--muted)}
+.timebar{height:10px;border-radius:5px;background:var(--rule);overflow:hidden}
+.timebar i{display:block;height:100%;background:var(--hot);transform-origin:left}
+.streak{font-family:var(--f-hud);font-weight:700;color:var(--hot);font-size:18px;min-width:5ch;text-align:right}
+.qbox{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:14px 18px;display:grid;gap:6px;align-content:center;min-height:120px;position:relative}
+.qkicker{font-family:var(--f-hud);font-size:12px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.qtext{font-weight:900;font-size:clamp(22px,3.6vw,34px);line-height:1.25;color:var(--plum)}
+.qtext .chord{font-family:var(--f-hud);font-size:1.5em;color:var(--hot);margin:0 .15em}
+.hint{font-size:15px;color:var(--muted);min-height:1.3em}
+.fb{position:absolute;right:16px;top:12px;font-weight:900;font-size:clamp(20px,3vw,28px)}
+.fb.ok{color:var(--good)}.fb.ng{color:var(--bad)}
+.picked{font-family:var(--f-hud);font-size:18px;color:var(--plum)}
+
+.kb{position:relative;flex:1;min-height:200px;max-height:380px;border-radius:16px;background:var(--plum);padding:10px 10px 12px;touch-action:none}
+.whites{position:relative;display:flex;height:100%;gap:3px}
+.key{position:relative}
+.white{flex:1;background:#fff;border-radius:0 0 10px 10px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:10px;gap:6px}
+.white .nm{font-weight:900;font-size:clamp(16px,2.6vw,26px);color:var(--plum)}
+.black{position:absolute;top:10px;height:58%;background:#2B2340;border-radius:0 0 8px 8px;z-index:2}
+.key.sel{background:var(--lilac)!important}
+.black.sel{background:#8A6CF0!important}
+.key.root{background:var(--pink)!important}
+.key.ghost{box-shadow:inset 0 0 0 4px #E5A1C4}
+.key.right{background:#BDEBD6!important}
+.key.wrong{background:#F7B3C2!important}
+.key .tag{font-size:12px;font-weight:900;color:#fff;background:var(--hot);border-radius:999px;padding:2px 8px}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.opt{min-height:96px;border-radius:16px;background:var(--card);border:2px solid var(--plum);font-family:var(--f-hud);font-weight:700;font-size:40px;color:var(--plum)}
+.opt.right{background:#BDEBD6;border-color:var(--good)}.opt.wrong{background:#F7B3C2;border-color:var(--bad)}
+.ctrl{display:flex;gap:10px;justify-content:space-between;align-items:center}
+.ctrl .btn{min-height:46px;font-size:16px}
+.countdown{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-hud);font-weight:700;font-size:120px;color:var(--plum);background:rgba(246,242,255,.85);z-index:40}
+
+/* results / host */
+.big{font-family:var(--f-hud);font-weight:700;font-size:clamp(64px,12vw,110px);line-height:.9;font-variant-numeric:tabular-nums;color:var(--plum)}
+.res-head{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end}
+.stats{display:flex;gap:24px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}.stat b{font-family:var(--f-hud);font-size:28px;color:var(--plum)}.stat span{font-size:13px;color:var(--muted)}
+.status{font-size:15px;color:var(--muted);margin:0}.status.ok{color:var(--good)}.status.warn{color:#A2601A}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px;min-width:0;display:grid;gap:10px;align-content:start}
+.panel h3{margin:0;font-size:17px;color:var(--plum)}
+.lb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.lb td,.lb th{padding:8px 6px;text-align:left;border-bottom:1px solid var(--rule)}
+.lb th{font-family:var(--f-hud);font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+.lb td.r{font-family:var(--f-hud);font-weight:700;color:var(--muted);width:2.5em}
+.lb td.s{font-family:var(--f-hud);font-weight:700;font-size:20px;text-align:right;color:var(--plum)}
+.lb td.st{color:var(--muted);font-size:14px}
+.lb tr.me td{background:#FFF1D2}
+.empty{color:var(--muted);font-size:15px;line-height:1.6;margin:0}
+.host-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.pinbig{font-family:var(--f-hud);font-weight:700;font-size:clamp(56px,10vw,104px);letter-spacing:.12em;color:var(--plum);line-height:1}
+.label{font-family:var(--f-hud);font-size:13px;letter-spacing:.14em;color:var(--muted)}
+.qr{background:#fff;border-radius:12px;padding:8px;border:1px solid var(--rule);width:clamp(120px,18vw,180px)}
+.qr svg{display:block;width:100%;height:auto}
+.joinurl{font-size:15px;color:var(--muted);word-break:break-all}
+.host .lb td{font-size:clamp(17px,2.2vw,26px);padding:10px 8px}
+.host .lb td.s{font-size:clamp(20px,2.8vw,32px)}
+@media (max-width:560px){.opt{min-height:70px;font-size:30px}.host-top{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="screen scroll" id="scHome">
+    <div class="brand"><h1>CHORD HUNTER<small>和弦獵人</small></h1></div>
+    <p class="lede">喺鍵盤上搵出和弦。答得越快越高分，連續答啱有額外分。每局 12 題。</p>
+    <div class="paths">
+      <div class="path main">
+        <h2>加入遊戲</h2>
+        <p>輸入老師畫面上的 PIN 碼。</p>
+        <input class="txt pin" id="pinInput" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" aria-label="PIN 碼">
+        <input class="txt" id="nameInput" maxlength="12" autocomplete="off" placeholder="暱稱" aria-label="暱稱">
+        <button class="btn btn-main" id="joinBtn" disabled>加入</button>
+        <p class="err" id="joinErr"></p>
+      </div>
+      <div class="path">
+        <h2>老師開局</h2>
+        <p>揀關卡，取得 PIN 碼和即時排行榜。每次開局都是新的一局。</p>
+        <div class="seg" id="hostMode"></div>
+        <button class="btn btn-soft" id="hostBtn">開局</button>
+        <p class="err" id="hostErr"></p>
+      </div>
+      <div class="path">
+        <h2>自己練習</h2>
+        <p>不用 PIN，分數不會上排行榜。</p>
+        <div class="seg" id="practiceMode"></div>
+        <button class="btn btn-soft" id="practiceBtn" disabled>開始練習</button>
+      </div>
+    </div>
+    <p class="load" id="loadMsg">載入鋼琴聲中…</p>
+    <p class="credits">用 iPad 玩：請關掉側面靜音掣並調高音量。鋼琴採樣：tonejs-instruments（Nicholaus Brosowsky 等，CC BY 3.0；源自 Versilian Studios VSO2）。</p>
+  </section>
+
+  <section class="screen scroll host" id="scHost" hidden>
+    <div class="host-top">
+      <div style="display:grid;gap:10px">
+        <span class="label" id="hostLbl">PIN</span>
+        <div class="pinbig" id="hostPin">——</div>
+        <div class="joinurl" id="hostUrl"></div>
+      </div>
+      <div class="qr" id="hostQr" aria-label="加入遊戲二維碼"></div>
+    </div>
+    <div class="row">
+      <button class="btn btn-soft" id="hostNew">新一局（新 PIN）</button>
+      <button class="btn btn-soft" id="hostExit">返回主頁</button>
+      <span class="status" id="hostStatus"></span>
+    </div>
+    <div class="panel"><div id="hostTable"></div></div>
+  </section>
+
+  <section class="screen game" id="scGame" hidden>
+    <div class="hud">
+      <div class="score" id="hudScore">0<small>SCORE</small></div>
+      <div class="prog">
+        <div class="prog-top"><b id="hudQ">1 / 12</b><span id="hudMode"></span></div>
+        <div class="timebar"><i id="timeFill"></i></div>
+      </div>
+      <div class="streak" id="hudStreak"></div>
+    </div>
+    <div class="qbox">
+      <span class="qkicker" id="qKick"></span>
+      <div class="qtext" id="qText"></div>
+      <div class="hint" id="qHint"></div>
+      <div class="fb" id="fb"></div>
+    </div>
+    <div class="kb" id="kb"><div class="whites" id="whites"></div></div>
+    <div class="opts" id="opts" hidden></div>
+    <div class="ctrl">
+      <span class="picked" id="picked"></span>
+      <div class="row">
+        <button class="btn btn-soft" id="replayBtn" hidden>▶ 再聽</button>
+        <button class="btn btn-soft" id="clearBtn">清除</button>
+        <button class="btn btn-soft" id="quitBtn">退出</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen scroll" id="scResults" hidden>
+    <div class="res-head">
+      <div><span class="label" id="resMode"></span><div class="big" id="resScore">0</div></div>
+      <div class="stats">
+        <div class="stat"><b id="resCorrect">0</b><span>答對（12 題）</span></div>
+        <div class="stat"><b id="resBest">0</b><span>最長連續答對</span></div>
+        <div class="stat"><b id="resRank">—</b><span>排名</span></div>
+      </div>
+    </div>
+    <p class="status" id="resStatus"></p>
+    <div class="row">
+      <button class="btn btn-main" id="againBtn">再玩一次</button>
+      <button class="btn btn-soft" id="homeBtn">返回主頁</button>
+    </div>
+    <div class="panel"><h3 id="resTopTitle">排行榜</h3><div id="resTop"></div></div>
+  </section>
+</div>
+<div class="countdown" id="countdown" hidden></div>
+
+<script>
+(() => {
+"use strict";
+const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
+const NQ = 12;
+// Shared backend only accepts its own stage ids; map them onto this game's modes.
+const MODES = [
+  {id:"build", stage:"terms", name:"第 1 關：疊三度", short:"疊三度", limit:10},
+  {id:"name",  stage:"fam",   name:"第 2 關：速認和弦", short:"速認和弦", limit:10},
+  {id:"ear",   stage:"mix",   name:"挑戰關：聽和弦", short:"聽和弦", limit:12},
+];
+const modeOf = id => MODES.find(m => m.id === id) || MODES[0];
+const modeByStage = st => MODES.find(m => m.stage === st) || MODES[0];
+
+const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const LOW = 60, HIGH = 76;             // C4 .. E5
+const CHORDS = {C:[60,64,67], Dm:[62,65,69], Em:[64,67,71], F:[65,69,72], G:[67,71,74], Am:[69,72,76]};
+const ROOTS = ["C","Dm","Em","F","G","Am"];
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
+const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+function show(id){ for (const s of document.querySelectorAll(".screen")) s.hidden = s.id !== id; }
+function seg(el, items, getSel, onPick){
+  el.textContent = "";
+  for (const it of items) { const b = document.createElement("button"); b.type = "button"; b.textContent = it.name; b.setAttribute("aria-pressed", String(getSel()===it.id));
+    b.onclick = () => { onPick(it.id); for (const x of el.children) x.setAttribute("aria-pressed", String(x===b)); }; el.appendChild(b); }
+}
+async function api(params){
+  const qs = new URLSearchParams(params).toString(); let lastErr;
+  for (let i = 0; i < 2; i++) {
+    try { const r = await fetch(API + "?" + qs, {method:"GET", redirect:"follow"}); const j = await r.json();
+          if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j; }
+    catch (e) { lastErr = e; if (e.server) break; await new Promise(r => setTimeout(r, 600 + Math.random()*600)); }
+  }
+  throw lastErr;
+}
+
+/* ---------- audio ---------- */
+const AC = window.AudioContext || window.webkitAudioContext; const ctx = AC ? new AC() : null;
+const SAMPLES = {60:"C4",63:"Ds4",66:"Fs4",69:"A4",72:"C5",75:"Ds5",78:"Fs5",81:"A5",84:"C6"};
+const buffers = {}; let audioReady = false;
+async function loadAudio(){
+  const ent = Object.entries(SAMPLES); let done = 0;
+  await Promise.all(ent.map(async ([m, f]) => {
+    try { const ab = await (await fetch("audio/" + f + ".mp3")).arrayBuffer();
+          buffers[m] = await new Promise((ok,no) => { const p = ctx.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); }); } catch {}
+    done++; $("loadMsg").textContent = `載入鋼琴聲中… ${done}/${ent.length}`;
+  }));
+  audioReady = true; $("loadMsg").textContent = "鋼琴聲已準備好"; checkHome();
+}
+function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  ctx.resume(); const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1,1,22050); s.connect(ctx.destination); s.start(0); }
+function note(m, when = 0, dur = 1.2, vel = .8){
+  if (!ctx) return; const roots = Object.keys(SAMPLES).map(Number); let r = roots[0];
+  for (const x of roots) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
+  const buf = buffers[r]; if (!buf) return;
+  const t = ctx.currentTime + when, src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = buf; src.playbackRate.value = Math.pow(2, (m-r)/12); src.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .15); src.start(t, .025); src.stop(t + dur + .8);
+}
+function chord(ms, when = 0, dur = 1.4){ ms.forEach(m => note(m, when, dur, .55)); }
+function blip(ok){
+  if (!ctx) return; const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = ok ? "triangle" : "sine";
+  if (ok) { o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1320,t+.06); } else { o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(90,t+.25); }
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(ok?.1:.18,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+(ok?.2:.3));
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+.35);
+}
+
+/* ---------- home ---------- */
+const prefs = store.get("chordhunter.v1", {name:"", practice:"build", host:"build"});
+let practiceMode = prefs.practice, hostMode = prefs.host;
+seg($("practiceMode"), MODES, () => practiceMode, v => practiceMode = v);
+seg($("hostMode"), MODES, () => hostMode, v => hostMode = v);
+const pinInput = $("pinInput"), nameInput = $("nameInput"); nameInput.value = prefs.name || "";
+const urlPin = new URLSearchParams(location.search).get("pin"); if (urlPin && /^\d{6}$/.test(urlPin)) pinInput.value = urlPin;
+function checkHome(){ $("joinBtn").disabled = !(audioReady && /^\d{6}$/.test(pinInput.value) && nameInput.value.trim()); $("practiceBtn").disabled = !audioReady; }
+pinInput.addEventListener("input", () => { pinInput.value = pinInput.value.replace(/\D/g,"").slice(0,6); checkHome(); });
+nameInput.addEventListener("input", checkHome);
+const savePrefs = () => store.set("chordhunter.v1", {name:nameInput.value.trim(), practice:practiceMode, host:hostMode});
+$("practiceBtn").onclick = () => { unlock(); savePrefs(); startGame({mode:practiceMode, room:null}); };
+$("joinBtn").onclick = async () => {
+  unlock(); savePrefs(); const err = $("joinErr"), btn = $("joinBtn"); err.textContent = ""; btn.disabled = true; btn.textContent = "加入中…";
+  try { const pin = pinInput.value, name = nameInput.value.trim().slice(0,12), pid = pidMake();
+        const room = await api({a:"join", pin, pid, name}); startGame({mode: modeByStage(room.stage).id, room:{pin, pid, name}}); }
+  catch (e) { err.textContent = e.message === "noroom" ? "找不到這個 PIN，請再檢查。" : "連線失敗，請再試一次。"; }
+  finally { btn.textContent = "加入"; checkHome(); }
+};
+
+/* ---------- host ---------- */
+let H = null;
+async function openRoom(){
+  const err = $("hostErr"); err.textContent = "";
+  try {
+    const r = await api({a:"create", stage: modeOf(hostMode).stage});
+    H && clearInterval(H.iv); H = {pin:r.pin, iv:null};
+    $("hostPin").textContent = r.pin.replace(/(\d{3})(\d{3})/, "$1 $2");
+    $("hostLbl").textContent = "PIN · 和弦獵人 · " + modeOf(hostMode).name;
+    const url = location.origin + location.pathname + "?pin=" + r.pin; $("hostUrl").textContent = url;
+    const q = $("hostQr"); q.textContent = "";
+    if (window.qrcode) { const qr = qrcode(0,"M"); qr.addData(url); qr.make(); q.innerHTML = qr.createSvgTag({cellSize:5, margin:1, scalable:true}); }
+    show("scHost"); renderHost([]); pollHost(); H.iv = setInterval(pollHost, 3000);
+  } catch { err.textContent = "開局失敗，請再試一次。"; }
+}
+async function pollHost(){
+  if (!H || $("scHost").hidden) return;
+  try { const r = await api({a:"board", pin:H.pin}); renderHost(r.rows); $("hostStatus").textContent = "即時更新中"; }
+  catch { $("hostStatus").textContent = "連線不穩定，稍後自動重試"; }
+}
+function renderHost(rows){
+  const playing = rows.filter(r => r.status !== "done").length;
+  if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "等待學生加入…學生輸入上面的 PIN 碼或掃描二維碼即可。"; $("hostTable").replaceChildren(p); return; }
+  renderTable($("hostTable"), rows, null, 50, true, `${rows.length} 人加入 · ${playing} 人遊戲中 · ${rows.length-playing} 人完成`);
+}
+$("hostBtn").onclick = () => { savePrefs(); openRoom(); };
+$("hostNew").onclick = () => openRoom();
+$("hostExit").onclick = () => { if (H) clearInterval(H.iv); H = null; show("scHome"); };
+function renderTable(el, rows, meId, limit, showStatus, caption){
+  el.textContent = "";
+  if (caption) { const c = document.createElement("p"); c.className = "status"; c.textContent = caption; el.appendChild(c); }
+  if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "未有分數。"; el.appendChild(p); return; }
+  const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
+  const t = document.createElement("table"); t.className = "lb";
+  const head = t.insertRow(); for (const h of ["#","暱稱","答對", ...(showStatus?["狀態"]:[]), "分數"]) { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); }
+  let shown = sorted.slice(0, limit); const mi = sorted.findIndex(r => r.pid === meId); if (mi >= limit) shown.push(sorted[mi]);
+  for (const r of shown) {
+    const tr = t.insertRow(); if (r.pid === meId) tr.className = "me";
+    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[r.status==="done"?`${r.correct||0}/${NQ}`:"—",""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
+    for (const [v,c] of cells) { const td = tr.insertCell(); td.textContent = v; if (c) td.className = c; }
+  }
+  el.appendChild(t);
+}
+
+/* ---------- keyboard ---------- */
+const kb = $("kb"), whites = $("whites"); const wl = [];
+for (let m = LOW; m <= HIGH; m++) { if ([1,3,6,8,10].includes(m%12)) continue;
+  const d = document.createElement("div"); d.className = "key white"; d.dataset.m = m; d.innerHTML = `<span class="nm">${PC[m%12]}</span>`; whites.appendChild(d); wl.push(m); }
+function placeBlacks(){
+  kb.querySelectorAll(".black").forEach(e => e.remove()); const els = [...whites.children];
+  for (let m = LOW; m < HIGH; m++) { if (![1,3,6,8,10].includes(m%12)) continue;
+    const l = els[wl.indexOf(m-1)], r = els[wl.indexOf(m+1)]; if (!l || !r) continue;
+    const w = l.offsetWidth*.6, x = (l.offsetLeft + l.offsetWidth + r.offsetLeft)/2 - w/2;
+    const b = document.createElement("div"); b.className = "key black"; b.dataset.m = m; b.style.left = (x+10)+"px"; b.style.width = w+"px"; kb.appendChild(b); }
+}
+addEventListener("resize", () => { if (!$("scGame").hidden) { placeBlacks(); paintKeys(); } });
+const keyEl = m => kb.querySelector(`.key[data-m="${m}"]`);
+kb.addEventListener("pointerdown", e => {
+  e.preventDefault(); const el = document.elementFromPoint(e.clientX, e.clientY); const k = el && el.closest("#kb .key"); if (!k || !G || G.lock || G.q.type === "ear") return;
+  tapKey(+k.dataset.m);
+});
+
+/* ---------- game ---------- */
+let G = null, raf = 0;
+function makeQuestions(mode){
+  const qs = [];
+  if (mode === "build") {
+    let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(ROOTS); const c = bag.pop(); qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0]}); }
+  } else if (mode === "name") {
+    let bag = [];
+    for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(i < 6 ? ["C","F","G","Am"] : ROOTS); const c = bag.pop(); qs.push({type:"name", chord:c, notes:CHORDS[c]}); }
+  } else {
+    let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(["F","G","Am","C","F","G"]); const c = bag.pop(); qs.push({type:"ear", chord:c, notes:CHORDS[c], opts:["C","F","G","Am"]}); }
+  }
+  return qs;
+}
+function startGame(opts){
+  const m = modeOf(opts.mode);
+  G = {...opts, M:m, qs:makeQuestions(m.id), i:-1, score:0, correct:0, streak:0, best:0, lock:true, sel:[]};
+  $("hudMode").textContent = m.short + (G.room ? " · PIN " + G.room.pin : " · 練習");
+  show("scGame"); placeBlacks();
+  const cd = $("countdown"); let n = 3; cd.hidden = false; cd.textContent = n;
+  const iv = setInterval(() => { n--; if (n > 0) cd.textContent = n; else { clearInterval(iv); cd.hidden = true; next(); } }, 650);
+}
+function next(){
+  G.i++; if (G.i >= NQ) return finish();
+  const q = G.q = G.qs[G.i]; G.sel = q.type === "build" ? [q.root] : []; G.lock = false; G.t0 = performance.now();
+  $("hudQ").textContent = `${G.i+1} / ${NQ}`; $("fb").textContent = ""; $("fb").className = "fb";
+  const isEar = q.type === "ear"; $("opts").hidden = !isEar; kb.hidden = isEar; $("replayBtn").hidden = !isEar; $("clearBtn").hidden = isEar;
+  if (q.type === "build") {
+    $("qKick").textContent = "疊三度"; $("qText").innerHTML = `根音係 <span class="chord">${PC[q.root%12]}</span>，撳埋另外兩個音`;
+    $("qHint").textContent = G.i < 2 ? "提示：由根音開始，隔一個白鍵，再隔一個白鍵。" : "";
+  } else if (q.type === "name") {
+    $("qKick").textContent = "速認和弦"; $("qText").innerHTML = `撳出 <span class="chord">${q.chord}</span> 和弦嘅三個音`;
+    $("qHint").textContent = G.i < 2 ? "提示：先搵根音，再疊兩個三度。" : (q.chord.endsWith("m") ? "小和弦：一樣係隔一個白鍵。" : "");
+  } else {
+    $("qKick").textContent = "聽和弦"; $("qText").innerHTML = `先聽 <span class="chord">C</span>，再聽神秘和弦：係邊個？`;
+    $("qHint").textContent = "可以撳「再聽」。"; buildOpts(q); playEar(q);
+  }
+  paintKeys(); updateHud();
+  cancelAnimationFrame(raf); const me = G; raf = requestAnimationFrame(function tick(){ if (G !== me || me.lock) return;
+    const left = 1 - (performance.now() - me.t0)/1000/me.M.limit; $("timeFill").style.transform = `scaleX(${Math.max(0,left)})`;
+    if (left <= 0) return judge(false, true); raf = requestAnimationFrame(tick); });
+}
+function playEar(q){ chord(CHORDS.C, .05, 1.1); chord(q.notes, 1.5, 1.6); }
+function buildOpts(q){
+  const box = $("opts"); box.textContent = "";
+  for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.textContent = o; b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
+}
+function tapKey(m){
+  const q = G.q; note(m, 0, .7, .7);
+  if (q.type === "build" && m === q.root) return;
+  const i = G.sel.indexOf(m); if (i >= 0) G.sel.splice(i,1); else G.sel.push(m);
+  paintKeys();
+  if (G.sel.length === 3) {
+    const want = new Set(q.notes.map(x => q.type === "name" ? x%12 : x)), got = new Set(G.sel.map(x => q.type === "name" ? x%12 : x));
+    judge(want.size === got.size && [...want].every(x => got.has(x)));
+  }
+}
+function paintKeys(){
+  if (!G || !G.q) return; const q = G.q;
+  kb.querySelectorAll(".key").forEach(k => { const m = +k.dataset.m; k.className = k.className.replace(/\b(sel|root|ghost|right|wrong)\b/g,"").trim();
+    if (q.type === "build" && m === q.root) k.classList.add("root"); else if (G.sel.includes(m)) k.classList.add("sel");
+    if (q.type === "build" && G.i === 0 && !G.lock && q.notes.includes(m) && m !== q.root) k.classList.add("ghost");
+    const old = k.querySelector(".tag"); if (old) old.remove(); });
+  $("picked").textContent = G.sel.length ? "已揀：" + G.sel.slice().sort((a,b)=>a-b).map(m => PC[m%12]).join(" ") : "";
+}
+function judge(ok, timeout = false){
+  if (G.lock) return; G.lock = true; cancelAnimationFrame(raf);
+  const q = G.q, el = (performance.now() - G.t0)/1000;
+  if (ok) { G.correct++; G.streak++; G.best = Math.max(G.best, G.streak);
+    const pts = 100 + Math.round(100 * Math.max(0, 1 - el/G.M.limit)) + (G.streak >= 3 ? 20 : 0); G.score += pts;
+    $("fb").textContent = `啱！ +${pts}`; $("fb").className = "fb ok"; blip(true); }
+  else { G.streak = 0; $("fb").textContent = timeout ? "夠鐘！" : "唔啱"; $("fb").className = "fb ng"; blip(false); }
+  // reveal
+  if (q.type === "ear") { for (const b of $("opts").children) { if (b.textContent === q.chord) b.classList.add("right"); else if (b.textContent === G.pick) b.classList.add("wrong"); } G.pick = null;
+    $("qHint").textContent = `答案：${q.chord}（${q.notes.map(m=>PC[m%12]).join(" ")}）`; }
+  else {
+    const want = q.notes, keyMatch = m => q.type === "name" ? want.some(w => w%12 === m%12) : want.includes(m);
+    kb.querySelectorAll(".key").forEach(k => { const m = +k.dataset.m; k.classList.remove("ghost","sel");
+      if (want.includes(m)) k.classList.add("right"); else if (G.sel.includes(m) && !keyMatch(m)) k.classList.add("wrong"); });
+    want.forEach((m, j) => { const k = keyEl(m); if (k && k.classList.contains("white")) { const t = document.createElement("span"); t.className = "tag"; t.textContent = j === 0 ? "根音" : (j === 1 ? "三度" : "五度"); k.prepend(t); } });
+    $("qHint").textContent = `${q.chord} 和弦 ＝ ${want.map(m=>PC[m%12]).join("・")}（隔一個白鍵疊上去）`;
+    chord(want, .05, 1.0);
+  }
+  updateHud(); setTimeout(next, ok ? 1100 : 1900);
+}
+function updateHud(){ $("hudScore").innerHTML = `${G.score}<small>SCORE</small>`; $("hudStreak").textContent = G.streak >= 2 ? `連續 ×${G.streak}` : ""; }
+$("clearBtn").onclick = () => { if (!G || G.lock) return; G.sel = G.q.type === "build" ? [G.q.root] : []; paintKeys(); };
+$("replayBtn").onclick = () => { if (G && G.q && G.q.type === "ear") playEar(G.q); };
+$("quitBtn").onclick = () => { if (G) G.lock = true; cancelAnimationFrame(raf); G = null; show("scHome"); };
+
+async function finish(){
+  const g = G; g.lock = true; show("scResults");
+  $("resMode").textContent = g.M.name + (g.room ? " · PIN " + g.room.pin : " · 練習");
+  $("resScore").textContent = g.score; $("resCorrect").textContent = `${g.correct}`; $("resBest").textContent = g.best; $("resRank").textContent = "—";
+  const st = $("resStatus");
+  if (!g.room) { st.className = "status"; st.textContent = "練習模式：分數不會上排行榜。"; $("resTop").textContent = ""; return; }
+  st.className = "status"; st.textContent = "上傳分數中…"; $("resTopTitle").textContent = "房間排行榜 · PIN " + g.room.pin;
+  try {
+    await api({a:"finish", pin:g.room.pin, pid:g.room.pid, name:g.room.name, score:g.score, level:MODES.indexOf(g.M)+1, correct:g.correct, answered:NQ});
+    st.className = "status ok"; st.textContent = "分數已上傳。";
+    const refresh = async () => { try { const r = await api({a:"board", pin:g.room.pin}); const s = r.rows.slice().sort((a,b)=>b.score-a.score||a.updated-b.updated);
+      $("resRank").textContent = (s.findIndex(x => x.pid === g.room.pid)+1) + " / " + s.length; renderTable($("resTop"), r.rows, g.room.pid, 10, false, ""); } catch {} };
+    refresh(); const iv = setInterval(() => { if ($("scResults").hidden) clearInterval(iv); else refresh(); }, 4000);
+  } catch { st.className = "status warn"; st.textContent = "上傳失敗，請叫老師。"; }
+}
+$("againBtn").onclick = async () => {
+  const last = G; if (!last) return show("scHome");
+  if (last.room) { const pid = pidMake(); try { await api({a:"join", pin:last.room.pin, pid, name:last.room.name}); return startGame({mode:last.M.id, room:{...last.room, pid}}); } catch {} }
+  startGame({mode:last.M.id, room:null});
+};
+$("homeBtn").onclick = () => { G = null; show("scHome"); };
+document.addEventListener("visibilitychange", () => { if (document.hidden && ctx) ctx.suspend(); else if (ctx) ctx.resume(); });
+
+if (ctx) loadAudio(); else { $("loadMsg").textContent = "此瀏覽器不支援聲音。"; audioReady = true; checkHome(); }
+})();
+</script>
+</body>
+</html>
