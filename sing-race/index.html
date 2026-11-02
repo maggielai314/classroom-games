@@ -124,7 +124,7 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
         <h3>2. 歌詞同時間</h3>
         <textarea id="lyr" rows="7" placeholder="貼入要唱嘅歌詞，一行一句（只會存喺呢部電腦）"></textarea>
         <div class="row"><button class="btn btn-main sm" id="timeBtn">定時間</button><span id="timeInfo"></span></div>
-        <div class="row radios"><label><input type="checkbox" id="fullIntro"> 由頭播前奏（唔剔＝第一句前 6 秒先開始）</label></div>
+        <div class="row radios"><label><input type="checkbox" id="fullIntro"> 由頭播前奏（唔剔＝第一句前 5 秒先開始，有 5 粒點倒數）</label></div>
         <p class="hint">撳「定時間」→ 伴奏由頭播 → 每句開始嗰下撳一下空白鍵 → 最後一句唱完再撳一下，定結束位置（遊戲唱到嗰度就完）。冇貼歌詞都可以撳，淨係定結束位置。</p>
       </section>
       <section>
@@ -454,8 +454,9 @@ $("goBtn").onclick = () => {
   if (!["ready","won","lost"].includes(state)) return;
   stopPreview(); hearts = DIFF[cfg.diff].hearts; inv = 0; badT = 0; loudT = 0; spikes = 0; hitLog = []; tJudge = 0; tGood = 0; fx = [];
   buildSchedule(); curDyn = "mf"; lastDynT = -9; swimY = null;
-  const from = cfg.fullIntro ? 0 : Math.max(0, songStart() - 6);
-  countdown("準備開始", () => { state = "run"; playFrom(from); $("pauseBtn").disabled = false; });
+  // music starts straight away; at most 5 s of intro, counted in by the dots on the lyrics panel
+  const from = cfg.fullIntro ? 0 : Math.max(0, songStart() - 5);
+  ban.hidden = true; state = "run"; playFrom(from); $("pauseBtn").disabled = false; renderDiff();
 };
 $("pauseBtn").onclick = () => {
   if (state === "run") { pausedAt = stopAcc(); state = "pause"; $("pauseBtn").textContent = "繼續"; renderDiff(); showBanner(`<h2>暫停</h2><p class="note">撳「繼續」或空白鍵</p>`); }
@@ -555,7 +556,7 @@ function step(dt){
   const Y = DYN[curDyn]; band.lo = Math.min(95, base + Y.lo + cfg.shift); band.hi = Math.min(99, base + Y.hi + cfg.shift);
   inv = Math.max(0, inv - dt);
   const st = $("status"); st.hidden = false;
-  if (t < songStart()) { mood = "intro"; st.className = "status intro"; st.textContent = songStart() - t < 3.2 ? `準備… ${Math.ceil(songStart() - t)}` : "前奏"; badT = 0; loudT = 0; return; }
+  if (t < songStart()) { mood = "intro"; st.className = "status intro"; st.textContent = songStart() - t <= 5 ? `準備唱… ${Math.ceil(songStart() - t)}` : "前奏"; badT = 0; loudT = 0; return; }
   const P = judgePitch(t, midiNow); lastP = P;
   const singing = !cfg.singOn || sing >= cfg.thr;
   mood = vol > band.hi ? "loud" : vol < band.lo ? "soft" : !singing ? "talk" : P.ok === false ? (P.d > 0 ? "high" : "low") : "ok";
@@ -727,9 +728,12 @@ function drawLyrics(x, y, w, h, t){
   let i = -1; vt.forEach((v, k) => { if (v <= t) i = k; });
   const big = Math.min(40, h*.36), small = Math.min(22, h*.2);
   if (i < 0) {
-    const left = vt[0] - t; g.fillStyle = "#6E6490"; g.font = `900 ${small}px 'Noto Sans TC', sans-serif`;
-    g.fillText(left < 3.5 && state === "run" ? `${"●".repeat(Math.max(1, Math.ceil(left)))}  準備` : "前奏", cx, y + h*.38);
-    g.fillStyle = "#3B2F5A"; g.font = `900 ${big*.85}px 'Noto Sans TC', sans-serif`; g.fillText(L[0], cx, y + h*.78); g.textAlign = "start"; return; }
+    // karaoke count-in: five dots that go out one per second, first line already on screen
+    const left = vt[0] - t, on = state === "run" || state === "pause" ? Math.max(0, Math.min(5, Math.ceil(left))) : 5, r = Math.min(11, h*.09), gap = r*3.2;
+    for (let k = 0; k < 5; k++) { const dx = cx + (k - 2)*gap, dy = y + h*.3;
+      g.beginPath(); g.arc(dx, dy, r, 0, Math.PI*2);
+      if (k < on) { g.fillStyle = "#B4528A"; g.fill(); } else { g.strokeStyle = "rgba(180,82,138,.35)"; g.lineWidth = 2; g.stroke(); } }
+    g.fillStyle = "#3B2F5A"; g.font = `900 ${big}px 'Noto Sans TC', sans-serif`; g.fillText(L[0], cx, y + h*.78); g.textAlign = "start"; return; }
   const cur = L[i], nxt = L[i + 1] || "", tEnd = vt[i + 1] ?? songEnd(), frac = Math.max(0, Math.min(1, (t - vt[i])/Math.max(.5, (tEnd - vt[i])*.85)));
   g.font = `900 ${big}px 'Noto Sans TC', sans-serif`; const tw = g.measureText(cur).width, ty = y + h*.5;
   g.fillStyle = "#3B2F5A"; g.fillText(cur, cx, ty);
