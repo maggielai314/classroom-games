@@ -17,404 +17,724 @@
 }
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);overflow:hidden;padding:16px 22px}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
-.app{height:100%;display:flex;flex-direction:column;gap:12px;max-width:1600px;margin:0 auto}
-.top{display:flex;align-items:center;gap:18px}
-.top h1{margin:0;font-family:var(--f-hud);font-size:32px;color:var(--plum);line-height:1;white-space:nowrap}
-.top h1 small{font-family:var(--f-ui);font-size:18px;color:var(--hot);margin-left:10px;font-weight:900}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);overflow:hidden;padding:14px 20px}
+button,select{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;gap:10px;max-width:1700px;margin:0 auto}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.top h1{margin:0;font-family:var(--f-hud);font-size:30px;color:var(--plum);line-height:1;white-space:nowrap}
+.top h1 small{font-family:var(--f-ui);font-size:17px;color:var(--hot);margin-left:10px;font-weight:900}
 .spacer{flex:1}
-.btn{min-height:46px;padding:0 18px;border-radius:12px;font-weight:900;font-size:17px;white-space:nowrap}
+.btn{min-height:44px;padding:0 16px;border-radius:12px;font-weight:900;font-size:16px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.sm{min-height:38px;font-size:14.5px;padding:0 12px}
 .btn-main{background:var(--plum);color:#fff}.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
 .btn:disabled{opacity:.4;cursor:default}
-.levels{display:flex;gap:8px}
-.lv{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:5px 12px;display:grid;gap:1px;min-width:132px}
-.lv b{font-size:15px;color:var(--plum)}.lv span{font-size:12.5px;color:var(--muted)}
-.lv.now{border:2px solid var(--plum);background:#FBF9FF}.lv.done{opacity:.55}
-.lv.done b::after{content:" ✓";color:var(--good)}
+.seg{display:flex;background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:3px;gap:3px}
+.seg button{min-height:38px;padding:0 14px;border-radius:9px;font-weight:900;color:var(--muted);display:flex;align-items:center;gap:6px}
+.seg button span{font-family:var(--f-hud);font-size:13px;color:var(--hot);font-weight:700}
+.seg button[aria-checked=true]{background:var(--plum);color:#fff}
+.seg button[aria-checked=true] span{color:var(--pink)}
+.seg button:disabled{cursor:default}
 
-.main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 168px;gap:14px}
-.track{position:relative;background:#FFF7EC;border:1px solid var(--rule);border-radius:20px;overflow:hidden}
+.track{flex:1;min-height:0;position:relative;background:#F3F7FF;border:1px solid var(--rule);border-radius:20px;overflow:hidden}
 canvas{display:block;width:100%;height:100%}
-.status{position:absolute;left:50%;top:58px;transform:translateX(-50%);font-weight:900;font-size:40px;letter-spacing:.04em;padding:6px 26px;border-radius:999px;background:rgba(255,255,255,.88);white-space:nowrap}
+.status{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-weight:900;font-size:34px;letter-spacing:.03em;padding:4px 24px;border-radius:999px;background:rgba(255,255,255,.92);white-space:nowrap;border:1px solid var(--rule)}
 .status.ok{color:var(--good)}.status.soft{color:var(--warn)}.status.loud{color:var(--bad)}.status.talk{color:var(--blue)}
-.banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(246,242,255,.9);text-align:center;padding:24px}
-.banner h2{margin:0;font-size:54px;color:var(--plum);font-family:var(--f-hud)}
-.banner p{margin:0;font-size:21px;color:var(--muted);max-width:44ch;line-height:1.55}
+.status.high,.status.low{color:var(--hot)}.status.intro{color:var(--muted)}
+.banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(246,242,255,.93);text-align:center;padding:24px}
+.banner h2{margin:0;font-size:50px;color:var(--plum);font-family:var(--f-hud)}
+.banner p{margin:0;font-size:20px;color:var(--muted);max-width:46ch;line-height:1.55}
 .banner .big{font-family:var(--f-hud);font-size:120px;color:var(--plum);line-height:1}
-.banner .note{font-size:16px}
-.meterbox{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:12px 10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:8px;justify-items:center}
-.meterbox .lbl{font-size:13px;color:var(--muted);font-weight:700;text-align:center;line-height:1.25}
-.meter{position:relative;width:48px;height:100%;border-radius:14px;background:#EFEAFB;overflow:hidden}
-.meter .band{position:absolute;left:0;right:0;background:rgba(31,157,98,.22);border-top:3px solid var(--good);border-bottom:3px solid var(--good)}
-.meter .thr{position:absolute;left:0;right:0;height:0;border-top:3px dashed var(--good)}
-.meter .lvl{position:absolute;left:6px;right:6px;bottom:0;border-radius:10px;background:var(--plum);transition:height .06s linear}
-#singLvl{background:var(--blue)}
-.meter.off{opacity:.35}
+.banner .note{font-size:15.5px}
+.banner .lnow{font-size:38px;font-weight:900;color:var(--plum);min-height:1.3em}
+.banner .lnext{font-size:22px;color:var(--muted);min-height:1.3em}
+.banner .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.banner ol{margin:0;padding:0 0 0 1.4em;text-align:left;font-size:17px;color:var(--ink);line-height:1.7}
 .bottom{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.stat{font-family:var(--f-hud);font-size:22px;color:var(--plum)}.stat small{font-family:var(--f-ui);font-size:13px;color:var(--muted);margin-right:6px}
-details{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px 14px;position:relative}
-summary{cursor:pointer;font-weight:700;color:var(--plum)}
-details[open]{position:absolute;right:22px;bottom:16px;z-index:5;box-shadow:0 10px 30px rgba(59,47,90,.18)}
-.set{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:14px;color:var(--muted)}
-.set input[type=range]{width:180px;accent-color:var(--plum)}
-.set .hint{font-size:12.5px;max-width:44ch;line-height:1.5}
-@media (prefers-reduced-motion:reduce){.meter .lvl{transition:none}}
+.stat{font-family:var(--f-hud);font-size:21px;color:var(--plum)}.stat small{font-family:var(--f-ui);font-size:13px;color:var(--muted);margin-right:6px}
+.chip{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--rule);color:var(--muted)}
+.chip.on{color:var(--good);border-color:#A9DCC3}.chip.off{color:var(--bad);border-color:#F1B8C6}
+
+dialog{border:0;border-radius:20px;padding:0;max-width:760px;width:calc(100% - 32px);max-height:calc(100% - 32px);box-shadow:0 20px 60px rgba(59,47,90,.3);color:var(--ink)}
+dialog::backdrop{background:rgba(42,33,64,.35)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+.dlg header{display:flex;align-items:center;padding:16px 22px;border-bottom:1px solid var(--rule)}
+.dlg header h2{margin:0;font-size:22px;color:var(--plum)}
+.dlg .body{overflow:auto;padding:6px 22px 20px}
+.dlg section{padding:14px 0;border-bottom:1px solid var(--rule)}
+.dlg section:last-child{border-bottom:0}
+.dlg h3{margin:0 0 8px;font-size:17px;color:var(--plum)}
+.dlg .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:14.5px;color:var(--muted)}
+.dlg .row b{color:var(--ink)}
+.dlg input[type=range]{width:170px;accent-color:var(--plum)}
+.dlg select{border:1.5px solid #CFC4EC;border-radius:10px;padding:6px 10px;background:#fff;color:var(--plum);font-weight:700}
+.dlg textarea{width:100%;border:1.5px solid #CFC4EC;border-radius:12px;padding:10px 12px;font:16px/1.6 var(--f-ui);color:var(--ink);resize:vertical}
+.dlg .hint{font-size:13px;color:var(--muted);line-height:1.6;margin:8px 0 0}
+.dlg label.file{position:relative;overflow:hidden}
+.dlg label.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.radios label{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:700}
+.radios input{accent-color:var(--plum);width:18px;height:18px}
+.ok-t{color:var(--good);font-weight:700}.bad-t{color:var(--bad);font-weight:700}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
     <h1>SING RACE<small>合唱過關</small></h1>
-    <div class="levels" id="levels"></div>
+    <div class="seg" id="diff" role="radiogroup" aria-label="難度">
+      <button role="radio" data-d="easy">易 <span>♥5</span></button>
+      <button role="radio" data-d="mid">中 <span>♥4</span></button>
+      <button role="radio" data-d="hard">難 <span>♥3</span></button>
+    </div>
     <div class="spacer"></div>
+    <button class="btn btn-soft" id="setBtn">老師設定</button>
     <button class="btn btn-soft" id="calBtn">① 校準</button>
     <button class="btn btn-main" id="goBtn" disabled>② 開始</button>
     <button class="btn btn-soft" id="pauseBtn" disabled>暫停</button>
   </div>
-  <div class="main">
-    <div class="track">
-      <canvas id="cv" aria-label="跑酷畫面"></canvas>
-      <div class="status" id="status" hidden></div>
-      <div class="banner" id="banner">
-        <h2>全班一齊唱，衝過天台！</h2>
-        <p>唱得啱聲量，跑手先會跳過障礙物。<br>太細聲、太大聲、或者唔係唱（亂嗌／講嘢），佢就會撞板。</p>
-        <p class="note">老師：撳「① 校準」→ 播住伴奏、全班唔好出聲 5 秒 → 再撳「② 開始」</p>
-      </div>
-    </div>
-    <div class="meterbox">
-      <span class="lbl">聲量</span><span class="lbl">唱歌</span>
-      <div class="meter" id="meter"><div class="band" id="band"></div><div class="lvl" id="lvl"></div></div>
-      <div class="meter" id="singMeter"><div class="thr" id="thrLine"></div><div class="lvl" id="singLvl"></div></div>
-      <span class="lbl">綠色<br>範圍</span><span class="lbl">過虛線<br>先算唱</span>
-    </div>
+  <div class="track">
+    <canvas id="cv" aria-label="遊戲畫面"></canvas>
+    <div class="status" id="status" hidden></div>
+    <div class="banner" id="banner"></div>
   </div>
   <div class="bottom">
     <span class="stat"><small>時間</small><span id="tTime">0.0</span>s</span>
     <span class="stat"><small>唱得好</small><span id="tGood">0</span>%</span>
-    <span class="stat"><small>撞板</small><span id="tCrash">0</span>次</span>
+    <span class="stat"><small>撞刺</small><span id="tSpike">0</span>次</span>
     <span class="stat"><small>進度</small><span id="tProg">0</span>%</span>
     <div class="spacer"></div>
-    <details id="setBox">
-      <summary>老師設定</summary>
-      <div class="set">綠色範圍下限 <input type="range" id="lo" min="5" max="90" value="0"><span id="loV"></span></div>
-      <div class="set">綠色範圍上限 <input type="range" id="hi" min="10" max="99" value="0"><span id="hiV"></span></div>
-      <div class="set"><label><input type="checkbox" id="singOn" checked> 唱歌偵測</label>
-        <input type="range" id="thr" min="20" max="90" value="45"><span id="thrV"></span></div>
-      <div class="set"><span class="hint">唱歌偵測睇聲音有冇穩定音高：齊聲唱會高，亂嗌、講嘢、拍枱會低。伴奏太大聲會影響準確度，建議伴奏收細少少。如果全班真係唱緊都過唔到，就拉低虛線。</span></div>
-      <div class="set">每關長度 <input type="range" id="dist" min="10" max="60" value="25"><span id="distV"></span> 秒（全程唱得好時）</div>
-    </details>
+    <span class="chip" id="chipAcc">伴奏</span>
+    <span class="chip" id="chipLyr">歌詞</span>
+    <span class="chip" id="chipPitch">音準</span>
   </div>
 </div>
+
+<dialog id="dlg">
+  <div class="dlg">
+    <header><h2>老師設定</h2><div class="spacer"></div><button class="btn btn-main sm" id="dlgClose">完成</button></header>
+    <div class="body">
+      <section>
+        <h3>1. 伴奏</h3>
+        <div class="row"><label class="btn btn-soft sm file">載入伴奏檔<input type="file" id="accFile" accept="audio/*,.mp3,.m4a,.wav,.aac"></label><span id="accInfo">未載入</span></div>
+        <div class="row">音量 <input type="range" id="accVol" min="0" max="100" value="70"><span id="accVolV"></span>
+          <button class="btn btn-soft sm" id="accTest">試聽</button></div>
+        <p class="hint">建議用冇人聲、冇樂器彈住主旋律嘅伴奏，咪先唔會聽錯。檔案只存喺呢部電腦嘅瀏覽器，唔會上網。改咗音量要重新校準。</p>
+      </section>
+      <section>
+        <h3>2. 歌詞同時間</h3>
+        <textarea id="lyr" rows="7" placeholder="貼入要唱嘅歌詞，一行一句（只會存喺呢部電腦）"></textarea>
+        <div class="row"><button class="btn btn-main sm" id="timeBtn">定時間</button><span id="timeInfo"></span></div>
+        <div class="row radios"><label><input type="checkbox" id="fullIntro"> 由頭播前奏（唔剔＝第一句前 6 秒先開始）</label></div>
+        <p class="hint">撳「定時間」→ 伴奏由頭播 → 每句開始嗰下撳一下空白鍵 → 最後一句唱完再撳一下，定結束位置（遊戲唱到嗰度就完）。冇貼歌詞都可以撳，淨係定結束位置。</p>
+      </section>
+      <section>
+        <h3>3. 音準</h3>
+        <div class="row radios">
+          <label><input type="radio" name="pm" value="guide"> 跟導唱</label>
+          <label><input type="radio" name="pm" value="key"> 喺唔喺個調入面</label>
+          <label><input type="radio" name="pm" value="off"> 唔計音準</label>
+        </div>
+        <div class="row">調（do）<select id="keySel"></select><span id="keyInfo"></span></div>
+        <div class="row"><button class="btn btn-main sm" id="recBtn">喺遊戲錄導唱</button>
+          <label class="btn btn-soft sm file">載入導唱檔<input type="file" id="guideFile" accept="audio/*,.mp3,.m4a,.wav,.aac"></label>
+          <span id="guideInfo">未有導唱</span></div>
+        <div class="row">導唱偏移 <input type="range" id="gOff" min="-150" max="150" value="0"><span id="gOffV"></span> 秒
+          <button class="btn btn-soft sm" id="gTest">同伴奏一齊試聽</button></div>
+        <p class="hint">錄導唱：戴耳筒聽伴奏，對住電腦咪由頭唱到結束位置，錄完自動抽出音高線。載入導唱檔：要淨人聲；如果同伴奏有時間差，用「同伴奏一齊試聽」聽下，再拉偏移對齊。<br>「喺唔喺個調入面」唔使導唱，捉到走音，但捉唔到唱錯旋律。男女相差一個八度都當啱。</p>
+      </section>
+      <section>
+        <h3>4. 聲量同唱歌偵測</h3>
+        <div class="row">綠色範圍整體 <input type="range" id="shift" min="-12" max="12" value="0"><span id="shiftV"></span>
+          <span>（全班唱極都唔夠聲就拉低）</span></div>
+        <div class="row radios"><label><input type="checkbox" id="singOn"> 唱歌偵測</label>
+          虛線 <input type="range" id="thr" min="20" max="90" value="45"><span id="thrV"></span></div>
+        <p class="hint">唱歌偵測睇聲音有冇穩定音高：齊聲唱會高，亂嗌、講嘢、拍枱會低。全班真係唱緊都過唔到，就拉低虛線或者關咗佢。</p>
+      </section>
+    </div>
+  </div>
+</dialog>
+
 <script>
 (() => {
 "use strict";
 const $ = id => document.getElementById(id);
-// Three stages. Band offsets are relative to the calibrated background (music + silent room), on a 0–100 loudness scale.
-const LEVELS = [
-  {name:"第 1 關", sub:"正常聲量 mf", lo:12, hi:34, sky:["#FFF7EC","#F6F2FF"], far:"rgba(205,184,255,.38)", mid:"#E7DEFA"},
-  {name:"第 2 關", sub:"細聲 p",       lo:6,  hi:18, sky:["#EAF3FF","#F6F2FF"], far:"rgba(176,205,245,.42)", mid:"#DEE8F8"},
-  {name:"第 3 關", sub:"大聲 f（唔好嗌）", lo:22, hi:40, sky:["#FFEFF5","#FFF7EC"], far:"rgba(255,170,200,.32)", mid:"#F6E0EA"},
-];
-const V = 300;                       // world px per second at full speed
-const RUN_X = .24;                   // runner's screen position (fraction of width)
-let base = null, baseClar = 0, lvl = 0, state = "idle", lastT = 0;
-let vol = 0, sing = 0, singRaw = 0, mood = "idle", okLvl = 0;
-let tTotal = 0, tGood = 0, crashes = 0;
-let band = {lo:0, hi:0}, thr = .45;
-const cv = $("cv"), g = cv.getContext("2d");
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const NN = ["C","C#","D","E♭","E","F","F#","G","A♭","A","B♭","B"];
+const SOLF = {0:"do",2:"re",4:"mi",5:"fa",7:"so",9:"la",11:"ti",12:"do"};
+const MAJ = [0,2,4,5,7,9,11,12];
+// Green bands relative to the calibrated background (accompaniment + silent room), 0–100 loudness scale.
+const DYN = {
+  pp:{lo:3,  hi:13, zh:"好細聲"},
+  p: {lo:7,  hi:19, zh:"細聲"},
+  mf:{lo:13, hi:31, zh:"中等"},
+  f: {lo:22, hi:40, zh:"大聲"},
+  ff:{lo:30, hi:48, zh:"好大聲"},
+};
+const DIFF = {
+  easy:{zh:"易", hearts:5, set:["p","mf","f"],            seg:[12,16], warn:3,   tol:1.5, keyTol:.7,  bad:4},
+  mid: {zh:"中", hearts:4, set:["p","mf","f"],            seg:[7,11],  warn:2.5, tol:1.0, keyTol:.5,  bad:3},
+  hard:{zh:"難", hearts:3, set:["pp","p","mf","f","ff"],  seg:[4,7],   warn:2,   tol:.6,  keyTol:.35, bad:2.5},
+};
 
-/* ---------- world ---------- */
-let W = 0, Hh = 0, ground = 0;
-let worldX = 0, speed = 0, levelLen = 0, obstacles = [], runPhase = 0;
-let jump = null, crash = null, fx = [], shake = 0, flash = 0, skyline = [], mids = [];
-function rnd(a, b){ return a + Math.random()*(b - a); }
-function buildLevel(){
-  levelLen = +$("dist").value * V; worldX = 0; speed = 0; jump = null; crash = null; fx = [];
-  obstacles = []; const kinds = ["hurdle","crate","barrier","vent","crate2"];
-  let x = 700;
-  while (x < levelLen - 380) { const k = kinds[Math.floor(Math.random()*kinds.length)];
-    const dim = {hurdle:[18,54], crate:[44,44], crate2:[44,84], barrier:[72,52], vent:[96,34]}[k];
-    obstacles.push({x, w:dim[0], h:dim[1], kind:k, passed:false, hits:0}); x += V * rnd(1.7, 2.5); }
-  skyline = []; for (let x2 = 0, i = 0; i < 26; i++) { const w = rnd(60, 150); skyline.push({x:x2, w, h:rnd(.16,.42)}); x2 += w + rnd(6, 30); }
-  mids = []; for (let x2 = 0, i = 0; i < 18; i++) { const w = rnd(90, 210); mids.push({x:x2, w, h:rnd(.08,.22), ant:Math.random() < .3}); x2 += w + rnd(20, 60); }
+/* ---------- saved settings ---------- */
+const LS = "singrace2";
+const cfg = Object.assign({diff:"mid", lyrics:"", times:[], timesFor:-1, end:null, fullIntro:false,
+  accName:"", accVol:70, pm:"key", key:"auto", autoKey:null, guide:null, gOff:0, shift:0, singOn:true, thr:.45}, loadCfg());
+function loadCfg(){ try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return {}; } }
+function save(){ try { localStorage.setItem(LS, JSON.stringify(cfg)); } catch(e){} }
+function idb(){ return new Promise((res, rej) => { const r = indexedDB.open("singrace2", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("m"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function idbPut(k, v){ try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction("m", "readwrite"); tx.objectStore("m").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } catch(e){} }
+async function idbGet(k){ try { const db = await idb(); return await new Promise(res => { const q = db.transaction("m").objectStore("m").get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); } catch(e){ return null; } }
+
+const lines = () => cfg.lyrics.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+const vTimes = () => (cfg.timesFor === lines().length ? cfg.times : []);
+const songStart = () => vTimes()[0] ?? 0;
+const songEnd = () => cfg.end ?? (accBuf ? accBuf.duration : 60);
+const keyPc = () => cfg.key === "auto" ? (cfg.autoKey ?? 0) : +cfg.key;
+const pitchMode = () => cfg.pm === "guide" && !cfg.guide ? "key" : cfg.pm;
+const rnd = (a, b) => a + Math.random()*(b - a);
+const pcd = (a, b) => ((a - b) % 12 + 18) % 12 - 6;    // signed pitch-class distance, −6…6
+
+/* ---------- audio ---------- */
+let ctx = null;
+function AC(){ if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume(); return ctx; }
+let accBuf = null, accSrc = null, accGain = null, accT0 = 0, accPlaying = false, clockT0 = 0, clockOff = 0, clockRun = false;
+function songTime(){
+  if (accBuf) return accPlaying ? ctx.currentTime - accT0 : clockOff;
+  return clockRun ? (performance.now() - clockT0)/1000 : clockOff;
+}
+function playFrom(t){
+  stopAcc(); t = Math.max(0, t);
+  if (accBuf) { const c = AC(); accGain = c.createGain(); accGain.gain.value = cfg.accVol/100;
+    accSrc = c.createBufferSource(); accSrc.buffer = accBuf; accSrc.connect(accGain).connect(c.destination);
+    accSrc.start(0, t); accT0 = c.currentTime - t; accPlaying = true; }
+  else { clockT0 = performance.now() - t*1000; clockRun = true; }
+}
+function stopAcc(){
+  const t = songTime();
+  if (accSrc) { try { accSrc.stop(); } catch(e){} accSrc.disconnect(); accSrc = null; }
+  accPlaying = false; clockRun = false; clockOff = t; stopTone(); return t;
 }
 
-function renderLevels(){
-  const box = $("levels"); box.textContent = "";
-  LEVELS.forEach((L,i) => { const d = document.createElement("div"); d.className = "lv" + (i===lvl && state!=="idle" ? " now" : "") + (i<lvl || state==="won" ? " done" : "");
-    d.innerHTML = `<b>${L.name}</b><span>${L.sub}</span>`; box.appendChild(d); });
+/* ---------- pitch analysis (NSDF / McLeod) ---------- */
+const nsdf = new Float32Array(1200);
+let decBuf = new Float32Array(1024);
+function pitchOf(fr, fs){
+  let s = 0; for (let i = 0; i < fr.length; i++) s += fr[i]*fr[i];
+  const db = 20*Math.log10(Math.sqrt(s/fr.length) + 1e-9);
+  const vol = Math.max(0, Math.min(100, (db + 70)*100/60));
+  if (vol < 8) return {vol, clar:0, midi:0};
+  const N = fr.length >> 1, f2 = fs/2; if (decBuf.length !== N) decBuf = new Float32Array(N); const d = decBuf;
+  for (let i = 0; i < N; i++) d[i] = (fr[2*i] + fr[2*i+1])*.5;
+  const tmin = Math.max(2, Math.floor(f2/1000)), tmax = Math.min((N >> 1), Math.floor(f2/70), nsdf.length - 2);
+  let m = 0; for (let i = 0; i < N; i++) m += 2*d[i]*d[i];
+  for (let t = 1; t < tmin; t++) m -= d[t-1]*d[t-1] + d[N-t]*d[N-t];
+  for (let t = tmin; t <= tmax + 1; t++) { m -= d[t-1]*d[t-1] + d[N-t]*d[N-t]; let a = 0; for (let i = 0; i < N - t; i++) a += d[i]*d[i+t]; nsdf[t] = m > 0 ? 2*a/m : 0; }
+  let t = tmin; while (t < tmax && nsdf[t] > 0) t++;
+  const peaks = []; let best = 0;
+  for (; t < tmax; t++) if (nsdf[t] > 0 && nsdf[t] >= nsdf[t-1] && nsdf[t] >= nsdf[t+1]) { peaks.push(t); if (nsdf[t] > best) best = nsdf[t]; }
+  if (!peaks.length) return {vol, clar:0, midi:0};
+  const pt = peaks.find(p => nsdf[p] >= .88*best);
+  const a = nsdf[pt-1], b = nsdf[pt], c = nsdf[pt+1], den = a - 2*b + c;
+  const tau = pt + (den ? (a - c)/(2*den) : 0);
+  return {vol, clar:Math.max(0, b), midi:69 + 12*Math.log2(f2/tau/440)};
 }
-renderLevels();
-
-/* ---------- mic + analysis ---------- */
-let ctx, an, buf, dec, fs = 48000;
+let an = null, micBuf = null;
 async function initMic(){
   if (an) return true;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
-    ctx = new (window.AudioContext || window.webkitAudioContext)(); await ctx.resume(); fs = ctx.sampleRate;
-    const src = ctx.createMediaStreamSource(stream); an = ctx.createAnalyser(); an.fftSize = 2048; src.connect(an);
-    buf = new Float32Array(an.fftSize); dec = new Float32Array(an.fftSize >> 1);
-    return true;
-  } catch (e) { alert("用唔到咪：請喺瀏覽器網址列旁邊允許使用咪，再撳一次「校準」。"); return false; }
+    const c = AC(); await c.resume(); const src = c.createMediaStreamSource(stream);
+    an = c.createAnalyser(); an.fftSize = 2048; src.connect(an); micBuf = new Float32Array(an.fftSize); return true;
+  } catch(e) { alert("用唔到咪：請喺瀏覽器網址列旁邊允許使用咪，再試一次。"); return false; }
 }
-const pitchHist = [];
-// Returns {vol 0–100, clar 0–1}. Clarity = peak of the normalised square difference function (McLeod),
-// scaled down when the pitch jumps around (speech glides, shouting) rather than holding notes.
+const pHist = [];
 function analyse(){
-  if (window.__sr && window.__sr.force) return window.__sr.force;
-  if (!an) return {vol:0, clar:0};
-  an.getFloatTimeDomainData(buf); let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i]*buf[i];
-  const db = 20*Math.log10(Math.sqrt(s/buf.length) + 1e-9);
-  const v = Math.max(0, Math.min(100, (db + 70) * 100/60));
-  if (v < 8) { pitchHist.length = 0; return {vol:v, clar:0}; }
-  const N = dec.length, f2 = fs/2; for (let i = 0; i < N; i++) dec[i] = (buf[2*i] + buf[2*i+1]) * .5;
-  const tmin = Math.floor(f2/1000), tmax = Math.min(N >> 1, Math.floor(f2/70));
-  let m = 0; for (let i = 0; i < N; i++) m += 2*dec[i]*dec[i];
-  for (let t = 1; t < tmin; t++) m -= dec[t-1]*dec[t-1] + dec[N-t]*dec[N-t];
-  const nsdf = new Float32Array(tmax + 1);
-  for (let t = tmin; t <= tmax; t++) { m -= dec[t-1]*dec[t-1] + dec[N-t]*dec[N-t]; let a = 0; for (let i = 0; i < N - t; i++) a += dec[i]*dec[i+t]; nsdf[t] = m > 0 ? 2*a/m : 0; }
-  // peaks after the first negative-going zero crossing
-  let t = tmin; while (t < tmax && nsdf[t] > 0) t++;
-  const peaks = []; let best = 0;
-  for (; t < tmax; t++) { if (nsdf[t] > 0 && nsdf[t] >= nsdf[t-1] && nsdf[t] >= nsdf[t+1]) { peaks.push(t); if (nsdf[t] > best) best = nsdf[t]; } }
-  if (!peaks.length) return {vol:v, clar:0};
-  const pt = peaks.find(p => nsdf[p] >= .88*best); const clar = Math.max(0, nsdf[pt]);
-  const semis = 12*Math.log2(f2/pt/440);
-  pitchHist.push(semis); if (pitchHist.length > 8) pitchHist.shift();
-  let jit = 0; if (pitchHist.length >= 4) { const d = []; for (let i = 1; i < pitchHist.length; i++) { let x = pitchHist[i] - pitchHist[i-1]; x -= 12*Math.round(x/12); d.push(Math.abs(x)); } d.sort((a,b)=>a-b); jit = d[d.length >> 1]; }
+  if (window.__sr.force) return Object.assign({vol:0, clar:0, midi:0}, window.__sr.force);
+  if (!an) return {vol:0, clar:0, midi:0};
+  an.getFloatTimeDomainData(micBuf); const r = pitchOf(micBuf, ctx.sampleRate);
+  if (!r.midi) { pHist.length = 0; return r; }
+  pHist.push(r.midi); if (pHist.length > 8) pHist.shift();
+  let jit = 0; if (pHist.length >= 4) { const dd = []; for (let i = 1; i < pHist.length; i++) dd.push(Math.abs(pcd(pHist[i], pHist[i-1]))); dd.sort((x, y) => x - y); jit = dd[dd.length >> 1]; }
   const stab = jit < .8 ? 1 : jit > 2.5 ? .55 : 1 - .45*(jit - .8)/1.7;
-  return {vol:v, clar:clar*stab};
+  return {vol:r.vol, clar:r.clar*stab, midi:r.midi};
 }
 
-/* ---------- settings ---------- */
-function setBand(L){
-  const b = base ?? 20; band.lo = Math.min(95, b + L.lo); band.hi = Math.min(99, b + L.hi);
-  $("lo").value = band.lo; $("hi").value = band.hi; showBand();
+/* ---------- guide melody contour ---------- */
+const GDT = .03;
+function guideAt(t){ const G = cfg.guide; if (!G) return 0; const i = Math.round((t - cfg.gOff)/G.dt); return G.data[i] || 0; }
+let gRange = null;
+function calcRange(){ gRange = null; if (!cfg.guide) return; let lo = 1e9, hi = -1e9; for (const v of cfg.guide.data) if (v) { lo = Math.min(lo, v); hi = Math.max(hi, v); } if (hi > 0) gRange = [lo - 2.5, Math.max(hi + 2.5, lo + 9)]; }
+function cleanContour(raw){
+  const n = raw.length, out = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) { if (!raw[i]) continue; const w = []; for (let j = i - 2; j <= i + 2; j++) if (raw[j]) w.push(raw[j]); w.sort((a, b) => a - b); out[i] = w[w.length >> 1]; }
+  // fold octave slips back towards the recent melody
+  const recent = [];
+  for (let i = 0; i < n; i++) { if (!out[i]) continue; if (recent.length >= 4) { const r = [...recent].sort((a, b) => a - b), med = r[r.length >> 1]; if (Math.abs(out[i] - med) > 7) out[i] -= 12*Math.round((out[i] - med)/12); }
+    recent.push(out[i]); if (recent.length > 9) recent.shift(); }
+  // drop voiced blips shorter than 3 frames
+  for (let i = 0; i < n;) { if (!out[i]) { i++; continue; } let j = i; while (j < n && out[j]) j++; if (j - i < 3) for (let k = i; k < j; k++) out[k] = 0; i = j; }
+  return out.map(v => v ? Math.round(v*10)/10 : 0);
 }
-function showBand(){
-  $("loV").textContent = Math.round(band.lo); $("hiV").textContent = Math.round(band.hi);
-  $("band").style.bottom = band.lo + "%"; $("band").style.height = Math.max(2, band.hi - band.lo) + "%";
+async function analyseGuideBuffer(buf, onProg){
+  const fs = buf.sampleRate, len = buf.length, mono = new Float32Array(len);
+  for (let ch = 0; ch < buf.numberOfChannels; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < len; i++) mono[i] += d[i]/buf.numberOfChannels; }
+  const W = 2048, hop = Math.round(GDT*fs), frames = Math.max(0, Math.floor((len - W)/hop));
+  const res = []; let vmax = 0;
+  for (let f = 0; f < frames; f++) { const r = pitchOf(mono.subarray(f*hop, f*hop + W), fs); res.push(r); vmax = Math.max(vmax, r.vol);
+    if (f % 150 === 0) { onProg && onProg(f/frames); await new Promise(r2 => setTimeout(r2, 0)); } }
+  // frame f covers [f*hop, f*hop+W]; centre it on its middle
+  const shift = Math.round((W/2/fs)/GDT), raw = new Array(frames + shift).fill(0);
+  res.forEach((r, f) => { raw[f + shift] = (r.clar > .72 && r.vol > vmax - 30 && r.midi > 36 && r.midi < 90) ? r.midi : 0; });
+  return cleanContour(raw);
 }
-function showThr(){ $("thrV").textContent = Math.round(thr*100); $("thr").value = Math.round(thr*100); $("thrLine").style.bottom = thr*100 + "%";
-  $("singMeter").classList.toggle("off", !$("singOn").checked); }
-$("lo").oninput = e => { band.lo = Math.min(+e.target.value, band.hi - 3); showBand(); };
-$("hi").oninput = e => { band.hi = Math.max(+e.target.value, band.lo + 3); showBand(); };
-$("thr").oninput = e => { thr = +e.target.value / 100; showThr(); };
-$("singOn").onchange = showThr;
-$("dist").oninput = e => $("distV").textContent = e.target.value; $("distV").textContent = $("dist").value;
-showThr();
+function gridRecording(rec, end){
+  const n = Math.ceil(end/GDT) + 1, raw = new Array(n).fill(0), bins = Array.from({length:n}, () => []);
+  for (const [t, m] of rec) { const i = Math.round(t/GDT); if (i >= 0 && i < n && m) bins[i].push(m); }
+  bins.forEach((b, i) => { if (b.length) { b.sort((x, y) => x - y); raw[i] = b[b.length >> 1]; } });
+  return cleanContour(raw);
+}
 
-/* ---------- calibrate / flow ---------- */
+/* ---------- key detection from the accompaniment ---------- */
+function fft(re, im){
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
+  for (let len = 2; len <= n; len <<= 1) { const ang = -2*Math.PI/len, wr = Math.cos(ang), wi = Math.sin(ang), h = len >> 1;
+    for (let i = 0; i < n; i += len) { let cr = 1, ci = 0;
+      for (let k = 0; k < h; k++) { const a = i + k, b = a + h, xr = re[b]*cr - im[b]*ci, xi = re[b]*ci + im[b]*cr;
+        re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi; const t = cr*wr - ci*wi; ci = cr*wi + ci*wr; cr = t; } } }
+}
+const KMAJ = [6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88], KMIN = [6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+async function detectKey(buf, end){
+  const fs = buf.sampleRate, N = 8192, d0 = buf.getChannelData(0), d1 = buf.numberOfChannels > 1 ? buf.getChannelData(1) : d0;
+  const stop = Math.min(buf.length - N, Math.floor(end*fs)), hop = Math.floor(.25*fs), chroma = new Array(12).fill(0);
+  const re = new Float64Array(N), im = new Float64Array(N), win = new Float64Array(N); for (let i = 0; i < N; i++) win[i] = .5 - .5*Math.cos(2*Math.PI*i/N);
+  const kLo = Math.ceil(65*N/fs), kHi = Math.floor(2000*N/fs), pcOf = []; for (let k = kLo; k <= kHi; k++) pcOf[k] = ((Math.round(12*Math.log2(k*fs/N/440)) + 69) % 12 + 12) % 12;
+  let cnt = 0;
+  for (let s = 0; s < stop; s += hop) { for (let i = 0; i < N; i++) { re[i] = (d0[s+i] + d1[s+i])*.5*win[i]; im[i] = 0; } fft(re, im);
+    for (let k = kLo; k <= kHi; k++) chroma[pcOf[k]] += Math.sqrt(re[k]*re[k] + im[k]*im[k]);
+    if (++cnt % 40 === 0) await new Promise(r => setTimeout(r, 0)); }
+  const corr = (prof, k) => { const x = chroma, y = i => prof[(i - k + 12) % 12]; let mx = 0, my = 0; for (let i = 0; i < 12; i++) { mx += x[i]; my += y(i); } mx /= 12; my /= 12;
+    let sxy = 0, sxx = 0, syy = 0; for (let i = 0; i < 12; i++) { const a = x[i] - mx, b = y(i) - my; sxy += a*b; sxx += a*a; syy += b*b; } return sxy/Math.sqrt(sxx*syy || 1); };
+  let best = {r:-2}; for (let k = 0; k < 12; k++) { const a = corr(KMAJ, k), b = corr(KMIN, k); if (a > best.r) best = {r:a, k, minor:false}; if (b > best.r) best = {r:b, k, minor:true}; }
+  return best.minor ? {doPc:(best.k + 3) % 12, label:`${NN[best.k]} 小調`} : {doPc:best.k, label:`${NN[best.k]} 大調`};
+}
+
+/* ---------- game state ---------- */
+let state = "idle", base = null, baseClar = 0;
+let A = {vol:0, clar:0, midi:0}, vol = 0, sing = 0, midiNow = 0; const mH = [];
+let hearts = 0, inv = 0, badT = 0, loudT = 0, spikes = 0, hitLog = [], sched = [], curDyn = "mf", lastDynT = -9, mood = "idle";
+let tJudge = 0, tGood = 0, pausedAt = 0, band = {lo:0, hi:0}, lastP = {ok:null};
+let swimY = null, swimV = 0, phase = 0, fx = [], shake = 0, flash = 0, heartPop = 0, spikeFlash = 0, clouds = [];
+
+function buildSchedule(){
+  const D = DIFF[cfg.diff], s0 = songStart(), end = songEnd(); sched = [{t:-1e9, d:"mf"}];
+  let t = s0 + rnd(D.seg[0], D.seg[1]), cur = "mf";
+  while (t < end - 3) { const opts = D.set.filter(x => x !== cur); cur = opts[Math.floor(Math.random()*opts.length)]; sched.push({t, d:cur}); t += rnd(D.seg[0], D.seg[1]); }
+}
+const dynAt = t => { let d = sched[0]?.d || "mf"; for (const e of sched) if (e.t <= t) d = e.d; return d; };
+const nextDyn = t => sched.find(e => e.t > t);
+
+function judgePitch(t, midi){
+  const pm = pitchMode(), D = DIFF[cfg.diff];
+  if (pm === "off" || !midi) return {ok:null};
+  if (pm === "guide") {
+    let best = null; for (let k = -5; k <= 5; k++) { const g = guideAt(t + k*.05); if (!g) continue; const dd = pcd(midi, g); if (!best || Math.abs(dd) < Math.abs(best.d)) best = {d:dd, g}; }
+    if (!best) return {ok:null, rest:true};
+    const gNow = guideAt(t) || best.g;
+    return {ok:Math.abs(best.d) <= D.tol, d:pcd(midi, gNow), target:gNow};
+  }
+  let rel = ((midi - keyPc()) % 12 + 12) % 12; if (rel > 11.5) rel -= 12;
+  let near = 0, dist = 99; for (const s of MAJ) if (Math.abs(rel - s) < dist) { dist = Math.abs(rel - s); near = s; }
+  return {ok:dist <= D.keyTol, d:rel - near, rel};
+}
+
+/* ---------- UI: difficulty, chips, settings ---------- */
+function renderDiff(){ document.querySelectorAll("#diff button").forEach(b => { b.setAttribute("aria-checked", b.dataset.d === cfg.diff); b.disabled = ["run","count","pause"].includes(state); }); }
+document.querySelectorAll("#diff button").forEach(b => b.onclick = () => { cfg.diff = b.dataset.d; save(); renderDiff(); if (state !== "run") hearts = DIFF[cfg.diff].hearts; });
+function renderChips(){
+  const c1 = $("chipAcc"), c2 = $("chipLyr"), c3 = $("chipPitch");
+  c1.textContent = accBuf ? "伴奏 ✓" : "伴奏：未載入"; c1.className = "chip " + (accBuf ? "on" : "off");
+  const L = lines(), timed = L.length && vTimes().length === L.length;
+  c2.textContent = !L.length ? "歌詞：未貼" : timed ? "歌詞 ✓" : "歌詞：未定時間"; c2.className = "chip " + (timed ? "on" : "off");
+  const pm = pitchMode(); c3.textContent = "音準：" + {guide:"跟導唱", key:`調內（do=${NN[keyPc()]}）`, off:"唔計"}[pm]; c3.className = "chip on";
+}
+function renderSettings(){
+  $("accInfo").innerHTML = accBuf ? `<b>${esc(cfg.accName || "伴奏")}</b>・${fmt(accBuf.duration)}` : "未載入";
+  $("accVol").value = cfg.accVol; $("accVolV").textContent = cfg.accVol;
+  $("lyr").value = cfg.lyrics; $("fullIntro").checked = cfg.fullIntro;
+  const L = lines(), vt = vTimes();
+  $("timeInfo").innerHTML = (L.length ? `${L.length} 句・` : "未貼歌詞・") + (vt.length === L.length && (L.length || cfg.end != null) ? `<span class="ok-t">已定時間</span>` : `<span class="bad-t">未定時間</span>`) + (cfg.end != null ? `・結束 ${fmt(cfg.end)}` : "");
+  document.querySelectorAll("input[name=pm]").forEach(r => r.checked = r.value === cfg.pm);
+  const ks = $("keySel"); if (!ks.options.length) { ks.add(new Option("自動", "auto")); NN.forEach((n, i) => ks.add(new Option(n, i))); }
+  ks.value = cfg.key; $("keyInfo").textContent = cfg.autoKey != null ? `自動偵測：${cfg.autoLabel}，do = ${NN[cfg.autoKey]}` : (accBuf ? "偵測緊…" : "載入伴奏後會自動偵測");
+  if (cfg.guide) { const v = cfg.guide.data.filter(Boolean).length; $("guideInfo").innerHTML = `<span class="ok-t">已有導唱</span>（${cfg.guide.src === "rec" ? "遊戲內錄" : esc(cfg.guide.name)}，${fmt(cfg.guide.data.length*cfg.guide.dt)}，有聲 ${Math.round(100*v/cfg.guide.data.length)}%）`; }
+  else $("guideInfo").textContent = "未有導唱";
+  $("gOff").value = Math.round(cfg.gOff*100); $("gOffV").textContent = cfg.gOff.toFixed(2);
+  $("shift").value = cfg.shift; $("shiftV").textContent = (cfg.shift > 0 ? "+" : "") + cfg.shift;
+  $("singOn").checked = cfg.singOn; $("thr").value = Math.round(cfg.thr*100); $("thrV").textContent = Math.round(cfg.thr*100);
+  renderChips();
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+$("setBtn").onclick = () => { if (state === "run") $("pauseBtn").click(); renderSettings(); $("dlg").showModal(); };
+$("dlgClose").onclick = () => { stopPreview(); $("dlg").close(); };
+$("dlg").addEventListener("close", () => { stopPreview(); renderChips(); });
+$("accVol").oninput = e => { cfg.accVol = +e.target.value; $("accVolV").textContent = cfg.accVol; if (accGain) accGain.gain.value = cfg.accVol/100; save(); };
+$("lyr").oninput = e => { cfg.lyrics = e.target.value; save(); renderSettings(); };
+$("fullIntro").onchange = e => { cfg.fullIntro = e.target.checked; save(); };
+document.querySelectorAll("input[name=pm]").forEach(r => r.onchange = () => { cfg.pm = r.value; save(); renderChips(); });
+$("keySel").onchange = e => { cfg.key = e.target.value; save(); renderChips(); };
+$("gOff").oninput = e => { cfg.gOff = +e.target.value/100; $("gOffV").textContent = cfg.gOff.toFixed(2); save(); };
+$("shift").oninput = e => { cfg.shift = +e.target.value; $("shiftV").textContent = (cfg.shift > 0 ? "+" : "") + cfg.shift; save(); };
+$("singOn").onchange = e => { cfg.singOn = e.target.checked; save(); };
+$("thr").oninput = e => { cfg.thr = +e.target.value/100; $("thrV").textContent = Math.round(cfg.thr*100); save(); };
+
+async function setAcc(ab, name, store){
+  const c = AC(); let buf;
+  try { buf = await c.decodeAudioData(ab.slice(0)); } catch(e) { alert("讀唔到呢個聲音檔，試下 mp3、m4a 或 wav。"); return; }
+  accBuf = buf; cfg.accName = name; save();
+  if (store) idbPut("acc", {name, data:ab});
+  renderSettings();
+  const k = await detectKey(buf, songEnd()); cfg.autoKey = k.doPc; cfg.autoLabel = k.label; save(); renderSettings();
+}
+$("accFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; $("accInfo").textContent = "載入緊…"; await setAcc(await f.arrayBuffer(), f.name, true); e.target.value = ""; };
+$("guideFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return; e.target.value = "";
+  let buf; try { buf = await AC().decodeAudioData(await f.arrayBuffer()); } catch(err) { alert("讀唔到呢個聲音檔。"); return; }
+  const data = await analyseGuideBuffer(buf, p => $("guideInfo").textContent = `分析緊… ${Math.round(p*100)}%`);
+  cfg.guide = {src:"file", name:f.name, dt:GDT, data}; cfg.pm = "guide"; save(); calcRange(); renderSettings();
+};
+
+/* preview: accompaniment alone, or accompaniment + a soft tone following the guide */
+let tone = null, previewing = false;
+function stopTone(){ if (tone) { try { tone.o.stop(); } catch(e){} tone.o.disconnect(); tone = null; } }
+function stopPreview(){ if (previewing) { previewing = false; stopAcc(); $("accTest").textContent = "試聽"; $("gTest").textContent = "同伴奏一齊試聽"; } }
+$("accTest").onclick = () => { if (previewing) return stopPreview(); if (!accBuf) return alert("請先載入伴奏。"); previewing = true; $("accTest").textContent = "停"; playFrom(Math.max(0, songStart() - 2)); };
+$("gTest").onclick = () => {
+  if (previewing) return stopPreview(); if (!cfg.guide) return alert("未有導唱。"); if (!accBuf) return alert("請先載入伴奏。");
+  previewing = true; $("gTest").textContent = "停"; const from = Math.max(0, songStart() - 2); playFrom(from);
+  const c = ctx, o = c.createOscillator(), gn = c.createGain(); o.type = "triangle"; o.connect(gn).connect(c.destination); gn.gain.value = 0;
+  const G = cfg.guide; let prev = -1;
+  for (let i = 0; i < G.data.length; i++) { const at = accT0 + i*G.dt + cfg.gOff; if (at < c.currentTime) continue; const v = G.data[i];
+    if (v) o.frequency.setValueAtTime(440*Math.pow(2, (v - 69)/12), at);
+    const on = v ? 1 : 0; if (on !== prev) { gn.gain.setTargetAtTime(on*.12, at, .01); prev = on; } }
+  o.start(); tone = {o};
+};
+
+/* ---------- flow: calibrate / start / pause ---------- */
+const ban = $("banner");
+function showBanner(html){ ban.hidden = false; ban.innerHTML = html; }
+function idleBanner(){
+  showBanner(`<h2>全班一齊唱，帶佢飛過終點！</h2>
+    <p>人嘅高低＝音高，跟住紫色線唱；左邊條 bar＝聲量，要停喺綠色範圍。<br>太大聲會撞刺，太細聲、走音、亂嗌太耐都會扣心心。</p>
+    <ol><li>撳「老師設定」：載入伴奏、貼歌詞、定時間（第一次先要）</li><li>撳「① 校準」：播住伴奏，全班唔好出聲 5 秒</li><li>揀難度，撳「② 開始」</li></ol>`);
+}
 $("calBtn").onclick = async () => {
-  if (!(await initMic())) return;
-  state = "cal"; const ban = $("banner"); ban.hidden = false;
-  ban.innerHTML = `<h2>校準中</h2><p>播住伴奏，全班唔好出聲</p><div class="big" id="calN">5</div>`;
-  const vals = [], cls = []; const t0 = performance.now();
-  const iv = setInterval(() => { const a = analyse(); vals.push(a.vol); cls.push(a.clar); const left = 5 - Math.floor((performance.now()-t0)/1000); const n = $("calN"); if (n) n.textContent = Math.max(1,left);
-    if (performance.now() - t0 > 5000) { clearInterval(iv); vals.sort((a,b)=>a-b); cls.sort((a,b)=>a-b);
-      base = vals[Math.floor(vals.length*.8)] || 20; baseClar = cls[Math.floor(cls.length*.5)] || 0;
-      let note = "";
-      if (baseClar > .75) { $("singOn").checked = false; note = "伴奏太大聲，唱歌偵測暫時關咗。收細伴奏再校準就會開返。"; }
-      else { $("singOn").checked = true; thr = Math.min(.8, Math.max(.45, baseClar + .15)); }
-      showThr();
-      state = "ready"; lvl = 0; setBand(LEVELS[0]); buildLevel(); $("goBtn").disabled = false;
-      ban.innerHTML = `<h2>準備好！</h2><p>${LEVELS[0].name}：${LEVELS[0].sub}<br>撳「② 開始」</p>${note ? `<p class="note">${note}</p>` : ""}`; renderLevels(); } }, 50);
+  if (!(await initMic())) return; stopPreview();
+  state = "cal"; renderDiff();
+  showBanner(`<h2>校準中</h2><p>${accBuf ? "播緊伴奏，全班唔好出聲" : "未載入伴奏：如果要喺外面播伴奏，而家播住；全班唔好出聲"}</p><div class="big" id="calN">5</div>`);
+  if (accBuf) playFrom(vTimes()[0] ?? Math.min(10, accBuf.duration/3));
+  const vals = [], cls = [], t0 = performance.now();
+  const iv = setInterval(() => {
+    const a = analyse(); vals.push(a.vol); cls.push(a.clar);
+    const n = $("calN"); if (n) n.textContent = Math.max(1, 5 - Math.floor((performance.now() - t0)/1000));
+    if (performance.now() - t0 < 5000) return;
+    clearInterval(iv); stopAcc(); vals.sort((x, y) => x - y); cls.sort((x, y) => x - y);
+    base = vals[Math.floor(vals.length*.8)] ?? 20; baseClar = cls[Math.floor(cls.length*.5)] || 0;
+    let note = "";
+    if (baseClar > .75) { cfg.singOn = false; note = "伴奏太大聲，唱歌偵測暫時關咗。收細伴奏再校準就會開返。"; }
+    else { cfg.singOn = true; cfg.thr = Math.min(.8, Math.max(.45, baseClar + .15)); }
+    save(); state = "ready"; hearts = DIFF[cfg.diff].hearts; $("goBtn").disabled = false; $("goBtn").textContent = "② 開始"; renderDiff();
+    showBanner(`<h2>準備好！</h2><p>揀難度，再撳「② 開始」</p>${note ? `<p class="note">${note}</p>` : ""}`);
+  }, 50);
 };
 $("goBtn").onclick = () => {
-  if (state === "won") { lvl = 0; tTotal = 0; tGood = 0; crashes = 0; }
-  if (state === "won" || state === "ready") { setBand(LEVELS[lvl]); buildLevel(); }
-  countdown(() => { state = "run"; lastT = performance.now(); $("pauseBtn").disabled = false; });
+  if (!["ready","won","lost"].includes(state)) return;
+  stopPreview(); hearts = DIFF[cfg.diff].hearts; inv = 0; badT = 0; loudT = 0; spikes = 0; hitLog = []; tJudge = 0; tGood = 0; fx = [];
+  buildSchedule(); curDyn = "mf"; lastDynT = -9; swimY = null;
+  const from = cfg.fullIntro ? 0 : Math.max(0, songStart() - 6);
+  countdown("準備開始", () => { state = "run"; playFrom(from); $("pauseBtn").disabled = false; });
 };
 $("pauseBtn").onclick = () => {
-  if (state === "run") { state = "pause"; $("pauseBtn").textContent = "繼續"; $("banner").hidden = false; $("banner").innerHTML = `<h2>暫停</h2>`; }
-  else if (state === "pause") { $("pauseBtn").textContent = "暫停"; countdown(() => { state = "run"; lastT = performance.now(); }); }
+  if (state === "run") { pausedAt = stopAcc(); state = "pause"; $("pauseBtn").textContent = "繼續"; renderDiff(); showBanner(`<h2>暫停</h2><p class="note">撳「繼續」或空白鍵</p>`); }
+  else if (state === "pause") { $("pauseBtn").textContent = "暫停"; countdown("繼續", () => { state = "run"; playFrom(Math.max(0, pausedAt - 1.5)); }); }
 };
-function countdown(done){
-  const ban = $("banner"); ban.hidden = false; let n = 3; ban.innerHTML = `<p>${LEVELS[lvl].name}：${LEVELS[lvl].sub}</p><div class="big">${n}</div>`;
-  state = "count"; renderLevels();
-  const iv = setInterval(() => { n--; if (n > 0) ban.querySelector(".big").textContent = n; else { clearInterval(iv); ban.hidden = true; done(); } }, 800);
+function countdown(title, done){
+  state = "count"; renderDiff(); let n = 3; const D = DIFF[cfg.diff];
+  showBanner(`<p>${title}・難度：${D.zh}（${D.hearts} 粒心）</p><div class="big">${n}</div>`);
+  const iv = setInterval(() => { n--; if (n > 0) ban.querySelector(".big").textContent = n; else { clearInterval(iv); ban.hidden = true; done(); renderDiff(); } }, 800);
 }
-document.addEventListener("keydown", e => { if (e.code === "Space" && e.target.tagName !== "INPUT") { e.preventDefault(); $("pauseBtn").click(); } });
+function finish(win){
+  stopAcc(); state = win ? "won" : "lost"; $("pauseBtn").disabled = true; $("pauseBtn").textContent = "暫停"; $("goBtn").textContent = "② 再嚟"; renderDiff();
+  const D = DIFF[cfg.diff], pct = tJudge ? Math.round(100*tGood/tJudge) : 0;
+  showBanner(win
+    ? `<h2>過關！</h2><p>難度 ${D.zh}・剩低 ${hearts} / ${D.hearts} 粒心・唱得好 ${pct}%・撞刺 ${spikes} 次</p><p class="note">撳「② 再嚟」再挑戰，或者轉難度</p>`
+    : `<h2>心心用晒…</h2><p>唱到 ${fmt(Math.max(0, songTime() - songStart()))}・唱得好 ${pct}%・撞刺 ${spikes} 次</p><p class="note">撳「② 再嚟」再試</p>`);
+}
+document.addEventListener("keydown", e => {
+  if (e.code !== "Space" || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || $("dlg").open) return;
+  e.preventDefault();
+  if (state === "timing") tapTiming(); else if (state === "run" || state === "pause") $("pauseBtn").click();
+});
 
-/* ---------- loop ---------- */
-let frameN = 0, lastA = {vol:0, clar:0};
-function frame(t){
-  if ((frameN++ & 1) === 0) lastA = analyse();
-  vol += (lastA.vol - vol) * .18; singRaw += (lastA.clar - singRaw) * .12; sing = singRaw;
-  $("lvl").style.height = vol + "%"; $("singLvl").style.height = Math.min(100, sing*100) + "%";
-  const dt = Math.min(.1, (t - lastT)/1000); lastT = t;
-  if (state === "run") step(dt);
-  else if (state !== "run") { $("status").hidden = true; if (state !== "between") mood = "idle"; }
-  $("tTime").textContent = tTotal.toFixed(1); $("tGood").textContent = tTotal ? Math.round(100*tGood/tTotal) : 0;
-  $("tCrash").textContent = crashes; $("tProg").textContent = Math.round(Math.min(1, worldX/(levelLen||1))*100);
-  draw(t, state === "run" ? dt : 0); requestAnimationFrame(frame);
+/* ---------- timing the lyrics ---------- */
+let tIdx = 0, tTimes = [], prevState = "idle";
+$("timeBtn").onclick = () => {
+  if (!accBuf) return alert("請先載入伴奏。"); stopPreview(); $("dlg").close();
+  prevState = base != null ? "ready" : "idle"; state = "timing"; tIdx = 0; tTimes = []; AC(); playFrom(0); renderTiming();
+};
+function renderTiming(){
+  const L = lines(), last = tIdx >= L.length;
+  showBanner(`<h2>定時間</h2><p class="note">${last ? "最後一句唱完嗰下再撳一下＝結束位置" : `第 ${tIdx + 1} / ${L.length} 句：呢句開始嗰下撳空白鍵`}</p>
+    <div class="lnow">${last ? "（結束位置）" : esc(L[tIdx])}</div><div class="lnext">${last ? "" : esc(L[tIdx + 1] || "（之後：結束位置）")}</div>
+    <div class="row"><button class="btn btn-main" id="tapBtn">${last ? "結束（空白鍵）" : "呢句開始（空白鍵）"}</button><button class="btn btn-soft" id="tapRe">由頭再嚟</button><button class="btn btn-soft" id="tapX">取消</button></div>
+    <p class="note" id="tClock">0:00</p>`);
+  $("tapBtn").onclick = tapTiming; $("tapRe").onclick = () => { tIdx = 0; tTimes = []; playFrom(0); renderTiming(); };
+  $("tapX").onclick = () => { stopAcc(); state = prevState; prevState === "ready" ? showBanner(`<h2>準備好！</h2><p>揀難度，再撳「② 開始」</p>`) : idleBanner(); };
+}
+function tapTiming(){
+  const L = lines(), t = songTime();
+  if (tIdx < L.length) { tTimes.push(t); tIdx++; renderTiming(); return; }
+  endTiming(t);
+}
+function endTiming(t){
+  const L = lines(); while (tTimes.length < L.length) tTimes.push(t);
+  cfg.times = tTimes; cfg.timesFor = L.length; cfg.end = t; save(); stopAcc(); state = prevState; renderChips();
+  if (accBuf) detectKey(accBuf, songEnd()).then(k => { cfg.autoKey = k.doPc; cfg.autoLabel = k.label; save(); renderChips(); });
+  showBanner(`<h2>時間定好！</h2><p>${L.length} 句・結束位置 ${fmt(t)}</p><p class="note">${prevState === "ready" ? "撳「② 開始」" : "下一步：撳「① 校準」"}</p>`);
+}
+
+/* ---------- recording the guide in-game ---------- */
+let rec = [];
+$("recBtn").onclick = async () => {
+  if (!accBuf) return alert("請先載入伴奏。");
+  if (!(await initMic())) return; stopPreview(); $("dlg").close();
+  prevState = base != null ? "ready" : "idle"; rec = [];
+  showBanner(`<h2>錄導唱</h2><p>戴住耳筒聽伴奏（唔好用喇叭），對住電腦咪由頭唱到結束位置（${fmt(songEnd())}）。</p>
+    <div class="row"><button class="btn btn-main" id="recGo">開始錄</button><button class="btn btn-soft" id="recX">取消</button></div>`);
+  $("recX").onclick = () => { state = prevState; idleOrReady(); };
+  $("recGo").onclick = () => countdown("錄導唱", () => { state = "rec"; playFrom(0);
+    showBanner(`<h2>錄緊導唱</h2><div class="lnow" id="rNow"></div><div class="lnext" id="rNext"></div><p class="note" id="rInfo"></p><div class="row"><button class="btn btn-soft" id="recStop">提早完</button></div>`);
+    $("recStop").onclick = () => endRec(); });
+};
+function idleOrReady(){ state === "ready" ? showBanner(`<h2>準備好！</h2><p>揀難度，再撳「② 開始」</p>`) : idleBanner(); }
+function recStep(){
+  const t = songTime(); if (A.clar > .7 && A.vol > 18 && A.midi) rec.push([t, A.midi]);
+  const L = lines(), vt = vTimes(); let i = -1; vt.forEach((x, k) => { if (x <= t) i = k; });
+  const rn = $("rNow"); if (rn) { rn.textContent = i >= 0 ? L[i] : (vt.length ? "（前奏）" : ""); $("rNext").textContent = L[i + 1] || "";
+    $("rInfo").textContent = `${fmt(t)} / ${fmt(songEnd())}・${A.clar > .7 && A.midi ? "聽到：" + NN[((Math.round(A.midi) % 12) + 12) % 12] : "…"}`; }
+  if (t >= songEnd()) endRec();
+}
+function endRec(){
+  const end = songTime(); stopAcc(); state = prevState;
+  const data = gridRecording(rec, end), v = data.filter(Boolean).length;
+  if (v < 20) { showBanner(`<h2>錄唔到聲</h2><p>好似聽唔到人聲，檢查下咪，再錄一次。</p>`); return; }
+  cfg.guide = {src:"rec", name:"遊戲內錄音", dt:GDT, data}; cfg.gOff = 0; cfg.pm = "guide"; save(); calcRange(); renderChips();
+  showBanner(`<h2>導唱錄好！</h2><p>${fmt(end)}・有聲部分 ${Math.round(100*v/data.length)}%。音準已改為「跟導唱」。</p><p class="note">可以喺老師設定撳「同伴奏一齊試聽」檢查。${state === "ready" ? "撳「② 開始」" : "下一步：撳「① 校準」"}</p>`);
+}
+
+/* ---------- main loop ---------- */
+let fn = 0, lastT = 0;
+function frame(now){
+  if ((fn++ & 1) === 0) A = analyse();
+  vol += (A.vol - vol)*.2; sing += (A.clar - sing)*.12;
+  if (A.midi && A.clar > .45) { mH.push(A.midi); if (mH.length > 5) mH.shift(); } else if (mH.length) mH.shift();
+  midiNow = mH.length >= 2 ? [...mH].sort((x, y) => x - y)[mH.length >> 1] : 0;
+  const dt = Math.min(.1, (now - lastT)/1000); lastT = now;
+  if (state === "run") step(dt); else { $("status").hidden = true; if (state === "timing") { const c = $("tClock"); if (c) c.textContent = fmt(songTime()); if (songTime() >= accBuf.duration - .05) endTiming(songTime()); } if (state === "rec") recStep(); }
+  $("tTime").textContent = Math.max(0, songTime() - songStart()).toFixed(1); $("tGood").textContent = tJudge ? Math.round(100*tGood/tJudge) : 0;
+  $("tSpike").textContent = spikes; $("tProg").textContent = Math.round(Math.max(0, Math.min(1, (songTime() - songStart())/((songEnd() - songStart()) || 1)))*100);
+  draw(now, dt); requestAnimationFrame(frame);
 }
 function step(dt){
-  tTotal += dt;
-  const singing = !$("singOn").checked || sing >= thr;
-  mood = vol > band.hi ? "loud" : vol < band.lo ? "soft" : !singing ? "talk" : "ok";
-  if (mood === "ok") tGood += dt;
-  okLvl += ((mood === "ok" ? 1 : 0) - okLvl) * Math.min(1, dt*5);
-  const st = $("status"); st.hidden = false; st.className = "status " + mood;
-  st.textContent = {ok:"唱得好！衝呀", soft:"大聲啲！", loud:"太大聲！唔好嗌", talk:"要唱，唔好嗌／講"}[mood];
-
-  if (crash) {
-    crash.t += dt; speed = 0;
-    if (crash.t < .25) worldX -= 60 * dt/.25;
-    if (crash.t > 1.0) { crash = null; speed = V*.35; }
-  } else {
-    const target = jump ? Math.max(speed, V*.95) : (okLvl > .5 ? V : V*.6);
-    speed += (target - speed) * Math.min(1, dt*4);
-    worldX += speed * dt; runPhase += speed * dt / 26;
-  }
-  if (jump) { jump.t += dt; if (jump.t >= jump.T) { jump = null; addDust(6); } }
-  const ob = obstacles.find(o => !o.passed && o.x + o.w > worldX - 10);
-  if (ob && !crash && !jump) {
-    const dx = ob.x - (worldX + 16);
-    if (dx < 26 + speed*.12 && okLvl > .5) { jump = {t:0, T:.62, h:ob.h + 58}; ob.passed = true; addDust(5); }
-    else if (dx <= 0) doCrash(ob);
-  }
-  for (const o of obstacles) if (!o.passed && o.x + o.w < worldX - 20) o.passed = true;
-  if (worldX >= levelLen) { worldX = levelLen; levelDone(); }
+  const t = songTime(), D = DIFF[cfg.diff];
+  if (t >= songEnd()) return finish(true);
+  const d = dynAt(t); if (d !== curDyn) { curDyn = d; lastDynT = t; }
+  const Y = DYN[curDyn]; band.lo = Math.min(95, base + Y.lo + cfg.shift); band.hi = Math.min(99, base + Y.hi + cfg.shift);
+  inv = Math.max(0, inv - dt);
+  const st = $("status"); st.hidden = false;
+  if (t < songStart()) { mood = "intro"; st.className = "status intro"; st.textContent = songStart() - t < 3.2 ? `準備… ${Math.ceil(songStart() - t)}` : "前奏"; badT = 0; loudT = 0; return; }
+  const P = judgePitch(t, midiNow); lastP = P;
+  const singing = !cfg.singOn || sing >= cfg.thr;
+  mood = vol > band.hi ? "loud" : vol < band.lo ? "soft" : !singing ? "talk" : P.ok === false ? (P.d > 0 ? "high" : "low") : "ok";
+  const grace = t - lastDynT < 1.2;
+  tJudge += dt; if (mood === "ok") tGood += dt;
+  st.className = "status " + mood;
+  st.textContent = {ok:"唱得好！", soft:`大聲啲！（${curDyn}）`, loud:"太大聲！小心刺", talk:"要唱，唔好嗌／講", high:"音高咗，低少少", low:"音低咗，高少少"}[mood];
+  if (mood === "loud" && !grace) { loudT += dt; if (loudT > .25 && inv <= 0) loseHeart("spike"); } else loudT = 0;
+  if (mood === "ok") badT = Math.max(0, badT - dt*3);
+  else if (mood !== "loud" && !(grace && mood === "soft")) { badT += dt; if (badT >= D.bad && inv <= 0) loseHeart(mood); }
 }
-function doCrash(ob){
-  crash = {t:0}; crashes++; ob.hits++; shake = reduce ? 0 : 10; flash = 1;
-  const msgs = {soft:"太細聲，撞板！", loud:"嗌得太大聲，撞板！", talk:"冇唱歌，撞板！"};
-  fx.push({type:"text", x:ob.x, y:-ob.h - 30, t:0, s:msgs[mood] || "撞板！"});
-  for (let i = 0; i < 9; i++) fx.push({type:"line", x:ob.x, y:-ob.h*.6, a:Math.PI*(.65 + .7*Math.random()) + Math.PI, l:rnd(18, 38), t:0});
-}
-function addDust(n){ for (let i = 0; i < n; i++) fx.push({type:"dust", x:worldX + rnd(-6, 12), y:-2, vx:rnd(-80, -20), vy:rnd(-60, -10), t:0}); }
-function levelDone(){
-  state = "between"; $("pauseBtn").disabled = true; $("status").hidden = true;
-  const ban = $("banner"); ban.hidden = false;
-  if (lvl < LEVELS.length - 1) {
-    lvl++; setBand(LEVELS[lvl]);
-    ban.innerHTML = `<h2>過關！</h2><p>撞板 ${crashes} 次・唱得好 ${Math.round(100*tGood/tTotal)}%</p><p>下一關：${LEVELS[lvl].name}・${LEVELS[lvl].sub}</p><p class="note">撳「② 開始」繼續</p>`;
-    state = "ready";
-  } else {
-    state = "won";
-    ban.innerHTML = `<h2>全部過關！</h2><p>總時間 ${tTotal.toFixed(1)} 秒・唱得好 ${Math.round(100*tGood/tTotal)}%・撞板 ${crashes} 次</p><p class="note">撳「② 開始」由第 1 關再嚟</p>`;
-  }
-  renderLevels();
+function loseHeart(why){
+  hearts--; inv = 2; badT = 0; loudT = 0; heartPop = 1; flash = 1; shake = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 9;
+  hitLog.push(songTime());
+  if (why === "spike") { spikes++; spikeFlash = 1; swimV = 420; }
+  fx.push({type:"text", t:0, s:{spike:"撞到刺！唔好嗌", soft:"太細聲太耐！", talk:"冇唱歌！", high:"走音（高咗）！", low:"走音（低咗）！"}[why] || "扣一粒心！"});
+  if (hearts <= 0) finish(false);
 }
 
 /* ---------- drawing ---------- */
-function draw(t, dt){
+const cv = $("cv"), g = cv.getContext("2d");
+let W = 0, H = 0;
+function draw(now, dt){
   const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
   if (cv.width !== Math.round(r.width*dpr) || cv.height !== Math.round(r.height*dpr)) { cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr); }
-  W = r.width; Hh = r.height; ground = Math.round(Hh*.78);
-  if (!skyline.length) buildLevel();
-  const L = LEVELS[lvl], rx = W*RUN_X;
-  g.setTransform(dpr,0,0,dpr,0,0);
-  const sx = shake ? rnd(-shake, shake) : 0, sy = shake ? rnd(-shake, shake)*.6 : 0; shake = Math.max(0, shake - 40*dt);
-  g.save(); g.translate(sx, sy);
+  W = r.width; H = r.height; if (W < 50 || H < 50) return;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const running = state === "run", t = songTime();
+  const lyrH = Math.min(124, H*.2), gx = 22, gw = 54, px0 = gx + gw + 30, px1 = W - 16, py0 = 104, py1 = H - lyrH - 34;
+  const sx = px0 + (px1 - px0)*.24, pps = (px1 - sx)/5;
+  const ox = shake ? rnd(-shake, shake) : 0, oy = shake ? rnd(-shake, shake)*.6 : 0; shake = Math.max(0, shake - 40*dt);
+  g.save(); g.translate(ox, oy);
   // sky
-  const sk = g.createLinearGradient(0, 0, 0, ground); sk.addColorStop(0, L.sky[0]); sk.addColorStop(1, L.sky[1]);
-  g.fillStyle = sk; g.fillRect(-20, -20, W + 40, ground + 20);
-  g.fillStyle = "rgba(255,201,222,.45)"; g.beginPath(); g.arc(W*.78, Hh*.24, Math.min(W, Hh)*.09, 0, Math.PI*2); g.fill();
-  // far skyline
-  const span1 = skyline.length ? skyline[skyline.length-1].x + skyline[skyline.length-1].w + 30 : 1;
-  g.fillStyle = L.far;
-  for (let rep = -1; rep < 3; rep++) for (const b of skyline) { const x = b.x + rep*span1 - (worldX*.12) % span1; if (x > W || x + b.w < 0) continue; g.fillRect(x, ground - Hh*b.h - 40, b.w, Hh*b.h + 40); }
-  // mid rooftops with windows
-  const span2 = mids.length ? mids[mids.length-1].x + mids[mids.length-1].w + 60 : 1;
-  for (let rep = -1; rep < 3; rep++) for (const b of mids) { const x = b.x + rep*span2 - (worldX*.4) % span2; if (x > W || x + b.w < 0) continue;
-    const top = ground - Hh*b.h - 12; g.fillStyle = L.mid; g.fillRect(x, top, b.w, ground - top);
-    g.fillStyle = "rgba(255,255,255,.7)"; for (let wy = top + 12; wy < ground - 14; wy += 20) for (let wx = x + 10; wx < x + b.w - 14; wx += 22) g.fillRect(wx, wy, 10, 9);
-    if (b.ant) { g.strokeStyle = L.mid; g.lineWidth = 3; g.beginPath(); g.moveTo(x + b.w*.7, top); g.lineTo(x + b.w*.7, top - 26); g.stroke(); } }
-  // rooftop floor
-  g.fillStyle = "#3B2F5A"; g.fillRect(-20, ground, W + 40, 6);
-  g.fillStyle = "#EDE6FF"; g.fillRect(-20, ground + 6, W + 40, Hh - ground);
-  g.fillStyle = "#DCD0F6"; const tile = 64, off = worldX % tile; for (let x = -off; x < W; x += tile) g.fillRect(x, ground + 6, 3, Hh - ground);
-  g.fillStyle = "#E4DCF7"; for (let x = -((worldX*1.0) % 140); x < W; x += 140) g.fillRect(x, ground + 26, 60, 4);
-  // finish gate
-  const fxs = rx + (levelLen - worldX);
-  if (fxs < W + 80) { g.fillStyle = "#3B2F5A"; g.fillRect(fxs - 4, ground - 150, 8, 150); g.fillRect(fxs + 92, ground - 150, 8, 150);
-    for (let i = 0; i < 12; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? "#3B2F5A" : "#FFFFFF"; g.fillRect(fxs + 4 + i*7.3, ground - 150 + j*12, 7.3, 12); }
-    g.fillStyle = "#3B2F5A"; g.font = "700 15px 'Chakra Petch', sans-serif"; g.fillText("FINISH", fxs + 22, ground - 158); }
-  // obstacles
-  for (const o of obstacles) { const x = rx + (o.x - worldX); if (x > W + 120 || x + o.w < -120) continue; drawObstacle(x, ground, o); }
-  // runner
-  let ry = ground, pose = "run";
-  if (jump) { const p = jump.t/jump.T; ry = ground - 4*jump.h*p*(1 - p); pose = "jump"; }
-  if (crash) pose = crash.t < .55 ? "hit" : "up";
-  if (state !== "run" && state !== "between") pose = state === "idle" || state === "ready" || state === "cal" || state === "count" ? "stand" : pose;
-  if (pose === "run" && mood === "ok" && !reduce) { g.fillStyle = "rgba(205,184,255,.55)"; for (let i = 0; i < 4; i++) g.fillRect(rx - 46 - i*22, ground - 92 + i*18, 26 + i*4, 3); }
-  drawRunner(rx, ry, pose, crash ? crash.t : 0, mood);
+  const sk = g.createLinearGradient(0, 0, 0, H); sk.addColorStop(0, "#E6F0FF"); sk.addColorStop(.7, "#F6F2FF"); sk.addColorStop(1, "#FFF3F8");
+  g.fillStyle = sk; g.fillRect(-20, -20, W + 40, H + 40);
+  if (!clouds.length) for (let i = 0; i < 7; i++) clouds.push({x:rnd(0, 1), y:rnd(.12, .7), s:rnd(.6, 1.4), v:rnd(.6, 1)});
+  for (const c of clouds) { if (running) c.x -= dt*.02*c.v; if (c.x < -.25) { c.x = 1.15; c.y = rnd(.12, .7); }
+    const cx = c.x*W, cy = c.y*H, s = 60*c.s; g.fillStyle = "rgba(255,255,255,.75)";
+    g.beginPath(); g.ellipse(cx, cy, s*1.6, s*.42, 0, 0, Math.PI*2); g.ellipse(cx - s*.5, cy - s*.22, s*.7, s*.38, 0, 0, Math.PI*2); g.ellipse(cx + s*.45, cy - s*.3, s*.8, s*.45, 0, 0, Math.PI*2); g.fill(); }
+  // pitch lanes
+  const pm = pitchMode(); let vMin, vMax, lanes = [];
+  if (pm === "guide" && gRange) { [vMin, vMax] = gRange; for (let v = Math.ceil(vMin); v <= vMax; v++) lanes.push({v, strong:((v - keyPc()) % 12 + 12) % 12 === 0, label:((v % 12) + 12) % 12 === keyPc() ? "do" : ""}); }
+  else { vMin = -1.2; vMax = 13.2; for (const s of MAJ) lanes.push({v:s, strong:s === 0 || s === 12, label:SOLF[s]}); }
+  const yOf = v => py1 - (v - vMin)/(vMax - vMin)*(py1 - py0);
+  g.font = "700 13px 'Chakra Petch', sans-serif"; g.textAlign = "right";
+  for (const L of lanes) { const y = yOf(L.v); g.strokeStyle = L.strong ? "rgba(59,47,90,.22)" : "rgba(59,47,90,.08)"; g.lineWidth = L.strong ? 2 : 1;
+    g.beginPath(); g.moveTo(px0, y); g.lineTo(px1, y); g.stroke(); if (L.label) { g.fillStyle = "rgba(110,100,144,.9)"; g.fillText(L.label, px0 - 4, y + 4); } }
+  g.textAlign = "start";
+  // tolerance bands (key mode)
+  const D = DIFF[cfg.diff];
+  if (pm === "key") { const tolPx = D.keyTol*(py1 - py0)/(vMax - vMin); g.fillStyle = "rgba(205,184,255,.16)"; for (const s of MAJ) g.fillRect(px0, yOf(s) - tolPx, px1 - px0, tolPx*2); }
+  // guide ribbon
+  if (pm === "guide" && cfg.guide && gRange) {
+    const per = (py1 - py0)/(vMax - vMin), tolPx = D.tol*per;
+    for (const pass of [0, 1]) { g.lineCap = "round"; g.lineJoin = "round";
+      g.strokeStyle = pass ? "#8E74D8" : "rgba(205,184,255,.5)"; g.lineWidth = pass ? 5 : tolPx*2;
+      g.beginPath(); let pen = false;
+      for (let x = px0; x <= px1; x += 3) { const tt = t + (x - sx)/pps, v = guideAt(tt);
+        if (v) { const y = yOf(v); pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true; } else pen = false; }
+      g.stroke(); }
+  }
+  // speed streaks
+  if (running) { g.strokeStyle = "rgba(205,184,255,.5)"; g.lineWidth = 2; for (let i = 0; i < 9; i++) { const yy = py0 + ((i*97) % (py1 - py0)), xx = px1 - ((t*pps*1.3 + i*173) % (px1 - px0)); g.beginPath(); g.moveTo(xx, yy); g.lineTo(xx + 40, yy); g.stroke(); } }
+  // dynamic change gates
+  for (const e of sched) { if (e.t < -1) continue; const x = sx + (e.t - t)*pps; if (x < px0 - 40 || x > px1 + 60) continue;
+    g.setLineDash([8, 7]); g.strokeStyle = "rgba(180,82,138,.6)"; g.lineWidth = 2; g.beginPath(); g.moveTo(x, py0 - 6); g.lineTo(x, py1 - 18); g.stroke(); g.setLineDash([]);
+    pill(x, py1 - 2, e.d, DYN[e.d].zh); }
+  // swimmer
+  let target;
+  if (pm === "guide" && gRange) { const gv = (lastP.target || guideAt(t)) || (vMin + vMax)/2; target = midiNow ? gv + pcd(midiNow, gv) : null; }
+  else if (pm === "key") target = midiNow ? (lastP.rel ?? (((midiNow - keyPc()) % 12 + 12) % 12)) : null;
+  else target = midiNow ? (vMin + vMax)/2 + Math.sin(now/600)*.6 : null;
+  const singingVis = running && target != null && vol >= band.lo*.85;
+  let ty = singingVis ? yOf(Math.max(vMin, Math.min(vMax, target))) : (running ? py1 - 6 : (py0 + py1)/2 + Math.sin(now/700)*8);
+  if (swimY == null) swimY = ty;
+  if (swimV) { swimY += swimV*dt; swimV = Math.max(0, swimV - 900*dt); }
+  swimY += (ty - swimY)*Math.min(1, dt*(singingVis ? 7 : 1.6)); swimY = Math.max(py0, Math.min(py1, swimY));
+  if (running || state === "idle" || state === "ready") phase += dt*(running && mood === "ok" ? 7 : 3.5);
+  if (running && mood === "ok" && Math.random() < dt*14) fx.push({type:"bub", x:sx - 80, y:swimY + rnd(-6, 8), t:0, r:rnd(3, 6)});
+  const blink = inv > 0 && Math.floor(now/110) % 2;
+  drawSwimmer(sx, swimY, phase, (ty - swimY)*-.004, inv > 1.4, blink, mood === "ok" && running);
   // fx
-  for (const f of fx) { f.t += dt; const x = rx + (f.x - worldX);
-    if (f.type === "dust") { f.x += f.vx*dt; f.y += f.vy*dt; f.vy += 160*dt; g.fillStyle = `rgba(205,184,255,${Math.max(0, .8 - f.t*1.4)})`; g.beginPath(); g.arc(x, ground + f.y, 4 + f.t*8, 0, Math.PI*2); g.fill(); }
-    else if (f.type === "line") { const a = Math.max(0, 1 - f.t*2.2), d = 10 + f.t*90; g.strokeStyle = `rgba(214,60,94,${a})`; g.lineWidth = 4; g.lineCap = "round";
-      g.beginPath(); g.moveTo(x + Math.cos(f.a)*d, ground + f.y + Math.sin(f.a)*d); g.lineTo(x + Math.cos(f.a)*(d + f.l), ground + f.y + Math.sin(f.a)*(d + f.l)); g.stroke(); }
-    else if (f.type === "text") { const a = Math.max(0, 1 - Math.max(0, f.t - .9)*1.6); g.fillStyle = `rgba(214,60,94,${a})`; g.font = "900 30px 'Noto Sans TC', sans-serif"; g.textAlign = "center";
-      g.fillText(f.s, x, ground + f.y - f.t*30); g.textAlign = "start"; } }
+  for (const f of fx) { f.t += dt;
+    if (f.type === "bub") { const x = f.x - f.t*120; g.strokeStyle = `rgba(142,116,216,${Math.max(0, .7 - f.t)})`; g.lineWidth = 2; g.beginPath(); g.arc(x, f.y - f.t*14, f.r + f.t*3, 0, Math.PI*2); g.stroke(); }
+    else if (f.type === "text") { const a = Math.max(0, 1 - Math.max(0, f.t - .9)*1.6); g.fillStyle = `rgba(214,60,94,${a})`; g.font = "900 32px 'Noto Sans TC', sans-serif"; g.textAlign = "center"; g.fillText(f.s, sx + 60, swimY - 50 - f.t*30); g.textAlign = "start"; } }
   fx = fx.filter(f => f.t < (f.type === "text" ? 1.6 : 1));
   g.restore();
-  // crash flash
-  if (flash > 0) { const v = g.createRadialGradient(W/2, Hh/2, Math.min(W, Hh)*.3, W/2, Hh/2, Math.max(W, Hh)*.75); v.addColorStop(0, "rgba(214,60,94,0)"); v.addColorStop(1, `rgba(214,60,94,${.35*flash})`); g.fillStyle = v; g.fillRect(0, 0, W, Hh); flash = Math.max(0, flash - dt*1.8); }
-  // progress strip
-  const px0 = 24, px1 = W - 24, py = 22, p = Math.min(1, worldX/(levelLen || 1));
-  g.fillStyle = "rgba(255,255,255,.8)"; roundRect(px0 - 6, py - 12, px1 - px0 + 12, 24, 12); g.fill();
-  g.fillStyle = "#E4DCF7"; roundRect(px0, py - 4, px1 - px0, 8, 4); g.fill();
-  g.fillStyle = "#B4528A"; roundRect(px0, py - 4, Math.max(8, (px1 - px0)*p), 8, 4); g.fill();
-  for (const o of obstacles) { const ox = px0 + (px1 - px0)*(o.x/levelLen); g.fillStyle = o.passed ? (o.hits ? "#D63C5E" : "#1F9D62") : "#9C8FC4"; g.fillRect(ox - 1.5, py - 8, 3, 16); }
-  g.fillStyle = "#3B2F5A"; g.beginPath(); g.arc(px0 + (px1 - px0)*p, py, 7, 0, Math.PI*2); g.fill();
-  g.fillStyle = "#6E6490"; g.font = "700 17px 'Noto Sans TC', sans-serif"; g.fillText(`${L.name}・${L.sub}`, 24, 64);
+  // volume gauge with spike ceiling
+  drawGauge(gx, py0, gw, py1 - py0, now);
+  // current dynamic badge
+  const Y = DYN[curDyn], nd = nextDyn(t);
+  g.fillStyle = "#3B2F5A"; g.font = "italic 900 46px Georgia, 'Times New Roman', serif"; g.textAlign = "center"; g.fillText(running || state === "pause" ? curDyn : "mf", gx + gw/2, 58);
+  g.font = "700 14px 'Noto Sans TC', sans-serif"; g.fillStyle = "#6E6490"; g.fillText(running || state === "pause" ? Y.zh : "中等", gx + gw/2, 80); g.textAlign = "start";
+  if (running && nd && nd.t - t <= D.warn && t >= songStart() - .5) { const left = nd.t - t;
+    g.fillStyle = "rgba(255,255,255,.95)"; roundRect(gx + gw + 14, 30, 210, 50, 14); g.fill(); g.strokeStyle = "#B4528A"; g.lineWidth = 2; g.stroke();
+    g.fillStyle = "#B4528A"; g.font = "900 20px 'Noto Sans TC', sans-serif"; g.fillText(`準備轉 ${nd.d}`, gx + gw + 28, 62);
+    g.font = "700 15px 'Chakra Petch', sans-serif"; g.fillText(`${DYN[nd.d].zh} · ${left.toFixed(1)}s`, gx + gw + 120, 62); }
+  // hearts
+  const N = DIFF[cfg.diff].hearts, hs = 30, have = ["run","pause","won","lost","count"].includes(state) ? hearts : N; heartPop = Math.max(0, heartPop - dt*2);
+  for (let i = 0; i < N; i++) { const x = W - 34 - (N - 1 - i)*(hs + 10), y = 22, full = i < have, pop = !full && i === have ? 1 + heartPop*.5 : 1;
+    g.save(); g.translate(x, y + hs/2); g.scale(pop, pop); heartPath(0, -hs/2, hs);
+    if (full) { g.fillStyle = "#E0517F"; g.fill(); } else { g.fillStyle = "rgba(224,81,127,.1)"; g.fill(); g.strokeStyle = "rgba(110,100,144,.5)"; g.lineWidth = 2; g.stroke(); } g.restore(); }
+  // progress
+  const s0 = songStart(), s1 = songEnd(), pr0 = px0, pr1 = px1, prY = py1 + 20, p = Math.max(0, Math.min(1, (t - s0)/((s1 - s0) || 1)));
+  g.fillStyle = "#E4DCF7"; roundRect(pr0, prY - 3, pr1 - pr0, 6, 3); g.fill();
+  g.fillStyle = "#B4528A"; roundRect(pr0, prY - 3, Math.max(6, (pr1 - pr0)*p), 6, 3); g.fill();
+  for (const e of sched) if (e.t > s0) { const x = pr0 + (pr1 - pr0)*(e.t - s0)/(s1 - s0); g.fillStyle = "#9C8FC4"; g.fillRect(x - 1, prY - 7, 2, 14); }
+  for (const h of hitLog) { const x = pr0 + (pr1 - pr0)*(h - s0)/(s1 - s0); g.fillStyle = "#D63C5E"; g.beginPath(); g.arc(x, prY, 5, 0, Math.PI*2); g.fill(); }
+  g.fillStyle = "#3B2F5A"; g.beginPath(); g.arc(pr0 + (pr1 - pr0)*p, prY, 7, 0, Math.PI*2); g.fill();
+  // lyrics panel
+  drawLyrics(px0 - 10, H - lyrH - 4, px1 - px0 + 10, lyrH - 8, t);
+  // hit flash
+  if (flash > 0) { const v = g.createRadialGradient(W/2, H/2, Math.min(W, H)*.3, W/2, H/2, Math.max(W, H)*.75); v.addColorStop(0, "rgba(214,60,94,0)"); v.addColorStop(1, `rgba(214,60,94,${.35*flash})`); g.fillStyle = v; g.fillRect(0, 0, W, H); flash = Math.max(0, flash - dt*1.8); }
 }
-function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
-function drawObstacle(x, y, o){
-  g.save(); g.translate(x, y); g.lineWidth = 3; g.strokeStyle = "#3B2F5A";
-  if (o.kind === "hurdle") {
-    g.fillStyle = "#3B2F5A"; g.fillRect(0, -o.h, 5, o.h); g.fillRect(o.w - 5, -o.h, 5, o.h);
-    g.fillStyle = "#FF9EC4"; g.fillRect(-10, -o.h, o.w + 20, 12); g.fillStyle = "#FFFFFF"; for (let i = 0; i < 3; i++) g.fillRect(-6 + i*14, -o.h + 2, 6, 8);
-  } else if (o.kind === "crate" || o.kind === "crate2") {
-    const n = o.kind === "crate2" ? 2 : 1;
-    for (let k = 0; k < n; k++) { const top = -44*(k + 1); g.fillStyle = k ? "#CDB8FF" : "#FFC9DE"; g.fillRect(0, top, 44, 44); g.strokeRect(1.5, top + 1.5, 41, 41);
-      g.beginPath(); g.moveTo(4, top + 4); g.lineTo(40, top + 40); g.moveTo(40, top + 4); g.lineTo(4, top + 40); g.stroke(); }
-  } else if (o.kind === "barrier") {
-    g.fillStyle = "#FFFFFF"; g.fillRect(0, -o.h, o.w, 26); g.save(); g.beginPath(); g.rect(0, -o.h, o.w, 26); g.clip();
-    g.fillStyle = "#B4528A"; for (let i = -2; i < 8; i++) { g.beginPath(); g.moveTo(i*16, -o.h + 26); g.lineTo(i*16 + 10, -o.h + 26); g.lineTo(i*16 + 36, -o.h); g.lineTo(i*16 + 26, -o.h); g.fill(); } g.restore();
-    g.strokeRect(1.5, -o.h + 1.5, o.w - 3, 23); g.fillStyle = "#3B2F5A"; g.fillRect(8, -o.h + 26, 6, o.h - 26); g.fillRect(o.w - 14, -o.h + 26, 6, o.h - 26);
-  } else {
-    g.fillStyle = "#BFE6FF"; g.fillRect(0, -o.h, o.w, o.h); g.strokeRect(1.5, -o.h + 1.5, o.w - 3, o.h - 3);
-    g.fillStyle = "#3B2F5A"; for (let i = 0; i < 5; i++) g.fillRect(10 + i*16, -o.h + 9, 8, o.h - 18);
-  }
+function pill(x, y, sym, zh){
+  g.font = "italic 900 20px Georgia, serif"; const w1 = g.measureText(sym).width; g.font = "700 13px 'Noto Sans TC', sans-serif"; const w2 = g.measureText(zh).width, w = w1 + w2 + 26;
+  g.fillStyle = "#fff"; roundRect(x - w/2, y - 15, w, 30, 15); g.fill(); g.strokeStyle = "#B4528A"; g.lineWidth = 1.5; g.stroke();
+  g.fillStyle = "#B4528A"; g.font = "italic 900 20px Georgia, serif"; g.fillText(sym, x - w/2 + 10, y + 7); g.font = "700 13px 'Noto Sans TC', sans-serif"; g.fillStyle = "#6E6490"; g.fillText(zh, x - w/2 + 16 + w1, y + 5);
+}
+function drawGauge(x, y, w, h, now){
+  const yv = v => y + h - (v/100)*h;
+  g.fillStyle = "#fff"; roundRect(x, y, w, h, 14); g.fill(); g.strokeStyle = "#E4DCF7"; g.lineWidth = 1.5; g.stroke();
+  g.save(); roundRect(x, y, w, h, 14); g.clip();
+  const lo = state === "run" ? band.lo : (base ?? 20) + DYN.mf.lo + cfg.shift, hi = state === "run" ? band.hi : (base ?? 20) + DYN.mf.hi + cfg.shift;
+  g.fillStyle = "rgba(31,157,98,.18)"; g.fillRect(x, yv(hi), w, yv(lo) - yv(hi));
+  g.fillStyle = "#1F9D62"; g.fillRect(x, yv(lo) - 1.5, w, 3);
+  // spikes hang down from the top of the green band
+  spikeFlash = Math.max(0, spikeFlash - .03);
+  g.fillStyle = spikeFlash > 0 ? "rgba(214,60,94,.25)" : "#EEE8FA"; g.fillRect(x, y, w, yv(hi) - y - 12);
+  g.fillStyle = spikeFlash > 0 ? "#D63C5E" : "#3B2F5A"; g.fillRect(x, yv(hi) - 16, w, 4);
+  g.beginPath(); const n = 4, sw = w/n, top = yv(hi) - 12; for (let i = 0; i < n; i++) { g.moveTo(x + i*sw, top); g.lineTo(x + i*sw + sw/2, top + 12); g.lineTo(x + (i + 1)*sw, top); } g.fill();
+  // level
+  const lvTop = Math.max(yv(Math.min(100, vol)), y);
+  g.fillStyle = vol > hi ? "#D63C5E" : vol < lo ? "#D98A1C" : "#1F9D62"; roundRect(x + 9, lvTop, w - 18, y + h - lvTop, 8); g.fill();
   g.restore();
+  g.fillStyle = "#6E6490"; g.font = "700 13px 'Noto Sans TC', sans-serif"; g.textAlign = "center"; g.fillText("聲量", x + w/2, y + h + 18); g.textAlign = "start";
 }
-function drawRunner(x, y, pose, ct, md){
-  const col = pose === "hit" || pose === "up" ? "#D63C5E" : "#3B2F5A";
-  g.save(); g.translate(x, y); g.strokeStyle = col; g.fillStyle = col; g.lineCap = "round"; g.lineJoin = "round"; g.lineWidth = 8;
-  const seg = (pts) => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.stroke(); };
-  if (pose === "hit") { g.translate(-10, 0); g.rotate(-Math.min(1.1, ct*3.5)); }
-  if (pose === "up") { const p = Math.min(1, (ct - .55)/.45); g.translate(-10, 0); g.rotate(-1.1*(1 - p)); }
-  const ph = runPhase, s = Math.sin(ph), c = Math.cos(ph);
-  let hip = [0, -50], sh = [10, -92], head = [18, -110];
-  if (pose === "run") {
-    hip = [0, -50 + Math.abs(c)*3]; sh = [12, -92 + Math.abs(c)*3]; head = [20, -110 + Math.abs(c)*3];
-    const leg = a => { const kx = hip[0] + 18*Math.sin(a), ky = hip[1] + 22 - 4*Math.cos(a); const fx = kx - 6 + 14*Math.sin(a - 1.2), fy = Math.min(0, -2 - 14*Math.max(0, Math.cos(a + .6))); seg([hip, [kx, ky], [fx, fy]]); };
-    const arm = a => { const ex = sh[0] - 16*Math.sin(a), ey = sh[1] + 20; seg([sh, [ex, ey], [ex + 14 + 4*Math.cos(a), ey - 10]]); };
-    g.globalAlpha = .55; leg(ph + Math.PI); arm(ph); g.globalAlpha = 1; leg(ph); arm(ph + Math.PI);
-  } else if (pose === "jump") {
-    hip = [0, -54]; sh = [14, -92]; head = [24, -108];
-    seg([hip, [18, -44], [4, -26]]); seg([hip, [12, -36], [-8, -30]]);
-    seg([sh, [34, -100], [48, -112]]); seg([sh, [-8, -104], [-22, -116]]);
-  } else if (pose === "hit" || pose === "up") {
-    seg([hip, [-10, -24], [-6, 0]]); seg([hip, [12, -26], [14, 0]]);
-    seg([sh, [28, -110], [36, -128]]); seg([sh, [-6, -112], [-10, -130]]);
-  } else {
-    seg([hip, [-6, -24], [-6, 0]]); seg([hip, [8, -24], [10, 0]]);
-    seg([sh, [0, -66], [6, -50]]); seg([sh, [22, -68], [26, -52]]);
-  }
+function drawLyrics(x, y, w, h, t){
+  g.fillStyle = "rgba(255,255,255,.92)"; roundRect(x, y, w, h, 16); g.fill(); g.strokeStyle = "#E4DCF7"; g.lineWidth = 1; g.stroke();
+  const L = lines(), vt = vTimes(), cx = x + w/2;
+  g.textAlign = "center";
+  if (!L.length || vt.length !== L.length) { g.fillStyle = "#9C8FC4"; g.font = "700 18px 'Noto Sans TC', sans-serif"; g.fillText(L.length ? "歌詞未定時間：老師設定 → 定時間" : "（未貼歌詞：老師設定 → 歌詞同時間）", cx, y + h/2 + 6); g.textAlign = "start"; return; }
+  let i = -1; vt.forEach((v, k) => { if (v <= t) i = k; });
+  const big = Math.min(40, h*.36), small = Math.min(22, h*.2);
+  if (i < 0) {
+    const left = vt[0] - t; g.fillStyle = "#6E6490"; g.font = `900 ${small}px 'Noto Sans TC', sans-serif`;
+    g.fillText(left < 3.5 && state === "run" ? `${"●".repeat(Math.max(1, Math.ceil(left)))}  準備` : "前奏", cx, y + h*.38);
+    g.fillStyle = "#3B2F5A"; g.font = `900 ${big*.85}px 'Noto Sans TC', sans-serif`; g.fillText(L[0], cx, y + h*.78); g.textAlign = "start"; return; }
+  const cur = L[i], nxt = L[i + 1] || "", tEnd = vt[i + 1] ?? songEnd(), frac = Math.max(0, Math.min(1, (t - vt[i])/Math.max(.5, (tEnd - vt[i])*.85)));
+  g.font = `900 ${big}px 'Noto Sans TC', sans-serif`; const tw = g.measureText(cur).width, ty = y + h*.5;
+  g.fillStyle = "#3B2F5A"; g.fillText(cur, cx, ty);
+  g.save(); g.beginPath(); g.rect(cx - tw/2, y, tw*frac, h); g.clip(); g.fillStyle = "#B4528A"; g.fillText(cur, cx, ty); g.restore();
+  g.fillStyle = "#9C8FC4"; g.font = `700 ${small}px 'Noto Sans TC', sans-serif`; g.fillText(nxt, cx, y + h*.86);
+  g.textAlign = "start";
+}
+function drawSwimmer(x, y, ph, tilt, hurt, blink, glow){
+  g.save(); g.translate(x, y); g.rotate(Math.max(-.35, Math.min(.35, tilt))); if (blink) g.globalAlpha = .35;
+  if (glow) { g.fillStyle = "rgba(31,157,98,.13)"; g.beginPath(); g.ellipse(-12, 0, 74, 30, 0, 0, Math.PI*2); g.fill(); }
+  const col = hurt ? "#D63C5E" : "#3B2F5A"; g.strokeStyle = col; g.fillStyle = col; g.lineCap = "round"; g.lineJoin = "round"; g.lineWidth = 7;
+  const seg = pts => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.stroke(); };
+  const hip = [-26, 2], sh = [14, -3], k = Math.sin(ph*2.3);
+  const arm = (a, al) => { g.globalAlpha = (blink ? .35 : 1)*al; const e = [sh[0] + 22*Math.cos(a), sh[1] + 20*Math.sin(a)], h2 = [e[0] + 20*Math.cos(a + .4), e[1] + 18*Math.sin(a + .4)]; seg([sh, e, h2]); };
+  g.globalAlpha = (blink ? .35 : 1)*.5; seg([hip, [-50, 4 - 7*k], [-72, 2 - 11*k]]); arm(ph + Math.PI, .5);
+  g.globalAlpha = blink ? .35 : 1; seg([hip, [-50, 4 + 7*k], [-72, 2 + 11*k]]);
   seg([hip, sh]);
-  g.beginPath(); g.arc(head[0], head[1], 13, 0, Math.PI*2); g.fill();
-  g.fillStyle = "#FF9EC4"; g.fillRect(head[0] - 13, head[1] - 6, 26, 5);   // headband
+  g.beginPath(); g.arc(31, -6, 11, 0, Math.PI*2); g.fill();
+  g.fillStyle = "#FF9EC4"; g.beginPath(); g.arc(31, -6, 11.5, Math.PI*1.05, Math.PI*1.95); g.lineTo(31, -6); g.fill();   // swim cap
+  g.fillStyle = "#CDB8FF"; g.fillRect(34, -8, 9, 4);                                                                     // goggles
+  arm(ph, 1);
   g.restore();
 }
-window.__sr = {force:null, get s(){ return {state, worldX, levelLen, crashes, mood, lvl}; }};
+function heartPath(x, y, s){ g.beginPath(); g.moveTo(x, y + s*.3); g.bezierCurveTo(x, y, x - s*.5, y, x - s*.5, y + s*.3); g.bezierCurveTo(x - s*.5, y + s*.6, x, y + s*.78, x, y + s);
+  g.bezierCurveTo(x, y + s*.78, x + s*.5, y + s*.6, x + s*.5, y + s*.3); g.bezierCurveTo(x + s*.5, y, x, y, x, y + s*.3); g.closePath(); }
+function roundRect(x, y, w, h, r){ r = Math.min(r, w/2, h/2); g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+/* ---------- boot ---------- */
+window.__sr = {force:null, cfg, get s(){ return {state, hearts, mood, curDyn, sched, band, base, badT, spikes, t:songTime(), midiNow, swimY, end:songEnd(), start:songStart(), acc:!!accBuf}; }, analyseGuideBuffer, judgePitch};
+calcRange(); renderDiff(); renderSettings(); idleBanner();
+idbGet("acc").then(v => { if (v && v.data) setAcc(v.data, v.name, false); });
 requestAnimationFrame(t => { lastT = t; frame(t); });
 })();
 </script>
