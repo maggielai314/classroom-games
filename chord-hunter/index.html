@@ -115,6 +115,25 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 .joinurl{font-size:15px;color:var(--muted);word-break:break-all}
 .host .lb td{font-size:clamp(17px,2.2vw,26px);padding:10px 8px}
 .host .lb td.s{font-size:clamp(20px,2.8vw,32px)}
+.opt small{display:block;font-family:var(--f-ui);font-size:.42em;font-weight:900;color:var(--hot);margin-top:2px}
+.livebox{flex:1;display:flex;flex-direction:column;gap:14px;padding-block:16px}
+.livemsg{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:18px;font-size:clamp(20px,3vw,30px);font-weight:900;color:var(--plum);text-align:center}
+.livemsg small{display:block;font-size:.55em;color:var(--muted);font-weight:700;margin-top:6px}
+.liveopts .opt{min-height:clamp(110px,18vh,180px);font-size:clamp(40px,6vw,64px)}
+.ear-top{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center}
+.ear-top .pinbig{font-size:clamp(40px,6vw,72px)}
+.ear-top .qr{width:120px}
+.phases{display:flex;flex-wrap:wrap;gap:8px}
+.phases .btn[aria-pressed="true"]{background:var(--plum);color:#fff}
+.demo{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.demo button{min-height:150px;border-radius:18px;background:var(--card);border:2px solid var(--plum);display:grid;place-items:center;gap:4px;font-family:var(--f-hud);font-weight:700;font-size:56px;color:var(--plum)}
+.demo button small{font-family:var(--f-ui);font-size:20px;color:var(--hot)}
+.demo button.on{background:var(--lilac)}
+.qstage{background:var(--card);border:1px solid var(--rule);border-radius:18px;padding:18px;display:grid;gap:12px;text-align:center}
+.qstage .qn{font-family:var(--f-hud);font-size:22px;color:var(--muted)}
+.qstage .ans{font-family:var(--f-hud);font-weight:700;font-size:clamp(70px,10vw,120px);color:var(--plum);line-height:1}
+.qstage .ans small{font-family:var(--f-ui);font-size:.3em;color:var(--hot)}
+.qstage .cnt{font-size:20px;color:var(--muted)}
 @media (max-width:560px){.opt{min-height:70px;font-size:30px}.host-top{grid-template-columns:1fr}}
 </style>
 </head>
@@ -122,7 +141,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 <div class="app">
   <section class="screen scroll" id="scHome">
     <div class="brand"><h1>CHORD HUNTER<small>和弦獵人</small></h1></div>
-    <p class="lede">喺鍵盤上搵出和弦。答得越快越高分，連續答啱有額外分。每局 12 題。</p>
+    <p class="lede">喺鍵盤上砌出和弦，或者聽和弦估係邊個。答得越快越高分，連續答啱有額外分。</p>
     <div class="paths">
       <div class="path main">
         <h2>加入遊戲</h2>
@@ -194,11 +213,49 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     </div>
   </section>
 
+  <section class="screen livebox" id="scLive" hidden>
+    <div class="hud">
+      <div class="score" id="liveScore">0<small>SCORE</small></div>
+      <div class="prog"><div class="prog-top"><b id="liveQ">挑戰關：聽和弦</b><span id="liveMode"></span></div><div class="timebar"><i id="liveFill"></i></div></div>
+      <button class="btn btn-soft" id="liveQuit">退出</button>
+    </div>
+    <div class="livemsg" id="liveMsg">已加入！<small>望大螢幕，等老師開始</small></div>
+    <div class="opts liveopts" id="liveOpts" hidden></div>
+  </section>
+
+  <section class="screen scroll" id="scEar" hidden>
+    <div class="ear-top">
+      <div style="display:grid;gap:6px"><span class="label">PIN · 和弦獵人 · 挑戰關：聽和弦</span><div class="pinbig" id="earPin">——</div><div class="joinurl" id="earUrl"></div></div>
+      <div class="status" id="earJoined" style="font-size:20px"></div>
+      <div class="qr" id="earQr"></div>
+    </div>
+    <div class="phases">
+      <button class="btn btn-soft" id="phDemo">① 試聽四個和弦</button>
+      <button class="btn btn-soft" id="phPrac">② 試玩 6 題（唔計分）</button>
+      <button class="btn btn-soft" id="phReal">③ 正式比賽 12 題</button>
+      <button class="btn btn-soft" id="phEnd">結束・排行榜</button>
+      <label class="row" style="font-size:15px;color:var(--muted)"><input type="checkbox" id="earRef" checked> 每題先播 C 做參考</label>
+      <button class="btn btn-soft" id="earExit">返回主頁</button>
+    </div>
+    <div class="demo" id="earDemo" hidden></div>
+    <div class="qstage" id="earStage" hidden>
+      <div class="qn" id="earQn"></div>
+      <div class="ans" id="earAns">？</div>
+      <div class="cnt" id="earCnt"></div>
+      <div class="row" style="justify-content:center">
+        <button class="btn btn-soft" id="earPlay">▶ 再播（兩次）</button>
+        <button class="btn btn-main" id="earReveal">揭曉答案</button>
+        <button class="btn btn-main" id="earNext">下一題 ▸</button>
+      </div>
+    </div>
+    <div class="panel" id="earBoardBox" hidden><h3>排行榜</h3><div id="earBoard"></div></div>
+  </section>
+
   <section class="screen scroll" id="scResults" hidden>
     <div class="res-head">
       <div><span class="label" id="resMode"></span><div class="big" id="resScore">0</div></div>
       <div class="stats">
-        <div class="stat"><b id="resCorrect">0</b><span>答對（12 題）</span></div>
+        <div class="stat"><b id="resCorrect">0</b><span>答對（共 12 題）</span></div>
         <div class="stat"><b id="resBest">0</b><span>最長連續答對</span></div>
         <div class="stat"><b id="resRank">—</b><span>排名</span></div>
       </div>
@@ -220,12 +277,18 @@ const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-np
 const NQ = 12;
 // Shared backend only accepts its own stage ids; map them onto this game's modes.
 const MODES = [
-  {id:"build", stage:"terms", name:"第 1 關：疊三度", short:"疊三度", limit:10},
-  {id:"name",  stage:"fam",   name:"第 2 關：速認和弦", short:"速認和弦", limit:10},
+  {id:"basic", stage:"terms", name:"第 1 關：砌和弦", short:"砌和弦", limit:10},
   {id:"ear",   stage:"mix",   name:"挑戰關：聽和弦", short:"聽和弦", limit:12},
 ];
 const modeOf = id => MODES.find(m => m.id === id) || MODES[0];
-const modeByStage = st => MODES.find(m => m.stage === st) || MODES[0];
+const modeByStage = st => st === "mix" ? MODES[1] : MODES[0];
+const ROMAN = {C:"I", Dm:"ii", Em:"iii", F:"IV", G:"V", Am:"vi"};
+const EAR_OPTS = ["C","F","G","Am"];
+const HOST_NAME = "★老師";
+const isHostRow = r => String(r.pid).startsWith("h0st");
+function rng(seed){ let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function seededShuffle(arr, r){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function earSeq(seed, phase){ const r = rng(seed + phase*7919); return phase === 3 ? seededShuffle(["C","F","G","Am","C","G"], r) : seededShuffle([...EAR_OPTS,...EAR_OPTS,...EAR_OPTS], r); }
 
 const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 const LOW = 60, HIGH = 76;             // C4 .. E5
@@ -285,7 +348,7 @@ function blip(ok){
 }
 
 /* ---------- home ---------- */
-const prefs = store.get("chordhunter.v1", {name:"", practice:"build", host:"build"});
+const prefs = store.get("chordhunter.v2", {name:"", practice:"basic", host:"basic"});
 let practiceMode = prefs.practice, hostMode = prefs.host;
 seg($("practiceMode"), MODES, () => practiceMode, v => practiceMode = v);
 seg($("hostMode"), MODES, () => hostMode, v => hostMode = v);
@@ -294,12 +357,12 @@ const urlPin = new URLSearchParams(location.search).get("pin"); if (urlPin && /^
 function checkHome(){ $("joinBtn").disabled = !(audioReady && /^\d{6}$/.test(pinInput.value) && nameInput.value.trim()); $("practiceBtn").disabled = !audioReady; }
 pinInput.addEventListener("input", () => { pinInput.value = pinInput.value.replace(/\D/g,"").slice(0,6); checkHome(); });
 nameInput.addEventListener("input", checkHome);
-const savePrefs = () => store.set("chordhunter.v1", {name:nameInput.value.trim(), practice:practiceMode, host:hostMode});
+const savePrefs = () => store.set("chordhunter.v2", {name:nameInput.value.trim(), practice:practiceMode, host:hostMode});
 $("practiceBtn").onclick = () => { unlock(); savePrefs(); startGame({mode:practiceMode, room:null}); };
 $("joinBtn").onclick = async () => {
   unlock(); savePrefs(); const err = $("joinErr"), btn = $("joinBtn"); err.textContent = ""; btn.disabled = true; btn.textContent = "加入中…";
   try { const pin = pinInput.value, name = nameInput.value.trim().slice(0,12), pid = pidMake();
-        const room = await api({a:"join", pin, pid, name}); startGame({mode: modeByStage(room.stage).id, room:{pin, pid, name}}); }
+        const room = await api({a:"join", pin, pid, name}); const md = modeByStage(room.stage); if (md.id === "ear") startLive({pin, pid, name}); else startGame({mode: md.id, room:{pin, pid, name}}); }
   catch (e) { err.textContent = e.message === "noroom" ? "找不到這個 PIN，請再檢查。" : "連線失敗，請再試一次。"; }
   finally { btn.textContent = "加入"; checkHome(); }
 };
@@ -310,7 +373,9 @@ async function openRoom(){
   const err = $("hostErr"); err.textContent = "";
   try {
     const r = await api({a:"create", stage: modeOf(hostMode).stage});
-    H && clearInterval(H.iv); H = {pin:r.pin, iv:null};
+    H && clearInterval(H.iv); E && clearInterval(E.iv);
+    if (hostMode === "ear") { H = null; return openEar(r.pin); }
+    H = {pin:r.pin, iv:null};
     $("hostPin").textContent = r.pin.replace(/(\d{3})(\d{3})/, "$1 $2");
     $("hostLbl").textContent = "PIN · 和弦獵人 · " + modeOf(hostMode).name;
     const url = location.origin + location.pathname + "?pin=" + r.pin; $("hostUrl").textContent = url;
@@ -327,13 +392,14 @@ async function pollHost(){
 function renderHost(rows){
   const playing = rows.filter(r => r.status !== "done").length;
   if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "等待學生加入…學生輸入上面的 PIN 碼或掃描二維碼即可。"; $("hostTable").replaceChildren(p); return; }
+  rows = rows.filter(r => !isHostRow(r)); if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "等待學生加入…"; $("hostTable").replaceChildren(p); return; }
   renderTable($("hostTable"), rows, null, 50, true, `${rows.length} 人加入 · ${playing} 人遊戲中 · ${rows.length-playing} 人完成`);
 }
 $("hostBtn").onclick = () => { savePrefs(); openRoom(); };
 $("hostNew").onclick = () => openRoom();
 $("hostExit").onclick = () => { if (H) clearInterval(H.iv); H = null; show("scHome"); };
 function renderTable(el, rows, meId, limit, showStatus, caption){
-  el.textContent = "";
+  el.textContent = ""; rows = rows.filter(r => !isHostRow(r));
   if (caption) { const c = document.createElement("p"); c.className = "status"; c.textContent = caption; el.appendChild(c); }
   if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "未有分數。"; el.appendChild(p); return; }
   const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
@@ -370,11 +436,9 @@ kb.addEventListener("pointerdown", e => {
 let G = null, raf = 0;
 function makeQuestions(mode){
   const qs = [];
-  if (mode === "build") {
-    let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(ROOTS); const c = bag.pop(); qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0]}); }
-  } else if (mode === "name") {
-    let bag = [];
-    for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(i < 6 ? ["C","F","G","Am"] : ROOTS); const c = bag.pop(); qs.push({type:"name", chord:c, notes:CHORDS[c]}); }
+  if (mode === "basic") {
+    const b1 = shuffle(ROOTS); for (let i = 0; i < 6; i++) { const c = b1[i]; qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0], hint:i < 2}); }
+    const b2 = shuffle(["C","F","G","Am"]).concat(shuffle(["Dm","Em"])); for (let i = 0; i < 6; i++) { const c = b2[i]; qs.push({type:"name", chord:c, notes:CHORDS[c], hint:i === 0}); }
   } else {
     let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(["F","G","Am","C","F","G"]); const c = bag.pop(); qs.push({type:"ear", chord:c, notes:CHORDS[c], opts:["C","F","G","Am"]}); }
   }
@@ -395,10 +459,10 @@ function next(){
   const isEar = q.type === "ear"; $("opts").hidden = !isEar; kb.hidden = isEar; $("replayBtn").hidden = !isEar; $("clearBtn").hidden = isEar;
   if (q.type === "build") {
     $("qKick").textContent = "疊三度"; $("qText").innerHTML = `根音係 <span class="chord">${PC[q.root%12]}</span>，撳埋另外兩個音`;
-    $("qHint").textContent = G.i < 2 ? "提示：由根音開始，隔一個白鍵，再隔一個白鍵。" : "";
+    $("qHint").textContent = q.hint ? "提示：由根音開始，隔一個白鍵，再隔一個白鍵。" : "";
   } else if (q.type === "name") {
     $("qKick").textContent = "速認和弦"; $("qText").innerHTML = `撳出 <span class="chord">${q.chord}</span> 和弦嘅三個音`;
-    $("qHint").textContent = G.i < 2 ? "提示：先搵根音，再疊兩個三度。" : (q.chord.endsWith("m") ? "小和弦：一樣係隔一個白鍵。" : "");
+    $("qHint").textContent = q.hint ? "下半場：而家要自己搵根音，再疊兩個三度。" : (q.chord.endsWith("m") ? "小和弦：一樣係隔一個白鍵。" : "");
   } else {
     $("qKick").textContent = "聽和弦"; $("qText").innerHTML = `先聽 <span class="chord">C</span>，再聽神秘和弦：係邊個？`;
     $("qHint").textContent = "可以撳「再聽」。"; buildOpts(q); playEar(q);
@@ -411,7 +475,7 @@ function next(){
 function playEar(q){ chord(CHORDS.C, .05, 1.1); chord(q.notes, 1.5, 1.6); }
 function buildOpts(q){
   const box = $("opts"); box.textContent = "";
-  for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.textContent = o; b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
+  for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = o; b.innerHTML = `${o}<small>${ROMAN[o]}</small>`; b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
 }
 function tapKey(m){
   const q = G.q; note(m, 0, .7, .7);
@@ -439,14 +503,14 @@ function judge(ok, timeout = false){
     $("fb").textContent = `啱！ +${pts}`; $("fb").className = "fb ok"; blip(true); }
   else { G.streak = 0; $("fb").textContent = timeout ? "夠鐘！" : "唔啱"; $("fb").className = "fb ng"; blip(false); }
   // reveal
-  if (q.type === "ear") { for (const b of $("opts").children) { if (b.textContent === q.chord) b.classList.add("right"); else if (b.textContent === G.pick) b.classList.add("wrong"); } G.pick = null;
-    $("qHint").textContent = `答案：${q.chord}（${q.notes.map(m=>PC[m%12]).join(" ")}）`; }
+  if (q.type === "ear") { for (const b of $("opts").children) { if (b.dataset.c === q.chord) b.classList.add("right"); else if (b.dataset.c === G.pick) b.classList.add("wrong"); } G.pick = null;
+    $("qHint").textContent = `答案：${q.chord}（${ROMAN[q.chord]}）＝ ${q.notes.map(m=>PC[m%12]).join("・")}`; }
   else {
     const want = q.notes, keyMatch = m => q.type === "name" ? want.some(w => w%12 === m%12) : want.includes(m);
     kb.querySelectorAll(".key").forEach(k => { const m = +k.dataset.m; k.classList.remove("ghost","sel");
       if (want.includes(m)) k.classList.add("right"); else if (G.sel.includes(m) && !keyMatch(m)) k.classList.add("wrong"); });
     want.forEach((m, j) => { const k = keyEl(m); if (k && k.classList.contains("white")) { const t = document.createElement("span"); t.className = "tag"; t.textContent = j === 0 ? "根音" : (j === 1 ? "三度" : "五度"); k.prepend(t); } });
-    $("qHint").textContent = `${q.chord} 和弦 ＝ ${want.map(m=>PC[m%12]).join("・")}（隔一個白鍵疊上去）`;
+    $("qHint").textContent = `${q.chord} 和弦（${ROMAN[q.chord]}）＝ ${want.map(m=>PC[m%12]).join("・")}（隔一個白鍵疊上去）`;
     chord(want, .05, 1.0);
   }
   updateHud(); setTimeout(next, ok ? 1100 : 1900);
@@ -455,6 +519,130 @@ function updateHud(){ $("hudScore").innerHTML = `${G.score}<small>SCORE</small>`
 $("clearBtn").onclick = () => { if (!G || G.lock) return; G.sel = G.q.type === "build" ? [G.q.root] : []; paintKeys(); };
 $("replayBtn").onclick = () => { if (G && G.q && G.q.type === "ear") playEar(G.q); };
 $("quitBtn").onclick = () => { if (G) G.lock = true; cancelAnimationFrame(raf); G = null; show("scHome"); };
+
+/* ---------- 挑戰關（房間）：老師機播放，學生機只作答 ---------- */
+// Shared state rides on the host's own leaderboard row: level = phase (1 lobby, 2 demo, 3 practice, 4 real, 5 end),
+// answered = question number, correct = 1 when revealed, score = seed.
+let E = null;
+async function hostPush(){
+  if (!E) return;
+  try { await api({a:"finish", pin:E.pin, pid:E.hpid, name:HOST_NAME, score:E.seed, level:E.phase, correct:E.rev ? 1 : 0, answered:E.q}); } catch {}
+}
+function openEar(pin){
+  E = {pin, hpid:"h0st" + pidMake().slice(0,10), seed:1 + Math.floor(Math.random()*90000), phase:1, q:0, rev:false, iv:null};
+  $("earPin").textContent = pin.replace(/(\d{3})(\d{3})/, "$1 $2");
+  const url = location.origin + location.pathname + "?pin=" + pin; $("earUrl").textContent = url;
+  const q = $("earQr"); q.textContent = ""; if (window.qrcode) { const qr = qrcode(0,"M"); qr.addData(url); qr.make(); q.innerHTML = qr.createSvgTag({cellSize:4, margin:1, scalable:true}); }
+  show("scEar"); earPhaseUi(); hostPush(); earPoll(); E.iv = setInterval(earPoll, 2500);
+}
+function earPhaseUi(){
+  const map = {2:"phDemo", 3:"phPrac", 4:"phReal", 5:"phEnd"};
+  for (const id of ["phDemo","phPrac","phReal","phEnd"]) $(id).setAttribute("aria-pressed", String(map[E.phase] === id));
+  $("earDemo").hidden = E.phase !== 2; $("earStage").hidden = !(E.phase === 3 || E.phase === 4);
+  $("earBoardBox").hidden = !(E.phase === 4 || E.phase === 5);
+  if (E.phase === 2) buildDemo();
+  if (E.phase === 3 || E.phase === 4) earShowQ();
+}
+function buildDemo(){
+  const box = $("earDemo"); box.textContent = "";
+  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.innerHTML = `${c}<small>${ROMAN[c]}</small>`;
+    b.onclick = () => { unlock(); for (const x of box.children) x.classList.toggle("on", x === b); chord(CHORDS[c], .05, 1.6); }; box.appendChild(b); }
+}
+function earSeqNow(){ return earSeq(E.seed, E.phase); }
+function earPlay(){
+  unlock(); const c = earSeqNow()[E.q - 1]; if (!c) return; let t = .05;
+  if ($("earRef").checked) { chord(CHORDS.C, t, 1.0); t += 1.6; }
+  chord(CHORDS[c], t, 1.5); chord(CHORDS[c], t + 2.2, 1.5);
+}
+function earShowQ(){
+  const seq = earSeqNow(), N = seq.length;
+  $("earQn").textContent = (E.phase === 3 ? "試玩（唔計分）" : "正式比賽") + ` · 第 ${E.q} / ${N} 題`;
+  const c = seq[E.q - 1]; $("earAns").innerHTML = E.rev ? `${c}<small> ${ROMAN[c]}</small>` : "？";
+  $("earReveal").disabled = E.rev; $("earNext").disabled = !E.rev;
+  $("earNext").textContent = E.q >= N ? (E.phase === 3 ? "開始正式比賽 ▸" : "結束・排行榜 ▸") : "下一題 ▸";
+}
+async function earSetPhase(ph){
+  E.phase = ph; E.q = (ph === 3 || ph === 4) ? 1 : 0; E.rev = false; earPhaseUi(); await hostPush();
+  if (ph === 3 || ph === 4) setTimeout(earPlay, 1500);
+}
+$("phDemo").onclick = () => earSetPhase(2);
+$("phPrac").onclick = () => earSetPhase(3);
+$("phReal").onclick = () => earSetPhase(4);
+$("phEnd").onclick = () => earSetPhase(5);
+$("earPlay").onclick = () => earPlay();
+$("earReveal").onclick = async () => { E.rev = true; earShowQ(); const c = earSeqNow()[E.q-1]; chord(CHORDS[c], .05, 1.4); await hostPush(); };
+$("earNext").onclick = async () => {
+  const N = earSeqNow().length;
+  if (E.q >= N) return earSetPhase(E.phase === 3 ? 4 : 5);
+  E.q++; E.rev = false; earShowQ(); await hostPush(); setTimeout(earPlay, 1200);
+};
+$("earExit").onclick = () => { if (E) clearInterval(E.iv); E = null; show("scHome"); };
+async function earPoll(){
+  if (!E || $("scEar").hidden) return;
+  try {
+    const r = await api({a:"board", pin:E.pin}); const kids = r.rows.filter(x => !isHostRow(x));
+    const tag = E.phase * 100 + E.q, done = kids.filter(x => x.answered === tag).length;
+    $("earJoined").textContent = `${kids.length} 人加入`;
+    $("earCnt").textContent = (E.phase === 3 || E.phase === 4) ? `已作答 ${done} / ${kids.length}` : "";
+    if (E.phase >= 4) renderTable($("earBoard"), kids, null, 50, false, "");
+  } catch {}
+}
+
+/* student side */
+let L = null;
+function startLive(room){
+  L = {room, score:0, correct:0, answered:0, key:"", t0:0, pick:null, timer:0, phase:1};
+  show("scLive"); $("liveMode").textContent = "PIN " + room.pin; $("liveScore").innerHTML = `0<small>SCORE</small>`;
+  const box = $("liveOpts"); box.textContent = "";
+  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = c; b.innerHTML = `${c}<small>${ROMAN[c]}</small>`; b.onclick = () => livePick(c); box.appendChild(b); }
+  livePoll(); L.iv = setInterval(livePoll, 2200 + Math.floor(Math.random()*600));
+}
+async function livePoll(){
+  if (!L) return;
+  let r; try { r = await api({a:"board", pin:L.room.pin}); } catch { return; }
+  const h = r.rows.find(isHostRow); if (!h) return;
+  const ph = h.level, qn = h.answered, rev = h.correct === 1, seed = h.score, key = ph + ":" + qn;
+  L.phase = ph; L.seed = seed;
+  const msg = $("liveMsg"), opts = $("liveOpts");
+  if (ph <= 2 || ph === 5) {
+    opts.hidden = true; $("liveFill").style.transform = "scaleX(0)";
+    if (ph === 2) { $("liveQ").textContent = "試聽"; msg.innerHTML = "聽老師播四個和弦<small>C（I）・F（IV）・G（V）・Am（vi）</small>"; }
+    else if (ph === 5) { $("liveQ").textContent = "完成"; const s = r.rows.filter(x => !isHostRow(x)).sort((a,b)=>b.score-a.score); const i = s.findIndex(x => x.pid === L.room.pid);
+      msg.innerHTML = `比賽完！你嘅分數：${L.score}<small>排名 ${i >= 0 ? (i+1) + " / " + s.length : "—"}・答對 ${L.correct} 題</small>`; }
+    else { $("liveQ").textContent = "挑戰關：聽和弦"; msg.innerHTML = "已加入！<small>望大螢幕，等老師開始</small>"; }
+    return;
+  }
+  const seq = earSeq(seed, ph), ans = seq[qn - 1];
+  if (key !== L.key) {           // new question
+    L.key = key; L.pick = null; L.t0 = performance.now(); L.revShown = false;
+    $("liveQ").textContent = (ph === 3 ? "試玩（唔計分）" : "正式比賽") + ` · ${qn} / ${seq.length}`;
+    msg.innerHTML = "聽大螢幕播嘅和弦，揀答案<small>每題播兩次</small>"; opts.hidden = false;
+    for (const b of opts.children) { b.className = "opt"; b.disabled = false; b.style.background = ""; }
+    cancelAnimationFrame(L.timer); const me = L, k = key;
+    const tick = () => { if (L !== me || me.key !== k) return; const left = 1 - (performance.now() - me.t0)/1000/16; $("liveFill").style.transform = `scaleX(${Math.max(0,left)})`; if (left > 0 && !me.pick) me.timer = requestAnimationFrame(tick); };
+    tick();
+  }
+  if (rev && !L.revShown) {
+    L.revShown = true;
+    cancelAnimationFrame(L.timer); $("liveFill").style.transform = "scaleX(0)";
+    for (const b of opts.children) { b.disabled = true; b.style.background = ""; if (b.dataset.c === ans) b.classList.add("right"); else if (b.dataset.c === L.pick) b.classList.add("wrong"); }
+    const ok = L.pick === ans;
+    msg.innerHTML = (ok ? "答啱！" : L.pick ? "唔啱" : "冇作答") + `<small>答案：${ans}（${ROMAN[ans]}）${ph === 3 ? "・試玩唔計分" : ""}</small>`;
+    if (ok) blip(true); else blip(false);
+  }
+}
+async function livePick(c){
+  if (!L || L.pick || (L.phase !== 3 && L.phase !== 4)) return;
+  L.pick = c; const [ph, qn] = L.key.split(":").map(Number); const el = (performance.now() - L.t0)/1000;
+  for (const b of $("liveOpts").children) { b.disabled = true; if (b.dataset.c === c) b.classList.add("on"); }
+  $("liveOpts").querySelector(`[data-c="${c}"]`).style.background = "var(--lilac)";
+  $("liveMsg").innerHTML = "已作答<small>等老師揭曉答案</small>";
+  // score is computed when the answer is known; the sequence is derived from the shared seed
+  const ok = earSeq(L.seed, ph)[qn - 1] === c;
+  if (ph === 4) { L.answered++; if (ok) { L.correct++; L.score += 100 + Math.round(100 * Math.max(0, 1 - el/16)); } $("liveScore").innerHTML = `${L.score}<small>SCORE</small>`; }
+  try { await api({a:"finish", pin:L.room.pin, pid:L.room.pid, name:L.room.name, score:L.score, level:2, correct:L.correct, answered:ph*100 + qn}); } catch {}
+}
+$("liveQuit").onclick = () => { if (L) clearInterval(L.iv); L = null; show("scHome"); };
 
 async function finish(){
   const g = G; g.lock = true; show("scResults");
@@ -479,6 +667,7 @@ $("againBtn").onclick = async () => {
 $("homeBtn").onclick = () => { G = null; show("scHome"); };
 document.addEventListener("visibilitychange", () => { if (document.hidden && ctx) ctx.suspend(); else if (ctx) ctx.resume(); });
 
+window.__ch = {get L(){return L;}, get G(){return G;}, earSeq, show, setPractice:v => { practiceMode = v; }};
 if (ctx) loadAudio(); else { $("loadMsg").textContent = "此瀏覽器不支援聲音。"; audioReady = true; checkHome(); }
 })();
 </script>
