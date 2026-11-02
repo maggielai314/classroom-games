@@ -259,7 +259,20 @@ function analyse(){
 const GDT = .03;
 function guideAt(t){ const G = cfg.guide; if (!G) return 0; const i = Math.round((t - cfg.gOff)/G.dt); return G.data[i] || 0; }
 let gRange = null;
-function calcRange(){ gRange = null; if (!cfg.guide) return; let lo = 1e9, hi = -1e9; for (const v of cfg.guide.data) if (v) { lo = Math.min(lo, v); hi = Math.max(hi, v); } if (hi > 0) gRange = [lo - 2.5, Math.max(hi + 2.5, lo + 9)]; }
+// Display-only version of the guide: gaps joined and the line smoothed into one continuous curve
+// (judging still uses the raw guide, so rests are not marked).
+let gDisp = null;
+function calcRange(){
+  gRange = null; gDisp = null; const G = cfg.guide; if (!G) return;
+  const d = G.data, n = d.length; let first = d.findIndex(v => v), last = n - 1; while (last >= 0 && !d[last]) last--; if (first < 0) return;
+  const f = new Float32Array(n); let prev = first;
+  for (let i = first; i <= last; i++) if (d[i]) { for (let k = prev + 1; k < i; k++) f[k] = d[prev] + (d[i] - d[prev])*(k - prev)/(i - prev); f[i] = d[i]; prev = i; }
+  const sig = Math.max(1, Math.round(.14/G.dt)), R = sig*3, w = []; for (let k = -R; k <= R; k++) w.push(Math.exp(-k*k/(2*sig*sig)));
+  const out = new Float32Array(n); let lo = 1e9, hi = -1e9;
+  for (let i = first; i <= last; i++) { let sum = 0, ws = 0; for (let k = -R; k <= R; k++) { const j = i + k; if (j < first || j > last) continue; sum += f[j]*w[k + R]; ws += w[k + R]; } out[i] = sum/ws; lo = Math.min(lo, out[i]); hi = Math.max(hi, out[i]); }
+  gDisp = {data:out, first, last, dt:G.dt}; gRange = [lo - 2.5, Math.max(hi + 2.5, lo + 9)];
+}
+function guideDispAt(t){ if (!gDisp) return null; const i = Math.round((t - cfg.gOff)/gDisp.dt); return i >= gDisp.first && i <= gDisp.last ? gDisp.data[i] : null; }
 function cleanContour(raw){
   const n = raw.length, out = new Array(n).fill(0);
   for (let i = 0; i < n; i++) { if (!raw[i]) continue; const w = []; for (let j = i - 2; j <= i + 2; j++) if (raw[j]) w.push(raw[j]); w.sort((a, b) => a - b); out[i] = w[w.length >> 1]; }
@@ -597,21 +610,21 @@ function draw(now, dt){
   // tolerance bands (key mode)
   const D = DIFF[cfg.diff];
   if (pm === "key") { const tolPx = D.keyTol*(py1 - py0)/(vMax - vMin); g.fillStyle = "rgba(205,184,255,.16)"; for (const s of MAJ) g.fillRect(px0, yOf(s) - tolPx, px1 - px0, tolPx*2); }
-  // guide ribbon
-  if (pm === "guide" && cfg.guide && gRange) {
-    const per = (py1 - py0)/(vMax - vMin), tolPx = D.tol*per;
-    for (const pass of [0, 1]) { g.lineCap = "round"; g.lineJoin = "round";
-      g.strokeStyle = pass ? "#8E74D8" : "rgba(205,184,255,.5)"; g.lineWidth = pass ? 5 : tolPx*2;
-      g.beginPath(); let pen = false;
-      for (let x = px0; x <= px1; x += 3) { const tt = t + (x - sx)/pps, v = guideAt(tt);
-        if (v) { const y = yOf(v); pen ? g.lineTo(x, y) : g.moveTo(x, y); pen = true; } else pen = false; }
-      g.stroke(); }
+  // guide ribbon: one smooth continuous curve
+  if (pm === "guide" && gDisp && gRange) {
+    const per = (py1 - py0)/(vMax - vMin), tolPx = D.tol*per, pts = [];
+    for (let x = px0; x <= px1; x += 6) { const v = guideDispAt(t + (x - sx)/pps); if (v != null) pts.push([x, yOf(v)]); }
+    if (pts.length > 1) for (const pass of [0, 1]) {
+      g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = pass ? "#8E74D8" : "rgba(205,184,255,.45)"; g.lineWidth = pass ? 5 : tolPx*2;
+      g.beginPath(); g.moveTo(pts[0][0], pts[0][1]);
+      for (let k = 1; k < pts.length - 1; k++) { const mx = (pts[k][0] + pts[k+1][0])/2, my = (pts[k][1] + pts[k+1][1])/2; g.quadraticCurveTo(pts[k][0], pts[k][1], mx, my); }
+      const e = pts[pts.length - 1]; g.lineTo(e[0], e[1]); g.stroke(); }
   }
   // speed streaks
   if (running) { g.strokeStyle = "rgba(205,184,255,.5)"; g.lineWidth = 2; for (let i = 0; i < 9; i++) { const yy = py0 + ((i*97) % (py1 - py0)), xx = px1 - ((t*pps*1.3 + i*173) % (px1 - px0)); g.beginPath(); g.moveTo(xx, yy); g.lineTo(xx + 40, yy); g.stroke(); } }
   // swimmer
   let target;
-  if (pm === "guide" && gRange) { const gv = (lastP.target || guideAt(t)) || (vMin + vMax)/2; target = midiNow ? gv + pcd(midiNow, gv) : null; }
+  if (pm === "guide" && gRange) { const gd = guideDispAt(t) ?? (vMin + vMax)/2, gr = lastP.target || guideAt(t) || gd; target = midiNow ? gd + pcd(midiNow, gr) : null; }
   else if (pm === "key") target = midiNow ? (lastP.rel ?? (((midiNow - keyPc()) % 12 + 12) % 12)) : null;
   else target = midiNow ? (vMin + vMax)/2 + Math.sin(now/600)*.6 : null;
   const singingVis = running && target != null && vol >= band.lo*.85;
@@ -624,7 +637,7 @@ function draw(now, dt){
   const blink = inv > 0 && Math.floor(now/110) % 2;
   // guide: dotted line from swimmer to where the note should be
   if (running && (mood === "high" || mood === "low") && pm === "guide" && lastP.target && gRange) {
-    const gy = yOf(lastP.target); g.setLineDash([4, 6]); g.strokeStyle = "rgba(180,82,138,.7)"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx + 30, swimY); g.lineTo(sx + 30, gy); g.stroke(); g.setLineDash([]);
+    const gy = yOf(guideDispAt(t) ?? lastP.target); g.setLineDash([4, 6]); g.strokeStyle = "rgba(180,82,138,.7)"; g.lineWidth = 2; g.beginPath(); g.moveTo(sx + 30, swimY); g.lineTo(sx + 30, gy); g.stroke(); g.setLineDash([]);
     g.fillStyle = "#B4528A"; g.beginPath(); g.arc(sx + 30, gy, 6, 0, Math.PI*2); g.fill(); }
   drawSwimmer(sx, swimY, phase, (ty - swimY)*-.004, inv > 1.4, blink, mood === "ok" && running);
   // spikes hanging over the swimmer's head: the louder the class, the lower they come; past the limit they hit
