@@ -9,51 +9,58 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap">
 <style>
 :root{
-  --bg:#F6F2FF; --card:#FFFFFF; --plum:#3B2F5A; --lilac:#CDB8FF; --pink:#FFC9DE; --sky:#CFE2FF;
-  --ink:#2A2140; --muted:#6E6490; --rule:#E4DCF7; --hot:#B4528A; --good:#1F9D62; --bad:#D63C5E; --warn:#D98A1C;
+  --bg:#F6F2FF; --card:#FFFFFF; --plum:#3B2F5A; --lilac:#CDB8FF; --pink:#FFC9DE; --sky:#CFE2FF; --mint:#BDEBD6;
+  --ink:#2A2140; --muted:#6E6490; --rule:#E4DCF7; --hot:#B4528A; --good:#1F9D62; --bad:#D63C5E; --warn:#D98A1C; --blue:#3E6FB8;
   --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-hud:"Chakra Petch","Noto Sans TC",ui-monospace,monospace;
   color-scheme:light;
 }
 *{box-sizing:border-box}[hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);overflow:hidden;padding:18px 24px}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);overflow:hidden;padding:16px 22px}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
-.app{height:100%;display:flex;flex-direction:column;gap:14px;max-width:1500px;margin:0 auto}
-.top{display:flex;align-items:center;gap:20px}
-.top h1{margin:0;font-family:var(--f-hud);font-size:34px;color:var(--plum);line-height:1}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;gap:12px;max-width:1600px;margin:0 auto}
+.top{display:flex;align-items:center;gap:18px}
+.top h1{margin:0;font-family:var(--f-hud);font-size:32px;color:var(--plum);line-height:1;white-space:nowrap}
 .top h1 small{font-family:var(--f-ui);font-size:18px;color:var(--hot);margin-left:10px;font-weight:900}
 .spacer{flex:1}
-.btn{min-height:48px;padding:0 20px;border-radius:12px;font-weight:900;font-size:17px}
+.btn{min-height:46px;padding:0 18px;border-radius:12px;font-weight:900;font-size:17px;white-space:nowrap}
 .btn-main{background:var(--plum);color:#fff}.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
 .btn:disabled{opacity:.4;cursor:default}
-.levels{display:flex;gap:10px}
-.lv{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:6px 14px;display:grid;gap:2px;min-width:150px}
-.lv b{font-size:16px;color:var(--plum)}.lv span{font-size:13px;color:var(--muted)}
+.levels{display:flex;gap:8px}
+.lv{background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:5px 12px;display:grid;gap:1px;min-width:132px}
+.lv b{font-size:15px;color:var(--plum)}.lv span{font-size:12.5px;color:var(--muted)}
 .lv.now{border:2px solid var(--plum);background:#FBF9FF}.lv.done{opacity:.55}
 .lv.done b::after{content:" ✓";color:var(--good)}
 
-.main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 150px;gap:16px}
-.track{position:relative;background:var(--card);border:1px solid var(--rule);border-radius:20px;overflow:hidden}
+.main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 168px;gap:14px}
+.track{position:relative;background:#FFF7EC;border:1px solid var(--rule);border-radius:20px;overflow:hidden}
 canvas{display:block;width:100%;height:100%}
-.status{position:absolute;left:50%;top:22px;transform:translateX(-50%);font-weight:900;font-size:44px;letter-spacing:.04em;padding:6px 26px;border-radius:999px;background:rgba(255,255,255,.85)}
-.status.ok{color:var(--good)}.status.soft{color:var(--warn)}.status.loud{color:var(--bad)}
+.status{position:absolute;left:50%;top:58px;transform:translateX(-50%);font-weight:900;font-size:40px;letter-spacing:.04em;padding:6px 26px;border-radius:999px;background:rgba(255,255,255,.88);white-space:nowrap}
+.status.ok{color:var(--good)}.status.soft{color:var(--warn)}.status.loud{color:var(--bad)}.status.talk{color:var(--blue)}
 .banner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(246,242,255,.9);text-align:center;padding:24px}
-.banner h2{margin:0;font-size:56px;color:var(--plum);font-family:var(--f-hud)}
-.banner p{margin:0;font-size:22px;color:var(--muted);max-width:40ch;line-height:1.5}
+.banner h2{margin:0;font-size:54px;color:var(--plum);font-family:var(--f-hud)}
+.banner p{margin:0;font-size:21px;color:var(--muted);max-width:44ch;line-height:1.55}
 .banner .big{font-family:var(--f-hud);font-size:120px;color:var(--plum);line-height:1}
-.meterbox{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:8px}
-.meterbox .lbl{font-size:13px;color:var(--muted);font-weight:700}
-.meter{position:relative;flex:1;width:56px;border-radius:14px;background:#EFEAFB;overflow:hidden}
+.banner .note{font-size:16px}
+.meterbox{background:var(--card);border:1px solid var(--rule);border-radius:20px;padding:12px 10px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr auto;gap:8px;justify-items:center}
+.meterbox .lbl{font-size:13px;color:var(--muted);font-weight:700;text-align:center;line-height:1.25}
+.meter{position:relative;width:48px;height:100%;border-radius:14px;background:#EFEAFB;overflow:hidden}
 .meter .band{position:absolute;left:0;right:0;background:rgba(31,157,98,.22);border-top:3px solid var(--good);border-bottom:3px solid var(--good)}
+.meter .thr{position:absolute;left:0;right:0;height:0;border-top:3px dashed var(--good)}
 .meter .lvl{position:absolute;left:6px;right:6px;bottom:0;border-radius:10px;background:var(--plum);transition:height .06s linear}
-.meter .tag{position:absolute;right:-2px;left:-2px;text-align:center;font-size:12px;font-weight:900;color:var(--good)}
+#singLvl{background:var(--blue)}
+.meter.off{opacity:.35}
 .bottom{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .stat{font-family:var(--f-hud);font-size:22px;color:var(--plum)}.stat small{font-family:var(--f-ui);font-size:13px;color:var(--muted);margin-right:6px}
-details{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px 14px}
+details{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:8px 14px;position:relative}
 summary{cursor:pointer;font-weight:700;color:var(--plum)}
+details[open]{position:absolute;right:22px;bottom:16px;z-index:5;box-shadow:0 10px 30px rgba(59,47,90,.18)}
 .set{display:flex;align-items:center;gap:10px;margin-top:8px;font-size:14px;color:var(--muted)}
 .set input[type=range]{width:180px;accent-color:var(--plum)}
+.set .hint{font-size:12.5px;max-width:44ch;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.meter .lvl{transition:none}}
 </style>
 </head>
 <body>
@@ -68,30 +75,35 @@ summary{cursor:pointer;font-weight:700;color:var(--plum)}
   </div>
   <div class="main">
     <div class="track">
-      <canvas id="cv"></canvas>
+      <canvas id="cv" aria-label="跑酷畫面"></canvas>
       <div class="status" id="status" hidden></div>
       <div class="banner" id="banner">
-        <h2>全班一齊唱，跑到終點！</h2>
-        <p>聲量喺綠色範圍入面，跑手先會向前跑。<br>太細聲停低，太大聲都會停低。</p>
-        <p style="font-size:17px">老師：撳「① 校準」→ 播住伴奏、全班唔好出聲 5 秒 → 再撳「② 開始」</p>
+        <h2>全班一齊唱，衝過天台！</h2>
+        <p>唱得啱聲量，跑手先會跳過障礙物。<br>太細聲、太大聲、或者唔係唱（亂嗌／講嘢），佢就會撞板。</p>
+        <p class="note">老師：撳「① 校準」→ 播住伴奏、全班唔好出聲 5 秒 → 再撳「② 開始」</p>
       </div>
     </div>
     <div class="meterbox">
-      <span class="lbl">太大聲</span>
+      <span class="lbl">聲量</span><span class="lbl">唱歌</span>
       <div class="meter" id="meter"><div class="band" id="band"></div><div class="lvl" id="lvl"></div></div>
-      <span class="lbl">太細聲</span>
+      <div class="meter" id="singMeter"><div class="thr" id="thrLine"></div><div class="lvl" id="singLvl"></div></div>
+      <span class="lbl">綠色<br>範圍</span><span class="lbl">過虛線<br>先算唱</span>
     </div>
   </div>
   <div class="bottom">
     <span class="stat"><small>時間</small><span id="tTime">0.0</span>s</span>
-    <span class="stat"><small>剛好</small><span id="tGood">0</span>%</span>
+    <span class="stat"><small>唱得好</small><span id="tGood">0</span>%</span>
+    <span class="stat"><small>撞板</small><span id="tCrash">0</span>次</span>
     <span class="stat"><small>進度</small><span id="tProg">0</span>%</span>
     <div class="spacer"></div>
-    <details>
+    <details id="setBox">
       <summary>老師設定</summary>
       <div class="set">綠色範圍下限 <input type="range" id="lo" min="5" max="90" value="0"><span id="loV"></span></div>
       <div class="set">綠色範圍上限 <input type="range" id="hi" min="10" max="99" value="0"><span id="hiV"></span></div>
-      <div class="set">每關距離 <input type="range" id="dist" min="10" max="60" value="25"><span id="distV"></span> 秒（全部剛好時）</div>
+      <div class="set"><label><input type="checkbox" id="singOn" checked> 唱歌偵測</label>
+        <input type="range" id="thr" min="20" max="90" value="45"><span id="thrV"></span></div>
+      <div class="set"><span class="hint">唱歌偵測睇聲音有冇穩定音高：齊聲唱會高，亂嗌、講嘢、拍枱會低。伴奏太大聲會影響準確度，建議伴奏收細少少。如果全班真係唱緊都過唔到，就拉低虛線。</span></div>
+      <div class="set">每關長度 <input type="range" id="dist" min="10" max="60" value="25"><span id="distV"></span> 秒（全程唱得好時）</div>
     </details>
   </div>
 </div>
@@ -101,13 +113,35 @@ summary{cursor:pointer;font-weight:700;color:var(--plum)}
 const $ = id => document.getElementById(id);
 // Three stages. Band offsets are relative to the calibrated background (music + silent room), on a 0–100 loudness scale.
 const LEVELS = [
-  {name:"第 1 關", sub:"正常聲量 mf", lo:12, hi:34},
-  {name:"第 2 關", sub:"細聲 p",       lo:6,  hi:18},
-  {name:"第 3 關", sub:"大聲 f（唔好嗌）", lo:22, hi:40},
+  {name:"第 1 關", sub:"正常聲量 mf", lo:12, hi:34, sky:["#FFF7EC","#F6F2FF"], far:"rgba(205,184,255,.38)", mid:"#E7DEFA"},
+  {name:"第 2 關", sub:"細聲 p",       lo:6,  hi:18, sky:["#EAF3FF","#F6F2FF"], far:"rgba(176,205,245,.42)", mid:"#DEE8F8"},
+  {name:"第 3 關", sub:"大聲 f（唔好嗌）", lo:22, hi:40, sky:["#FFEFF5","#FFF7EC"], far:"rgba(255,170,200,.32)", mid:"#F6E0EA"},
 ];
-let base = null, lvl = 0, prog = 0, tTotal = 0, tGood = 0, state = "idle", lastT = 0, cur = 0, smooth = 0;
-let band = {lo:0, hi:0}, runnerPhase = 0, mood = "idle";
+const V = 300;                       // world px per second at full speed
+const RUN_X = .24;                   // runner's screen position (fraction of width)
+let base = null, baseClar = 0, lvl = 0, state = "idle", lastT = 0;
+let vol = 0, sing = 0, singRaw = 0, mood = "idle", okLvl = 0;
+let tTotal = 0, tGood = 0, crashes = 0;
+let band = {lo:0, hi:0}, thr = .45;
 const cv = $("cv"), g = cv.getContext("2d");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- world ---------- */
+let W = 0, Hh = 0, ground = 0;
+let worldX = 0, speed = 0, levelLen = 0, obstacles = [], runPhase = 0;
+let jump = null, crash = null, fx = [], shake = 0, flash = 0, skyline = [], mids = [];
+function rnd(a, b){ return a + Math.random()*(b - a); }
+function buildLevel(){
+  levelLen = +$("dist").value * V; worldX = 0; speed = 0; jump = null; crash = null; fx = [];
+  obstacles = []; const kinds = ["hurdle","crate","barrier","vent","crate2"];
+  let x = 700;
+  while (x < levelLen - 380) { const k = kinds[Math.floor(Math.random()*kinds.length)];
+    const dim = {hurdle:[18,54], crate:[44,44], crate2:[44,84], barrier:[72,52], vent:[96,34]}[k];
+    obstacles.push({x, w:dim[0], h:dim[1], kind:k, passed:false, hits:0}); x += V * rnd(1.7, 2.5); }
+  skyline = []; for (let x2 = 0, i = 0; i < 26; i++) { const w = rnd(60, 150); skyline.push({x:x2, w, h:rnd(.16,.42)}); x2 += w + rnd(6, 30); }
+  mids = []; for (let x2 = 0, i = 0; i < 18; i++) { const w = rnd(90, 210); mids.push({x:x2, w, h:rnd(.08,.22), ant:Math.random() < .3}); x2 += w + rnd(20, 60); }
+}
+
 function renderLevels(){
   const box = $("levels"); box.textContent = "";
   LEVELS.forEach((L,i) => { const d = document.createElement("div"); d.className = "lv" + (i===lvl && state!=="idle" ? " now" : "") + (i<lvl || state==="won" ? " done" : "");
@@ -115,21 +149,45 @@ function renderLevels(){
 }
 renderLevels();
 
-/* ---------- mic ---------- */
-let ctx, an, buf;
+/* ---------- mic + analysis ---------- */
+let ctx, an, buf, dec, fs = 48000;
 async function initMic(){
   if (an) return true;
   try {
     const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
-    ctx = new (window.AudioContext || window.webkitAudioContext)(); await ctx.resume();
-    const src = ctx.createMediaStreamSource(stream); an = ctx.createAnalyser(); an.fftSize = 2048; src.connect(an); buf = new Float32Array(an.fftSize);
+    ctx = new (window.AudioContext || window.webkitAudioContext)(); await ctx.resume(); fs = ctx.sampleRate;
+    const src = ctx.createMediaStreamSource(stream); an = ctx.createAnalyser(); an.fftSize = 2048; src.connect(an);
+    buf = new Float32Array(an.fftSize); dec = new Float32Array(an.fftSize >> 1);
     return true;
   } catch (e) { alert("用唔到咪：請喺瀏覽器網址列旁邊允許使用咪，再撳一次「校準」。"); return false; }
 }
-function level(){
-  if (!an) return 0; an.getFloatTimeDomainData(buf); let s = 0; for (let i=0;i<buf.length;i++) s += buf[i]*buf[i];
-  const db = 20*Math.log10(Math.sqrt(s/buf.length) + 1e-9);         // about -90 .. 0 dBFS
-  return Math.max(0, Math.min(100, (db + 70) * 100/60));            // -70 dB → 0, -10 dB → 100
+const pitchHist = [];
+// Returns {vol 0–100, clar 0–1}. Clarity = peak of the normalised square difference function (McLeod),
+// scaled down when the pitch jumps around (speech glides, shouting) rather than holding notes.
+function analyse(){
+  if (window.__sr && window.__sr.force) return window.__sr.force;
+  if (!an) return {vol:0, clar:0};
+  an.getFloatTimeDomainData(buf); let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i]*buf[i];
+  const db = 20*Math.log10(Math.sqrt(s/buf.length) + 1e-9);
+  const v = Math.max(0, Math.min(100, (db + 70) * 100/60));
+  if (v < 8) { pitchHist.length = 0; return {vol:v, clar:0}; }
+  const N = dec.length, f2 = fs/2; for (let i = 0; i < N; i++) dec[i] = (buf[2*i] + buf[2*i+1]) * .5;
+  const tmin = Math.floor(f2/1000), tmax = Math.min(N >> 1, Math.floor(f2/70));
+  let m = 0; for (let i = 0; i < N; i++) m += 2*dec[i]*dec[i];
+  for (let t = 1; t < tmin; t++) m -= dec[t-1]*dec[t-1] + dec[N-t]*dec[N-t];
+  const nsdf = new Float32Array(tmax + 1);
+  for (let t = tmin; t <= tmax; t++) { m -= dec[t-1]*dec[t-1] + dec[N-t]*dec[N-t]; let a = 0; for (let i = 0; i < N - t; i++) a += dec[i]*dec[i+t]; nsdf[t] = m > 0 ? 2*a/m : 0; }
+  // peaks after the first negative-going zero crossing
+  let t = tmin; while (t < tmax && nsdf[t] > 0) t++;
+  const peaks = []; let best = 0;
+  for (; t < tmax; t++) { if (nsdf[t] > 0 && nsdf[t] >= nsdf[t-1] && nsdf[t] >= nsdf[t+1]) { peaks.push(t); if (nsdf[t] > best) best = nsdf[t]; } }
+  if (!peaks.length) return {vol:v, clar:0};
+  const pt = peaks.find(p => nsdf[p] >= .88*best); const clar = Math.max(0, nsdf[pt]);
+  const semis = 12*Math.log2(f2/pt/440);
+  pitchHist.push(semis); if (pitchHist.length > 8) pitchHist.shift();
+  let jit = 0; if (pitchHist.length >= 4) { const d = []; for (let i = 1; i < pitchHist.length; i++) { let x = pitchHist[i] - pitchHist[i-1]; x -= 12*Math.round(x/12); d.push(Math.abs(x)); } d.sort((a,b)=>a-b); jit = d[d.length >> 1]; }
+  const stab = jit < .8 ? 1 : jit > 2.5 ? .55 : 1 - .45*(jit - .8)/1.7;
+  return {vol:v, clar:clar*stab};
 }
 
 /* ---------- settings ---------- */
@@ -141,23 +199,34 @@ function showBand(){
   $("loV").textContent = Math.round(band.lo); $("hiV").textContent = Math.round(band.hi);
   $("band").style.bottom = band.lo + "%"; $("band").style.height = Math.max(2, band.hi - band.lo) + "%";
 }
+function showThr(){ $("thrV").textContent = Math.round(thr*100); $("thr").value = Math.round(thr*100); $("thrLine").style.bottom = thr*100 + "%";
+  $("singMeter").classList.toggle("off", !$("singOn").checked); }
 $("lo").oninput = e => { band.lo = Math.min(+e.target.value, band.hi - 3); showBand(); };
 $("hi").oninput = e => { band.hi = Math.max(+e.target.value, band.lo + 3); showBand(); };
+$("thr").oninput = e => { thr = +e.target.value / 100; showThr(); };
+$("singOn").onchange = showThr;
 $("dist").oninput = e => $("distV").textContent = e.target.value; $("distV").textContent = $("dist").value;
+showThr();
 
 /* ---------- calibrate / flow ---------- */
 $("calBtn").onclick = async () => {
   if (!(await initMic())) return;
   state = "cal"; const ban = $("banner"); ban.hidden = false;
   ban.innerHTML = `<h2>校準中</h2><p>播住伴奏，全班唔好出聲</p><div class="big" id="calN">5</div>`;
-  const vals = []; const t0 = performance.now();
-  const iv = setInterval(() => { vals.push(level()); const left = 5 - Math.floor((performance.now()-t0)/1000); const n = $("calN"); if (n) n.textContent = Math.max(1,left);
-    if (performance.now() - t0 > 5000) { clearInterval(iv); vals.sort((a,b)=>a-b); base = vals[Math.floor(vals.length*.8)] || 20;
-      state = "ready"; lvl = 0; setBand(LEVELS[0]); $("goBtn").disabled = false;
-      ban.innerHTML = `<h2>準備好！</h2><p>${LEVELS[0].name}：${LEVELS[0].sub}<br>撳「② 開始」</p>`; renderLevels(); } }, 50);
+  const vals = [], cls = []; const t0 = performance.now();
+  const iv = setInterval(() => { const a = analyse(); vals.push(a.vol); cls.push(a.clar); const left = 5 - Math.floor((performance.now()-t0)/1000); const n = $("calN"); if (n) n.textContent = Math.max(1,left);
+    if (performance.now() - t0 > 5000) { clearInterval(iv); vals.sort((a,b)=>a-b); cls.sort((a,b)=>a-b);
+      base = vals[Math.floor(vals.length*.8)] || 20; baseClar = cls[Math.floor(cls.length*.5)] || 0;
+      let note = "";
+      if (baseClar > .75) { $("singOn").checked = false; note = "伴奏太大聲，唱歌偵測暫時關咗。收細伴奏再校準就會開返。"; }
+      else { $("singOn").checked = true; thr = Math.min(.8, Math.max(.45, baseClar + .15)); }
+      showThr();
+      state = "ready"; lvl = 0; setBand(LEVELS[0]); buildLevel(); $("goBtn").disabled = false;
+      ban.innerHTML = `<h2>準備好！</h2><p>${LEVELS[0].name}：${LEVELS[0].sub}<br>撳「② 開始」</p>${note ? `<p class="note">${note}</p>` : ""}`; renderLevels(); } }, 50);
 };
 $("goBtn").onclick = () => {
-  if (state === "won" || state === "ready") { if (state === "won") { lvl = 0; } prog = 0; tTotal = 0; tGood = 0; setBand(LEVELS[lvl]); }
+  if (state === "won") { lvl = 0; tTotal = 0; tGood = 0; crashes = 0; }
+  if (state === "won" || state === "ready") { setBand(LEVELS[lvl]); buildLevel(); }
   countdown(() => { state = "run"; lastT = performance.now(); $("pauseBtn").disabled = false; });
 };
 $("pauseBtn").onclick = () => {
@@ -169,82 +238,184 @@ function countdown(done){
   state = "count"; renderLevels();
   const iv = setInterval(() => { n--; if (n > 0) ban.querySelector(".big").textContent = n; else { clearInterval(iv); ban.hidden = true; done(); } }, 800);
 }
-document.addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); $("pauseBtn").click(); } });
+document.addEventListener("keydown", e => { if (e.code === "Space" && e.target.tagName !== "INPUT") { e.preventDefault(); $("pauseBtn").click(); } });
 
 /* ---------- loop ---------- */
+let frameN = 0, lastA = {vol:0, clar:0};
 function frame(t){
-  const raw = level(); smooth += (raw - smooth) * 0.18; cur = smooth;
-  $("lvl").style.height = cur + "%";
-  if (state === "run") {
-    const dt = Math.min(.1, (t - lastT)/1000); lastT = t; tTotal += dt;
-    const inBand = cur >= band.lo && cur <= band.hi;
-    mood = inBand ? "ok" : (cur > band.hi ? "loud" : "soft");
-    if (inBand) { tGood += dt; prog += dt / +$("dist").value; runnerPhase += dt * 9; }
-    const st = $("status"); st.hidden = false; st.className = "status " + mood;
-    st.textContent = mood === "ok" ? "剛好！向前跑" : mood === "loud" ? "太大聲！停低" : "大聲啲！";
-    if (prog >= 1) { prog = 1; levelDone(); }
-  } else if (state !== "run") { $("status").hidden = true; mood = "idle"; }
-  $("tTime").textContent = tTotal.toFixed(1); $("tGood").textContent = tTotal ? Math.round(100*tGood/tTotal) : 0; $("tProg").textContent = Math.round(prog*100);
-  draw(t); requestAnimationFrame(frame);
+  if ((frameN++ & 1) === 0) lastA = analyse();
+  vol += (lastA.vol - vol) * .18; singRaw += (lastA.clar - singRaw) * .12; sing = singRaw;
+  $("lvl").style.height = vol + "%"; $("singLvl").style.height = Math.min(100, sing*100) + "%";
+  const dt = Math.min(.1, (t - lastT)/1000); lastT = t;
+  if (state === "run") step(dt);
+  else if (state !== "run") { $("status").hidden = true; if (state !== "between") mood = "idle"; }
+  $("tTime").textContent = tTotal.toFixed(1); $("tGood").textContent = tTotal ? Math.round(100*tGood/tTotal) : 0;
+  $("tCrash").textContent = crashes; $("tProg").textContent = Math.round(Math.min(1, worldX/(levelLen||1))*100);
+  draw(t, state === "run" ? dt : 0); requestAnimationFrame(frame);
 }
+function step(dt){
+  tTotal += dt;
+  const singing = !$("singOn").checked || sing >= thr;
+  mood = vol > band.hi ? "loud" : vol < band.lo ? "soft" : !singing ? "talk" : "ok";
+  if (mood === "ok") tGood += dt;
+  okLvl += ((mood === "ok" ? 1 : 0) - okLvl) * Math.min(1, dt*5);
+  const st = $("status"); st.hidden = false; st.className = "status " + mood;
+  st.textContent = {ok:"唱得好！衝呀", soft:"大聲啲！", loud:"太大聲！唔好嗌", talk:"要唱，唔好嗌／講"}[mood];
+
+  if (crash) {
+    crash.t += dt; speed = 0;
+    if (crash.t < .25) worldX -= 60 * dt/.25;
+    if (crash.t > 1.0) { crash = null; speed = V*.35; }
+  } else {
+    const target = jump ? Math.max(speed, V*.95) : (okLvl > .5 ? V : V*.6);
+    speed += (target - speed) * Math.min(1, dt*4);
+    worldX += speed * dt; runPhase += speed * dt / 26;
+  }
+  if (jump) { jump.t += dt; if (jump.t >= jump.T) { jump = null; addDust(6); } }
+  const ob = obstacles.find(o => !o.passed && o.x + o.w > worldX - 10);
+  if (ob && !crash && !jump) {
+    const dx = ob.x - (worldX + 16);
+    if (dx < 26 + speed*.12 && okLvl > .5) { jump = {t:0, T:.62, h:ob.h + 58}; ob.passed = true; addDust(5); }
+    else if (dx <= 0) doCrash(ob);
+  }
+  for (const o of obstacles) if (!o.passed && o.x + o.w < worldX - 20) o.passed = true;
+  if (worldX >= levelLen) { worldX = levelLen; levelDone(); }
+}
+function doCrash(ob){
+  crash = {t:0}; crashes++; ob.hits++; shake = reduce ? 0 : 10; flash = 1;
+  const msgs = {soft:"太細聲，撞板！", loud:"嗌得太大聲，撞板！", talk:"冇唱歌，撞板！"};
+  fx.push({type:"text", x:ob.x, y:-ob.h - 30, t:0, s:msgs[mood] || "撞板！"});
+  for (let i = 0; i < 9; i++) fx.push({type:"line", x:ob.x, y:-ob.h*.6, a:Math.PI*(.65 + .7*Math.random()) + Math.PI, l:rnd(18, 38), t:0});
+}
+function addDust(n){ for (let i = 0; i < n; i++) fx.push({type:"dust", x:worldX + rnd(-6, 12), y:-2, vx:rnd(-80, -20), vy:rnd(-60, -10), t:0}); }
 function levelDone(){
-  state = "between"; $("pauseBtn").disabled = true;
+  state = "between"; $("pauseBtn").disabled = true; $("status").hidden = true;
   const ban = $("banner"); ban.hidden = false;
   if (lvl < LEVELS.length - 1) {
-    lvl++; setBand(LEVELS[lvl]); prog = 0;
-    ban.innerHTML = `<h2>過關！</h2><p>下一關：${LEVELS[lvl].name}・${LEVELS[lvl].sub}</p><p style="font-size:16px">撳「② 開始」繼續</p>`;
+    lvl++; setBand(LEVELS[lvl]);
+    ban.innerHTML = `<h2>過關！</h2><p>撞板 ${crashes} 次・唱得好 ${Math.round(100*tGood/tTotal)}%</p><p>下一關：${LEVELS[lvl].name}・${LEVELS[lvl].sub}</p><p class="note">撳「② 開始」繼續</p>`;
     state = "ready";
   } else {
     state = "won";
-    ban.innerHTML = `<h2>全部過關！</h2><p>總時間 ${tTotal.toFixed(1)} 秒・剛好聲量 ${Math.round(100*tGood/tTotal)}%</p><p style="font-size:16px">撳「② 開始」由第 1 關再嚟</p>`;
+    ban.innerHTML = `<h2>全部過關！</h2><p>總時間 ${tTotal.toFixed(1)} 秒・唱得好 ${Math.round(100*tGood/tTotal)}%・撞板 ${crashes} 次</p><p class="note">撳「② 開始」由第 1 關再嚟</p>`;
   }
   renderLevels();
 }
 
 /* ---------- drawing ---------- */
-function draw(t){
+function draw(t, dt){
   const r = cv.getBoundingClientRect(), dpr = devicePixelRatio || 1;
   if (cv.width !== Math.round(r.width*dpr) || cv.height !== Math.round(r.height*dpr)) { cv.width = Math.round(r.width*dpr); cv.height = Math.round(r.height*dpr); }
-  const W = r.width, Hh = r.height; g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,Hh);
-  const ground = Hh*0.72, x0 = 70, x1 = W - 90;
-  // lanes
-  g.fillStyle = "#F3EEFF"; g.fillRect(0, ground, W, Hh - ground);
-  g.strokeStyle = "#E4DCF7"; g.lineWidth = 2;
-  for (let i = 0; i < 3; i++) { const y = ground + 16 + i*((Hh-ground-24)/3); g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
-  // distance ticks (scroll with runner phase)
-  g.fillStyle = "#CDB8FF";
-  const off = (prog * 1200) % 80;
-  for (let x = -off; x < W; x += 80) g.fillRect(x, ground - 4, 30, 4);
-  // checkpoints: 3 gates per level
-  for (let k = 1; k <= 3; k++) {
-    const gx = x0 + (x1 - x0) * (k/3); const passed = prog >= k/3;
-    g.fillStyle = passed ? "#1F9D62" : "#B4528A"; g.fillRect(gx - 3, ground - 120, 6, 120);
-    g.fillStyle = passed ? "#BDEBD6" : "#FFC9DE"; g.fillRect(gx + 3, ground - 120, 44, 26);
-    g.fillStyle = "#3B2F5A"; g.font = "700 14px 'Chakra Petch', sans-serif"; g.fillText(k === 3 ? "終點" : `${k}/3`, gx + 9, ground - 102);
-  }
+  W = r.width; Hh = r.height; ground = Math.round(Hh*.78);
+  if (!skyline.length) buildLevel();
+  const L = LEVELS[lvl], rx = W*RUN_X;
+  g.setTransform(dpr,0,0,dpr,0,0);
+  const sx = shake ? rnd(-shake, shake) : 0, sy = shake ? rnd(-shake, shake)*.6 : 0; shake = Math.max(0, shake - 40*dt);
+  g.save(); g.translate(sx, sy);
+  // sky
+  const sk = g.createLinearGradient(0, 0, 0, ground); sk.addColorStop(0, L.sky[0]); sk.addColorStop(1, L.sky[1]);
+  g.fillStyle = sk; g.fillRect(-20, -20, W + 40, ground + 20);
+  g.fillStyle = "rgba(255,201,222,.45)"; g.beginPath(); g.arc(W*.78, Hh*.24, Math.min(W, Hh)*.09, 0, Math.PI*2); g.fill();
+  // far skyline
+  const span1 = skyline.length ? skyline[skyline.length-1].x + skyline[skyline.length-1].w + 30 : 1;
+  g.fillStyle = L.far;
+  for (let rep = -1; rep < 3; rep++) for (const b of skyline) { const x = b.x + rep*span1 - (worldX*.12) % span1; if (x > W || x + b.w < 0) continue; g.fillRect(x, ground - Hh*b.h - 40, b.w, Hh*b.h + 40); }
+  // mid rooftops with windows
+  const span2 = mids.length ? mids[mids.length-1].x + mids[mids.length-1].w + 60 : 1;
+  for (let rep = -1; rep < 3; rep++) for (const b of mids) { const x = b.x + rep*span2 - (worldX*.4) % span2; if (x > W || x + b.w < 0) continue;
+    const top = ground - Hh*b.h - 12; g.fillStyle = L.mid; g.fillRect(x, top, b.w, ground - top);
+    g.fillStyle = "rgba(255,255,255,.7)"; for (let wy = top + 12; wy < ground - 14; wy += 20) for (let wx = x + 10; wx < x + b.w - 14; wx += 22) g.fillRect(wx, wy, 10, 9);
+    if (b.ant) { g.strokeStyle = L.mid; g.lineWidth = 3; g.beginPath(); g.moveTo(x + b.w*.7, top); g.lineTo(x + b.w*.7, top - 26); g.stroke(); } }
+  // rooftop floor
+  g.fillStyle = "#3B2F5A"; g.fillRect(-20, ground, W + 40, 6);
+  g.fillStyle = "#EDE6FF"; g.fillRect(-20, ground + 6, W + 40, Hh - ground);
+  g.fillStyle = "#DCD0F6"; const tile = 64, off = worldX % tile; for (let x = -off; x < W; x += tile) g.fillRect(x, ground + 6, 3, Hh - ground);
+  g.fillStyle = "#E4DCF7"; for (let x = -((worldX*1.0) % 140); x < W; x += 140) g.fillRect(x, ground + 26, 60, 4);
+  // finish gate
+  const fxs = rx + (levelLen - worldX);
+  if (fxs < W + 80) { g.fillStyle = "#3B2F5A"; g.fillRect(fxs - 4, ground - 150, 8, 150); g.fillRect(fxs + 92, ground - 150, 8, 150);
+    for (let i = 0; i < 12; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? "#3B2F5A" : "#FFFFFF"; g.fillRect(fxs + 4 + i*7.3, ground - 150 + j*12, 7.3, 12); }
+    g.fillStyle = "#3B2F5A"; g.font = "700 15px 'Chakra Petch', sans-serif"; g.fillText("FINISH", fxs + 22, ground - 158); }
+  // obstacles
+  for (const o of obstacles) { const x = rx + (o.x - worldX); if (x > W + 120 || x + o.w < -120) continue; drawObstacle(x, ground, o); }
   // runner
-  const rx = x0 + (x1 - x0) * prog, ry = ground;
-  drawRunner(rx, ry, mood === "ok" ? runnerPhase : 0, mood);
-  // progress text
-  g.fillStyle = "#6E6490"; g.font = "700 18px 'Noto Sans TC', sans-serif";
-  g.fillText(`${LEVELS[lvl].name}・${LEVELS[lvl].sub}`, 24, 40);
-}
-function drawRunner(x, y, ph, md){
-  const col = md === "loud" ? "#D63C5E" : md === "soft" ? "#D98A1C" : "#3B2F5A";
-  const s = 1.25, sw = Math.sin(ph), cw = Math.cos(ph);
-  g.save(); g.translate(x, y); g.scale(s, s); g.strokeStyle = col; g.fillStyle = col; g.lineCap = "round"; g.lineWidth = 7;
-  const hip = [0, -46], sh = [6, -86];
-  const leg = (a) => { const kx = hip[0] + 14*Math.sin(a), ky = hip[1] + 22, fx = kx + 10*Math.sin(a - .9), fy = 0 - Math.max(0, 8*Math.cos(a)); g.beginPath(); g.moveTo(...hip); g.lineTo(kx, ky); g.lineTo(fx, fy); g.stroke(); };
-  const arm = (a) => { const ex = sh[0] - 14*Math.sin(a), ey = sh[1] + 18, hx = ex + 12*Math.cos(a), hy = ey + 6; g.beginPath(); g.moveTo(...sh); g.lineTo(ex, ey); g.lineTo(hx, hy); g.stroke(); };
-  if (md === "ok") { leg(ph); leg(ph + Math.PI); arm(ph + Math.PI); arm(ph); }
-  else { g.beginPath(); g.moveTo(...hip); g.lineTo(-6, -22); g.lineTo(-6, 0); g.moveTo(...hip); g.lineTo(8, -22); g.lineTo(8, 0); g.stroke();
-         g.beginPath(); g.moveTo(...sh); g.lineTo(-10, -62); g.moveTo(...sh); g.lineTo(20, -64); g.stroke(); }
-  g.beginPath(); g.moveTo(...hip); g.lineTo(...sh); g.stroke();
-  g.beginPath(); g.arc(10, -102, 11, 0, Math.PI*2); g.fill();
+  let ry = ground, pose = "run";
+  if (jump) { const p = jump.t/jump.T; ry = ground - 4*jump.h*p*(1 - p); pose = "jump"; }
+  if (crash) pose = crash.t < .55 ? "hit" : "up";
+  if (state !== "run" && state !== "between") pose = state === "idle" || state === "ready" || state === "cal" || state === "count" ? "stand" : pose;
+  if (pose === "run" && mood === "ok" && !reduce) { g.fillStyle = "rgba(205,184,255,.55)"; for (let i = 0; i < 4; i++) g.fillRect(rx - 46 - i*22, ground - 92 + i*18, 26 + i*4, 3); }
+  drawRunner(rx, ry, pose, crash ? crash.t : 0, mood);
+  // fx
+  for (const f of fx) { f.t += dt; const x = rx + (f.x - worldX);
+    if (f.type === "dust") { f.x += f.vx*dt; f.y += f.vy*dt; f.vy += 160*dt; g.fillStyle = `rgba(205,184,255,${Math.max(0, .8 - f.t*1.4)})`; g.beginPath(); g.arc(x, ground + f.y, 4 + f.t*8, 0, Math.PI*2); g.fill(); }
+    else if (f.type === "line") { const a = Math.max(0, 1 - f.t*2.2), d = 10 + f.t*90; g.strokeStyle = `rgba(214,60,94,${a})`; g.lineWidth = 4; g.lineCap = "round";
+      g.beginPath(); g.moveTo(x + Math.cos(f.a)*d, ground + f.y + Math.sin(f.a)*d); g.lineTo(x + Math.cos(f.a)*(d + f.l), ground + f.y + Math.sin(f.a)*(d + f.l)); g.stroke(); }
+    else if (f.type === "text") { const a = Math.max(0, 1 - Math.max(0, f.t - .9)*1.6); g.fillStyle = `rgba(214,60,94,${a})`; g.font = "900 30px 'Noto Sans TC', sans-serif"; g.textAlign = "center";
+      g.fillText(f.s, x, ground + f.y - f.t*30); g.textAlign = "start"; } }
+  fx = fx.filter(f => f.t < (f.type === "text" ? 1.6 : 1));
   g.restore();
-  if (md === "ok") { g.fillStyle = "rgba(205,184,255,.6)"; for (let i = 1; i <= 3; i++) g.fillRect(x - 30 - i*14, y - 70 + i*10 + 3*Math.sin(ph+i), 18, 4); }
+  // crash flash
+  if (flash > 0) { const v = g.createRadialGradient(W/2, Hh/2, Math.min(W, Hh)*.3, W/2, Hh/2, Math.max(W, Hh)*.75); v.addColorStop(0, "rgba(214,60,94,0)"); v.addColorStop(1, `rgba(214,60,94,${.35*flash})`); g.fillStyle = v; g.fillRect(0, 0, W, Hh); flash = Math.max(0, flash - dt*1.8); }
+  // progress strip
+  const px0 = 24, px1 = W - 24, py = 22, p = Math.min(1, worldX/(levelLen || 1));
+  g.fillStyle = "rgba(255,255,255,.8)"; roundRect(px0 - 6, py - 12, px1 - px0 + 12, 24, 12); g.fill();
+  g.fillStyle = "#E4DCF7"; roundRect(px0, py - 4, px1 - px0, 8, 4); g.fill();
+  g.fillStyle = "#B4528A"; roundRect(px0, py - 4, Math.max(8, (px1 - px0)*p), 8, 4); g.fill();
+  for (const o of obstacles) { const ox = px0 + (px1 - px0)*(o.x/levelLen); g.fillStyle = o.passed ? (o.hits ? "#D63C5E" : "#1F9D62") : "#9C8FC4"; g.fillRect(ox - 1.5, py - 8, 3, 16); }
+  g.fillStyle = "#3B2F5A"; g.beginPath(); g.arc(px0 + (px1 - px0)*p, py, 7, 0, Math.PI*2); g.fill();
+  g.fillStyle = "#6E6490"; g.font = "700 17px 'Noto Sans TC', sans-serif"; g.fillText(`${L.name}・${L.sub}`, 24, 64);
 }
-requestAnimationFrame(frame);
+function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function drawObstacle(x, y, o){
+  g.save(); g.translate(x, y); g.lineWidth = 3; g.strokeStyle = "#3B2F5A";
+  if (o.kind === "hurdle") {
+    g.fillStyle = "#3B2F5A"; g.fillRect(0, -o.h, 5, o.h); g.fillRect(o.w - 5, -o.h, 5, o.h);
+    g.fillStyle = "#FF9EC4"; g.fillRect(-10, -o.h, o.w + 20, 12); g.fillStyle = "#FFFFFF"; for (let i = 0; i < 3; i++) g.fillRect(-6 + i*14, -o.h + 2, 6, 8);
+  } else if (o.kind === "crate" || o.kind === "crate2") {
+    const n = o.kind === "crate2" ? 2 : 1;
+    for (let k = 0; k < n; k++) { const top = -44*(k + 1); g.fillStyle = k ? "#CDB8FF" : "#FFC9DE"; g.fillRect(0, top, 44, 44); g.strokeRect(1.5, top + 1.5, 41, 41);
+      g.beginPath(); g.moveTo(4, top + 4); g.lineTo(40, top + 40); g.moveTo(40, top + 4); g.lineTo(4, top + 40); g.stroke(); }
+  } else if (o.kind === "barrier") {
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, -o.h, o.w, 26); g.save(); g.beginPath(); g.rect(0, -o.h, o.w, 26); g.clip();
+    g.fillStyle = "#B4528A"; for (let i = -2; i < 8; i++) { g.beginPath(); g.moveTo(i*16, -o.h + 26); g.lineTo(i*16 + 10, -o.h + 26); g.lineTo(i*16 + 36, -o.h); g.lineTo(i*16 + 26, -o.h); g.fill(); } g.restore();
+    g.strokeRect(1.5, -o.h + 1.5, o.w - 3, 23); g.fillStyle = "#3B2F5A"; g.fillRect(8, -o.h + 26, 6, o.h - 26); g.fillRect(o.w - 14, -o.h + 26, 6, o.h - 26);
+  } else {
+    g.fillStyle = "#BFE6FF"; g.fillRect(0, -o.h, o.w, o.h); g.strokeRect(1.5, -o.h + 1.5, o.w - 3, o.h - 3);
+    g.fillStyle = "#3B2F5A"; for (let i = 0; i < 5; i++) g.fillRect(10 + i*16, -o.h + 9, 8, o.h - 18);
+  }
+  g.restore();
+}
+function drawRunner(x, y, pose, ct, md){
+  const col = pose === "hit" || pose === "up" ? "#D63C5E" : "#3B2F5A";
+  g.save(); g.translate(x, y); g.strokeStyle = col; g.fillStyle = col; g.lineCap = "round"; g.lineJoin = "round"; g.lineWidth = 8;
+  const seg = (pts) => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.stroke(); };
+  if (pose === "hit") { g.translate(-10, 0); g.rotate(-Math.min(1.1, ct*3.5)); }
+  if (pose === "up") { const p = Math.min(1, (ct - .55)/.45); g.translate(-10, 0); g.rotate(-1.1*(1 - p)); }
+  const ph = runPhase, s = Math.sin(ph), c = Math.cos(ph);
+  let hip = [0, -50], sh = [10, -92], head = [18, -110];
+  if (pose === "run") {
+    hip = [0, -50 + Math.abs(c)*3]; sh = [12, -92 + Math.abs(c)*3]; head = [20, -110 + Math.abs(c)*3];
+    const leg = a => { const kx = hip[0] + 18*Math.sin(a), ky = hip[1] + 22 - 4*Math.cos(a); const fx = kx - 6 + 14*Math.sin(a - 1.2), fy = Math.min(0, -2 - 14*Math.max(0, Math.cos(a + .6))); seg([hip, [kx, ky], [fx, fy]]); };
+    const arm = a => { const ex = sh[0] - 16*Math.sin(a), ey = sh[1] + 20; seg([sh, [ex, ey], [ex + 14 + 4*Math.cos(a), ey - 10]]); };
+    g.globalAlpha = .55; leg(ph + Math.PI); arm(ph); g.globalAlpha = 1; leg(ph); arm(ph + Math.PI);
+  } else if (pose === "jump") {
+    hip = [0, -54]; sh = [14, -92]; head = [24, -108];
+    seg([hip, [18, -44], [4, -26]]); seg([hip, [12, -36], [-8, -30]]);
+    seg([sh, [34, -100], [48, -112]]); seg([sh, [-8, -104], [-22, -116]]);
+  } else if (pose === "hit" || pose === "up") {
+    seg([hip, [-10, -24], [-6, 0]]); seg([hip, [12, -26], [14, 0]]);
+    seg([sh, [28, -110], [36, -128]]); seg([sh, [-6, -112], [-10, -130]]);
+  } else {
+    seg([hip, [-6, -24], [-6, 0]]); seg([hip, [8, -24], [10, 0]]);
+    seg([sh, [0, -66], [6, -50]]); seg([sh, [22, -68], [26, -52]]);
+  }
+  seg([hip, sh]);
+  g.beginPath(); g.arc(head[0], head[1], 13, 0, Math.PI*2); g.fill();
+  g.fillStyle = "#FF9EC4"; g.fillRect(head[0] - 13, head[1] - 6, 26, 5);   // headband
+  g.restore();
+}
+window.__sr = {force:null, get s(){ return {state, worldX, levelLen, crashes, mood, lvl}; }};
+requestAnimationFrame(t => { lastT = t; frame(t); });
 })();
 </script>
 </body>
