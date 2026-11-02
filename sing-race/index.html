@@ -135,12 +135,12 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
           <label><input type="radio" name="pm" value="off"> 唔計音準</label>
         </div>
         <div class="row">調（do）<select id="keySel"></select><span id="keyInfo"></span></div>
-        <div class="row"><button class="btn btn-main sm" id="recBtn">喺遊戲錄導唱</button>
-          <label class="btn btn-soft sm file">載入導唱檔<input type="file" id="guideFile" accept="audio/*,.mp3,.m4a,.wav,.aac"></label>
+        <div class="row"><label class="btn btn-main sm file">導入導唱檔<input type="file" id="guideFile" accept="audio/*,.mp3,.m4a,.wav,.aac"></label>
+          <button class="btn btn-soft sm" id="recBtn">或者：喺遊戲錄導唱</button>
           <span id="guideInfo">未有導唱</span></div>
         <div class="row">導唱偏移 <input type="range" id="gOff" min="-150" max="150" value="0"><span id="gOffV"></span> 秒
           <button class="btn btn-soft sm" id="gTest">同伴奏一齊試聽</button></div>
-        <p class="hint">錄導唱：戴耳筒聽伴奏，對住電腦咪由頭唱到結束位置，錄完自動抽出音高線。載入導唱檔：要淨人聲；如果同伴奏有時間差，用「同伴奏一齊試聽」聽下，再拉偏移對齊。<br>「喺唔喺個調入面」唔使導唱，捉到走音，但捉唔到唱錯旋律。男女相差一個八度都當啱。</p>
+        <p class="hint">導入導唱檔：揀一個同伴奏對齊咗、以人聲為主嘅檔（混埋樂隊會唔準），遊戲會自動抽出音高線，幾秒就得。如果同伴奏有時間差，用「同伴奏一齊試聽」聽下，再拉偏移對齊。<br>錄導唱：戴耳筒聽伴奏，對住電腦咪由頭唱到結束位置，錄完自動抽出音高線。<br>「喺唔喺個調入面」唔使導唱，捉到走音，但捉唔到唱錯旋律。男女相差一個八度都當啱。</p>
       </section>
       <section>
         <h3>4. 聲量同唱歌偵測</h3>
