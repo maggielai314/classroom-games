@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>和弦工作紙</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{
+  --bg:#F6F2FF; --card:#FFFFFF; --plum:#3B2F5A; --lilac:#CDB8FF; --pink:#FFC9DE; --sky:#CFE2FF; --mint:#BDEBD6;
+  --ink:#2A2140; --muted:#6E6490; --rule:#E4DCF7; --hot:#B4528A; --good:#1F9D62; --bad:#D63C5E;
+  --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-hud:"Chakra Petch","Noto Sans TC",ui-monospace,monospace;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:16px;
+  padding:env(safe-area-inset-top,0) max(16px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0) max(16px,env(safe-area-inset-left,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+input,textarea{-webkit-user-select:text;user-select:text}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+.app{max-width:1100px;margin:0 auto;padding-block:18px 32px;display:grid;gap:16px}
+h1{margin:0;font-family:var(--f-hud);font-weight:700;font-size:clamp(32px,6vw,52px);line-height:.95;color:var(--plum)}
+h1 small{display:block;font-family:var(--f-ui);font-weight:900;font-size:.42em;color:var(--hot);letter-spacing:.06em;margin-top:6px}
+h2{margin:0;font-size:22px;color:var(--plum)}
+.lede{margin:0;color:var(--muted);line-height:1.6;max-width:64ch}
+.panel{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
+.txt{min-height:54px;width:100%;border-radius:12px;border:1.5px solid #CFC4EC;background:#FBF9FF;color:var(--ink);padding:0 14px;font:700 20px var(--f-ui)}
+.txt.pin{font-family:var(--f-hud);font-size:28px;letter-spacing:.3em;text-align:center}
+textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;resize:vertical}
+.btn{min-height:52px;padding:0 22px;border-radius:12px;font-weight:900;font-size:18px}
+.btn-main{background:var(--plum);color:#fff}.btn:disabled{opacity:.4;cursor:default}
+.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.err{color:var(--bad);font-size:15px;min-height:1.2em;margin:0}
+.note{color:var(--muted);font-size:14px;line-height:1.55;margin:0}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.steps span{padding:6px 12px;border-radius:999px;background:#EFEAFB;color:var(--muted);font-weight:700;font-size:14px}
+.steps span.on{background:var(--plum);color:#fff}
+.steps span.done{background:var(--mint);color:var(--ink)}
+
+/* part 1 */
+.task{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.task .q{font-weight:900;font-size:clamp(22px,3.6vw,32px);color:var(--plum)}
+.task .q b{font-family:var(--f-hud);font-size:1.5em;color:var(--hot);margin:0 .12em}
+.dots{display:flex;gap:6px}.dots i{width:14px;height:14px;border-radius:50%;background:var(--rule)}
+.dots i.cur{background:var(--plum)}.dots i.fill{background:var(--lilac)}
+.kb{position:relative;height:clamp(200px,34vh,320px);border-radius:16px;background:var(--plum);padding:10px 10px 12px;touch-action:none}
+.whites{position:relative;display:flex;height:100%;gap:3px}
+.key{position:relative}
+.white{flex:1;background:#fff;border-radius:0 0 10px 10px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:10px}
+.white .nm{font-weight:900;font-size:clamp(16px,2.6vw,24px);color:var(--plum)}
+.black{position:absolute;top:10px;height:58%;background:#2B2340;border-radius:0 0 8px 8px;z-index:2}
+.key.sel{background:var(--lilac)!important}.black.sel{background:#8A6CF0!important}
+.picked{font-family:var(--f-hud);font-size:20px;color:var(--plum)}
+.results{display:grid;gap:8px}
+.res{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:#FBF9FF;border:1px solid var(--rule)}
+.res .c{font-family:var(--f-hud);font-weight:700;font-size:28px;color:var(--plum);min-width:2.2em}
+.res.ok{background:#E9F8F0;border-color:#9ED9BC}.res.ng{background:#FDECF0;border-color:#F2B3C2}
+.res .m{font-weight:900;font-size:22px}.res.ok .m{color:var(--good)}.res.ng .m{color:var(--bad)}
+
+/* part 2 */
+.chips{display:flex;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:5;background:var(--bg);padding-block:8px}
+.chip{min-width:84px;min-height:56px;padding:0 16px;border-radius:14px;background:var(--card);border:2px solid var(--plum);font-family:var(--f-hud);font-weight:700;font-size:26px;color:var(--plum);touch-action:none}
+.chip small{font-family:var(--f-ui);font-size:13px;color:var(--hot);margin-left:4px}
+.chip[aria-pressed="true"]{background:var(--plum);color:#fff}.chip[aria-pressed="true"] small{color:var(--pink)}
+.chip.erase{font-family:var(--f-ui);font-size:17px;border-color:#CFC4EC}
+.line{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;border-bottom:1px dashed var(--rule)}
+.line .num{font-family:var(--f-hud);color:var(--muted);font-size:14px;width:100%}
+.cell{display:grid;grid-template-rows:40px auto;justify-items:center;min-width:52px;padding:4px 2px 6px;border-radius:12px;background:#FBF9FF;border:1.5px solid var(--rule)}
+.cell .ch{font-family:var(--f-hud);font-weight:700;font-size:24px;color:var(--hot);align-self:end;min-height:1em}
+.cell .w{font-weight:900;font-size:clamp(26px,4vw,36px);color:var(--ink)}
+.cell.has{background:#F3EDFF;border-color:var(--lilac)}
+.cell.drop{outline:3px solid var(--hot)}
+.ghostchip{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-60%);min-width:70px;padding:8px 14px;border-radius:12px;background:var(--plum);color:#fff;font-family:var(--f-hud);font-weight:700;font-size:26px;text-align:center}
+
+/* teacher */
+.host-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.pinbig{font-family:var(--f-hud);font-weight:700;font-size:clamp(52px,9vw,96px);letter-spacing:.12em;color:var(--plum);line-height:1}
+.qr{background:#fff;border-radius:12px;padding:8px;border:1px solid var(--rule);width:clamp(120px,16vw,170px)}
+.qr svg{display:block;width:100%;height:auto}
+.joinurl{font-size:14px;color:var(--muted);word-break:break-all}
+.lb{width:100%;border-collapse:collapse}
+.lb td,.lb th{padding:9px 6px;text-align:left;border-bottom:1px solid var(--rule);font-size:18px}
+.lb th{font-size:13px;color:var(--muted);font-weight:700}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:14px;font-weight:700}
+.tag.y{background:var(--mint)}.tag.n{background:#EFEAFB;color:var(--muted)}
+.show{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:24px max(24px,4vw)}
+.show .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.show .gname{font-weight:900;font-size:clamp(28px,4vw,44px);color:var(--plum)}
+.show .line{border-bottom:2px solid var(--rule);padding:14px 0;gap:4px}
+.show .cell{background:transparent;border:0;min-width:clamp(56px,6.5vw,92px);grid-template-rows:clamp(44px,6vw,70px) auto}
+.show .cell .ch{font-size:clamp(28px,4.4vw,52px)}
+.show .cell .w{font-size:clamp(36px,5.6vw,70px)}
+.show .cell.now{background:#FFF1D2;border-radius:14px}
+.show .cell.now .ch{color:var(--bad)}
+@media (max-width:560px){.host-top{grid-template-columns:1fr}.cell{min-width:44px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- home -->
+<section id="scHome" class="app" style="padding:0">
+  <div><h1>CHORD SHEET<small>和弦工作紙</small></h1></div>
+  <p class="lede">兩部分：① 喺鍵盤砌出 C、G、Am、F 四個和弦，提交對答案；② 將和弦拉落歌詞，決定喺邊隻字轉和弦，提交俾老師。</p>
+  <div class="panel">
+    <h2>學生：加入</h2>
+    <input class="txt pin" id="pinIn" inputmode="numeric" maxlength="6" placeholder="PIN">
+    <input class="txt" id="nameIn" maxlength="12" placeholder="組名（例如：第 3 組）">
+    <div class="row"><button class="btn btn-main" id="joinBtn" disabled>加入</button></div>
+    <p class="err" id="joinErr"></p>
+  </div>
+  <div class="panel">
+    <h2>老師</h2>
+    <p class="note">開局之後，貼上歌詞（最多 4 句、每句最多 12 個字），學生部機會自動收到。歌詞只會存喺你部電腦同今次局入面。</p>
+    <div class="row"><button class="btn btn-soft" id="hostBtn">開局（老師用）</button></div>
+    <p class="err" id="hostErr"></p>
+  </div>
+</section>
+
+<!-- part 1 -->
+<section id="scP1" hidden class="app" style="padding:0">
+  <div class="steps"><span class="on">① 砌和弦</span><span>② 和弦放落歌詞</span><span>③ 提交</span></div>
+  <div class="panel">
+    <div class="task"><div class="q" id="p1q"></div><div class="dots" id="p1dots"></div></div>
+    <p class="note">規則：根音開始，隔一個白鍵，再隔一個白鍵。撳鍵揀音，再撳一下取消。</p>
+    <div class="kb" id="kb"><div class="whites" id="whites"></div></div>
+    <div class="row" style="justify-content:space-between">
+      <span class="picked" id="picked">已揀：—</span>
+      <div class="row">
+        <button class="btn btn-soft" id="p1play">▶ 聽吓</button>
+        <button class="btn btn-soft" id="p1prev">◂ 上一個</button>
+        <button class="btn btn-main" id="p1next">下一個 ▸</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel" id="p1res" hidden>
+    <h2 id="p1resT"></h2>
+    <div class="results" id="p1list"></div>
+    <div class="row"><button class="btn btn-soft" id="p1retry">改返錯咗嗰啲</button><button class="btn btn-main" id="p1go">去第 ② 部分 ▸</button></div>
+  </div>
+</section>
+
+<!-- part 2 -->
+<section id="scP2" hidden class="app" style="padding:0">
+  <div class="steps"><span class="done">① 砌和弦</span><span class="on">② 和弦放落歌詞</span><span>③ 提交</span></div>
+  <div class="panel">
+    <h2>邊隻字轉和弦？</h2>
+    <p class="note">揀一個和弦（或者直接拉落去），再撳歌詞上面嗰隻字。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
+    <div class="chips" id="chips"></div>
+    <div id="lyrics"></div>
+    <p class="err" id="p2msg"></p>
+    <div class="row"><button class="btn btn-soft" id="p2clear">全部清除</button><button class="btn btn-main" id="p2send">提交俾老師</button></div>
+  </div>
+</section>
+
+<!-- host -->
+<section id="scHost" hidden class="app" style="padding:0">
+  <div class="host-top">
+    <div style="display:grid;gap:6px"><span class="note">PIN・和弦工作紙</span><div class="pinbig" id="hPin">——</div><div class="joinurl" id="hUrl"></div></div>
+    <div class="qr" id="hQr"></div>
+  </div>
+  <div class="panel">
+    <h2>歌詞</h2>
+    <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）"></textarea>
+    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><span class="note" id="hLyrMsg"></span></div>
+  </div>
+  <div class="panel">
+    <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
+    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hExit">結束</button></div>
+    <table class="lb"><thead><tr><th>組</th><th>① 砌和弦</th><th>② 歌詞和弦</th><th></th></tr></thead><tbody id="hTable"></tbody></table>
+  </div>
+</section>
+
+</div>
+
+<!-- projection -->
+<div class="show" id="show" hidden>
+  <div class="top">
+    <div class="gname" id="sName"></div>
+    <div class="row">
+      <button class="btn btn-main" id="sStep">下一個和弦 ▸</button>
+      <button class="btn btn-soft" id="sReset">由頭</button>
+      <button class="btn btn-soft" id="sNext">🎲 再抽</button>
+      <button class="btn btn-soft" id="sClose">返回</button>
+    </div>
+  </div>
+  <p class="note">全班睇住彈：撳「下一個和弦」（或者空白鍵）亮起下一個要彈嘅和弦，同時會彈一下。</p>
+  <div id="sLyr"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
+const $ = id => document.getElementById(id);
+const CH = {C:[60,64,67], G:[67,71,74], Am:[69,72,76], F:[65,69,72], Dm:[62,65,69], Em:[64,67,71]};
+const ROMAN = {C:"I", F:"IV", G:"V", Am:"vi", Dm:"ii", Em:"iii"};
+const P1 = ["C","G","Am","F"];
+const CHIPS = ["C","G","Am","F"];
+const CODE = {C:"C", G:"G", Am:"a", F:"F", Dm:"d", Em:"e"};
+const DECODE = Object.fromEntries(Object.entries(CODE).map(([k,v]) => [v,k]));
+const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+const MAXLEN = 12, MAXLINES = 4;
+const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+const show = id => { for (const s of ["scHome","scP1","scP2","scHost"]) $(s).hidden = s !== id; window.scrollTo(0,0); };
+const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
+async function api(params){
+  const qs = new URLSearchParams(params).toString(); let last;
+  for (let i = 0; i < 3; i++) {
+    try { const r = await fetch(API + "?" + qs, {redirect:"follow"}); const j = await r.json(); if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j; }
+    catch (e) { last = e; if (e.server) break; await new Promise(r => setTimeout(r, 500 + Math.random()*700)); }
+  }
+  throw last;
+}
+
+/* ---------- audio (shares Chord Hunter piano samples) ---------- */
+const AC = window.AudioContext || window.webkitAudioContext; const ctx = AC ? new AC() : null;
+const SAMPLES = {60:"C4",63:"Ds4",66:"Fs4",69:"A4",72:"C5",75:"Ds5",78:"Fs5",81:"A5",84:"C6"}; const buf = {};
+if (ctx) for (const [m,f] of Object.entries(SAMPLES)) fetch("../chord-hunter/audio/" + f + ".mp3").then(r => r.arrayBuffer()).then(ab => new Promise((ok,no) => { const p = ctx.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); })).then(b => buf[m] = b).catch(() => {});
+function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {} ctx.resume(); }
+function note(m, when = 0, dur = 1.2, vel = .7){
+  if (!ctx) return; let r = 60; for (const x of Object.keys(SAMPLES).map(Number)) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
+  const b = buf[r]; if (!b) return; const t = ctx.currentTime + when, s = ctx.createBufferSource(), g = ctx.createGain();
+  s.buffer = b; s.playbackRate.value = Math.pow(2,(m-r)/12); s.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .15); s.start(t, .025); s.stop(t + dur + .8);
+}
+const chord = (ms, when = 0, dur = 1.4) => ms.forEach(m => note(m, when, dur, .55));
+
+/* ---------- home ---------- */
+const urlPin = new URLSearchParams(location.search).get("pin");
+if (urlPin && /^\d{6}$/.test(urlPin)) $("pinIn").value = urlPin;
+const saved = store.get("chordsheet.v1", {}); $("nameIn").value = saved.name || "";
+const checkJoin = () => $("joinBtn").disabled = !(/^\d{6}$/.test($("pinIn").value) && $("nameIn").value.trim());
+$("pinIn").oninput = () => { $("pinIn").value = $("pinIn").value.replace(/\D/g,"").slice(0,6); checkJoin(); };
+$("nameIn").oninput = checkJoin; checkJoin();
+
+let me = null;   // {pin, gid, name}
+$("joinBtn").onclick = async () => {
+  unlock(); $("joinErr").textContent = ""; $("joinBtn").disabled = true;
+  const pin = $("pinIn").value, name = $("nameIn").value.trim().slice(0,12);
+  const old = store.get("chordsheet.v1", {});
+  const gid = old.pin === pin && old.gid ? old.gid : pidMake().slice(0,10);
+  try { await api({a:"join", pin, pid: gid + "g", name}); me = {pin, gid, name}; store.set("chordsheet.v1", {pin, gid, name}); startP1(); }
+  catch (e) { $("joinErr").textContent = e.message === "noroom" ? "搵唔到呢個 PIN，請再檢查。" : "連線失敗，請再試。"; }
+  finally { checkJoin(); }
+};
+
+/* ---------- keyboard ---------- */
+const WHITE = [60,62,64,65,67,69,71,72,74,76], BLACK = {61:0,63:1,66:3,68:4,70:5,73:7,75:8};
+let sel = new Set();
+function buildKb(){
+  const w = $("whites"); w.textContent = "";
+  for (const m of WHITE) { const k = document.createElement("div"); k.className = "key white"; k.dataset.m = m; k.innerHTML = `<span class="nm">${PC[m%12]}</span>`; w.appendChild(k); }
+  for (const [m,i] of Object.entries(BLACK)) { const k = document.createElement("div"); k.className = "key black"; k.dataset.m = m;
+    k.style.left = `calc(${(i+1)*10}% - 3.2%)`; k.style.width = "6%"; w.appendChild(k); }
+  w.onpointerdown = e => { const k = e.target.closest(".key"); if (!k) return; e.preventDefault(); unlock(); const m = +k.dataset.m;
+    if (sel.has(m)) sel.delete(m); else { sel.add(m); note(m, 0, 1.0); } paintKb(); saveAns(); };
+}
+function paintKb(){
+  for (const k of document.querySelectorAll("#whites .key")) k.classList.toggle("sel", sel.has(+k.dataset.m));
+  const ns = [...sel].sort((a,b)=>a-b).map(m => PC[m%12]);
+  $("picked").textContent = "已揀：" + (ns.length ? ns.join("・") : "—");
+}
+
+/* ---------- part 1 ---------- */
+let p1 = {i:0, ans:[[],[],[],[]], first:null};
+function startP1(){
+  const st = store.get("chordsheet.p1." + me.gid, null); if (st) p1 = st;
+  show("scP1"); buildKb(); $("p1res").hidden = true; loadQ();
+}
+function saveAns(){ p1.ans[p1.i] = [...sel]; store.set("chordsheet.p1." + me.gid, p1); }
+function loadQ(){
+  const c = P1[p1.i]; $("p1q").innerHTML = `第 ${p1.i+1} 個：砌出 <b>${c}</b> 和弦`;
+  sel = new Set(p1.ans[p1.i] || []); paintKb();
+  $("p1dots").innerHTML = P1.map((_,i) => `<i class="${i===p1.i?"cur":(p1.ans[i]||[]).length?"fill":""}"></i>`).join("");
+  $("p1prev").disabled = p1.i === 0; $("p1next").textContent = p1.i === P1.length-1 ? "提交對答案 ✓" : "下一個 ▸";
+}
+const okChord = (c, ms) => { const want = new Set(CH[c].map(m => m%12)), got = new Set(ms.map(m => m%12)); return got.size === 3 && [...want].every(p => got.has(p)); };
+$("p1play").onclick = () => { unlock(); chord([...sel]); };
+$("p1prev").onclick = () => { if (p1.i > 0) { p1.i--; loadQ(); } };
+$("p1next").onclick = () => { if (p1.i < P1.length-1) { p1.i++; loadQ(); } else checkP1(); };
+function checkP1(){
+  const res = P1.map((c,i) => okChord(c, p1.ans[i] || []));
+  const n = res.filter(Boolean).length; if (p1.first == null) p1.first = n; store.set("chordsheet.p1." + me.gid, p1);
+  $("p1resT").textContent = `答啱 ${n} / ${P1.length}` + (n === P1.length ? "　全部啱晒！" : "");
+  $("p1list").innerHTML = P1.map((c,i) => { const got = (p1.ans[i]||[]).slice().sort((a,b)=>a-b).map(m=>PC[m%12]).join("・") || "（冇揀）";
+    return `<div class="res ${res[i]?"ok":"ng"}"><span class="c">${c}</span><span>你哋：${got}${res[i] ? "" : `<br>正確：${CH[c].map(m=>PC[m%12]).join("・")}`}</span><span class="m">${res[i]?"✓":"✗"}</span></div>`; }).join("");
+  $("p1res").hidden = false; $("p1retry").hidden = n === P1.length; $("p1res").scrollIntoView({behavior:"smooth"});
+  api({a:"finish", pin:me.pin, pid:me.gid + "g", name:me.name, score:p1.first, level:1, correct:n, answered:p2sent ? 1 : 0}).catch(() => {});
+}
+$("p1retry").onclick = () => { const i = P1.findIndex((c,k) => !okChord(c, p1.ans[k] || [])); p1.i = Math.max(0, i); $("p1res").hidden = true; loadQ(); window.scrollTo(0,0); };
+$("p1go").onclick = () => startP2();
+
+/* ---------- part 2 ---------- */
+let lines = [], place = [], tool = "C", p2sent = false;
+async function startP2(){
+  show("scP2"); const st = store.get("chordsheet.p2." + me.gid, null);
+  $("p2msg").textContent = "載入歌詞中…";
+  for (let k = 0; k < 40; k++) {
+    try { const r = await api({a:"board", pin:me.pin}); lines = hostLines(r.rows); } catch {}
+    if (lines.length) break;
+    $("p2msg").textContent = "等老師傳歌詞過嚟…"; await new Promise(r => setTimeout(r, 3000));
+  }
+  if (!lines.length) { $("p2msg").textContent = "仲未收到歌詞，請老師撳「傳俾學生」，再撳返入嚟。"; return; }
+  $("p2msg").textContent = "";
+  place = lines.map((l,i) => { const old = st && st.lines && st.lines[i] === l ? st.place[i] : null; return old || Array(l.length).fill(""); });
+  renderChips(); renderLyrics();
+}
+function hostLines(rows){
+  return rows.filter(r => /^h0stL\d$/.test(r.pid)).sort((a,b) => a.pid.localeCompare(b.pid)).map(r => String(r.name)).filter(s => s && s !== "—");
+}
+function renderChips(){
+  const box = $("chips"); box.textContent = "";
+  for (const c of [...CHIPS, "erase"]) {
+    const b = document.createElement("button"); b.className = "chip" + (c === "erase" ? " erase" : ""); b.dataset.c = c;
+    b.innerHTML = c === "erase" ? "擦走" : `${c}<small>${ROMAN[c]}</small>`;
+    b.setAttribute("aria-pressed", String(tool === c));
+    b.onpointerdown = e => startDrag(e, c);
+    box.appendChild(b);
+  }
+}
+function setTool(c){ tool = c; for (const b of $("chips").children) b.setAttribute("aria-pressed", String(b.dataset.c === c)); }
+function renderLyrics(target = $("lyrics"), data = place, opts = {}){
+  target.textContent = "";
+  lines.forEach((l, i) => {
+    const row = document.createElement("div"); row.className = "line";
+    if (!opts.big) row.innerHTML = `<span class="num">第 ${i+1} 句</span>`;
+    [...l].forEach((w, j) => {
+      const c = document.createElement("div"); c.className = "cell" + (data[i][j] ? " has" : ""); c.dataset.i = i; c.dataset.j = j;
+      c.innerHTML = `<span class="ch">${data[i][j] || ""}</span><span class="w">${w}</span>`;
+      if (!opts.big) c.onclick = () => applyTool(i, j);
+      row.appendChild(c);
+    });
+    target.appendChild(row);
+  });
+}
+function applyTool(i, j, c = tool){
+  unlock();
+  if (c === "erase" || place[i][j] === c) place[i][j] = ""; else { place[i][j] = c; chord(CH[c], 0, 1.0); }
+  store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics();
+}
+// drag a chip onto a character (works with finger or mouse); a short tap just selects the chip
+let drag = null;
+function startDrag(e, c){
+  e.preventDefault(); unlock(); setTool(c);
+  drag = {c, x:e.clientX, y:e.clientY, moved:false, el:null};
+  const move = ev => {
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 8) { drag.moved = true; drag.el = document.createElement("div"); drag.el.className = "ghostchip"; drag.el.textContent = c === "erase" ? "擦" : c; document.body.appendChild(drag.el); }
+    if (drag.moved) { drag.el.style.left = ev.clientX + "px"; drag.el.style.top = ev.clientY + "px";
+      for (const x of document.querySelectorAll(".cell.drop")) x.classList.remove("drop");
+      const t = document.elementFromPoint(ev.clientX, ev.clientY); const cell = t && t.closest("#lyrics .cell"); if (cell) cell.classList.add("drop"); }
+  };
+  const up = ev => {
+    removeEventListener("pointermove", move); removeEventListener("pointerup", up); removeEventListener("pointercancel", up);
+    if (drag && drag.moved) { drag.el.remove(); for (const x of document.querySelectorAll(".cell.drop")) x.classList.remove("drop");
+      const t = document.elementFromPoint(ev.clientX, ev.clientY); const cell = t && t.closest("#lyrics .cell");
+      if (cell) applyTool(+cell.dataset.i, +cell.dataset.j, drag.c); }
+    else if (c !== "erase") chord(CH[c], 0, 1.0);
+    drag = null;
+  };
+  addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up);
+}
+$("p2clear").onclick = () => { if (!confirmClear()) return; place = lines.map(l => Array(l.length).fill("")); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); };
+function confirmClear(){ const b = $("p2clear"); if (b.dataset.arm) { delete b.dataset.arm; b.textContent = "全部清除"; return true; } b.dataset.arm = "1"; b.textContent = "再撳一下確認清除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "全部清除"; }, 2500); return false; }
+$("p2send").onclick = async () => {
+  const n = place.flat().filter(Boolean).length;
+  if (!n) { $("p2msg").textContent = "未放任何和弦。"; return; }
+  $("p2send").disabled = true; $("p2msg").textContent = "提交中…";
+  try {
+    for (let i = 0; i < lines.length; i++) {
+      const code = place[i].map(c => c ? CODE[c] : ".").join("");
+      await api({a:"finish", pin:me.pin, pid:me.gid + "l" + i, name:code, score:0, level:i+2, correct:0, answered:0});
+    }
+    p2sent = true;
+    await api({a:"finish", pin:me.pin, pid:me.gid + "g", name:me.name, score:p1.first ?? 0, level:1, correct:p1.first ?? 0, answered:1});
+    $("p2msg").textContent = `已提交（${n} 個和弦）。想改可以再改再交。`;
+  } catch { $("p2msg").textContent = "提交失敗，請再撳一次。"; }
+  finally { $("p2send").disabled = false; }
+};
+
+/* ---------- host ---------- */
+let H = null;
+$("hostBtn").onclick = async () => {
+  unlock(); $("hostErr").textContent = "";
+  try { const r = await api({a:"create", stage:"spot"}); openHost(r.pin); }
+  catch { $("hostErr").textContent = "開局失敗，請再試。"; }
+};
+function openHost(pin){
+  H = {pin, rows:[], shown:new Set(), iv:null};
+  $("hPin").textContent = pin.replace(/(\d{3})(\d{3})/, "$1 $2");
+  const url = location.origin + location.pathname + "?pin=" + pin; $("hUrl").textContent = url;
+  if (window.qrcode) { const q = qrcode(0,"M"); q.addData(url); q.make(); $("hQr").innerHTML = q.createSvgTag({cellSize:4, margin:1, scalable:true}); }
+  $("hLyr").value = store.get("chordsheet.lyrics", ""); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
+}
+$("hLyrSend").onclick = async () => {
+  const ls = $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g, "")).filter(Boolean);
+  if (!ls.length) { $("hLyrMsg").textContent = "未有歌詞。"; return; }
+  if (ls.length > MAXLINES || ls.some(s => [...s].length > MAXLEN)) { $("hLyrMsg").textContent = `最多 ${MAXLINES} 句、每句最多 ${MAXLEN} 個字（標點都計）。`; return; }
+  store.set("chordsheet.lyrics", $("hLyr").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
+  try {
+    for (let i = 0; i < MAXLINES; i++) await api({a:"finish", pin:H.pin, pid:"h0stL" + i, name:ls[i] || "—", score:0, level:1, correct:0, answered:0});
+    $("hLyrMsg").textContent = "已傳俾學生 ✓";
+  } catch { $("hLyrMsg").textContent = "傳送失敗，請再試。"; }
+  finally { $("hLyrSend").disabled = false; }
+};
+async function poll(){
+  if (!H || $("scHost").hidden) return;
+  try { const r = await api({a:"board", pin:H.pin}); H.rows = r.rows; renderHost(); $("hStatus").textContent = "即時更新中"; }
+  catch { $("hStatus").textContent = "連線不穩定，稍後自動重試"; }
+}
+function groups(){
+  return H.rows.filter(r => /g$/.test(r.pid) && !r.pid.startsWith("h0st")).map(r => {
+    const gid = r.pid.slice(0, -1);
+    const ls = H.rows.filter(x => x.pid.startsWith(gid + "l")).sort((a,b) => a.level - b.level).map(x => String(x.name));
+    return {gid, name:r.name, p1:r.status === "done" ? r.correct : null, first:r.score, sent:r.answered === 1 && ls.length > 0, code:ls};
+  });
+}
+function renderHost(){
+  const gs = groups(), tb = $("hTable"); tb.textContent = "";
+  if (!gs.length) { tb.innerHTML = `<tr><td colspan="4" class="note">等待各組加入…</td></tr>`; return; }
+  for (const g of gs) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${esc(g.name)}</td><td>${g.p1 == null ? '<span class="tag n">未交</span>' : `${g.p1} / 4`}</td><td>${g.sent ? '<span class="tag y">已交</span>' : '<span class="tag n">未交</span>'}</td><td></td>`;
+    if (g.sent) { const b = document.createElement("button"); b.className = "btn btn-soft"; b.style.minHeight = "40px"; b.textContent = "顯示"; b.onclick = () => showGroup(g); tr.lastChild.appendChild(b); }
+    tb.appendChild(tr);
+  }
+  $("hRand").disabled = !gs.some(g => g.sent);
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function pickRandom(){
+  const sent = groups().filter(g => g.sent); if (!sent.length) return;
+  let pool = sent.filter(g => !H.shown.has(g.gid)); if (!pool.length) { H.shown.clear(); pool = sent; }
+  showGroup(pool[Math.floor(Math.random() * pool.length)]);
+}
+$("hRand").onclick = () => { unlock(); pickRandom(); };
+$("hExit").onclick = () => { clearInterval(H.iv); H = null; show("scHome"); };
+
+/* projection: big lead sheet + step-through for the class to play along */
+let S = null;
+function showGroup(g){
+  H.shown.add(g.gid);
+  lines = hostLinesFromRows(); const data = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
+  const seq = []; data.forEach((row, i) => row.forEach((c, j) => { if (c) seq.push({i, j, c}); }));
+  S = {g, data, seq, k:-1};
+  $("sName").textContent = g.name; renderLyrics($("sLyr"), data, {big:true}); $("show").hidden = false; paintStep();
+}
+function hostLinesFromRows(){ return hostLines(H.rows).length ? hostLines(H.rows) : $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g,"")).filter(Boolean).slice(0, MAXLINES); }
+function paintStep(){
+  for (const c of document.querySelectorAll("#sLyr .cell")) c.classList.remove("now");
+  const cur = S.seq[S.k]; if (!cur) { $("sStep").textContent = S.k >= S.seq.length ? "完 ✓（撳由頭再嚟）" : "下一個和弦 ▸"; return; }
+  const cell = document.querySelector(`#sLyr .cell[data-i="${cur.i}"][data-j="${cur.j}"]`); if (cell) { cell.classList.add("now"); cell.scrollIntoView({block:"nearest"}); }
+  $("sStep").textContent = `下一個和弦 ▸（${S.k + 1} / ${S.seq.length}）`;
+}
+function step(){ if (!S) return; unlock(); if (S.k < S.seq.length) S.k++; const cur = S.seq[S.k]; if (cur) chord(CH[cur.c], 0, 1.6); paintStep(); }
+$("sStep").onclick = step;
+$("sReset").onclick = () => { S.k = -1; paintStep(); };
+$("sNext").onclick = () => pickRandom();
+$("sClose").onclick = () => { $("show").hidden = true; S = null; };
+addEventListener("keydown", e => { if (!$("show").hidden && (e.code === "Space" || e.code === "ArrowRight")) { e.preventDefault(); step(); } });
+
+window.__cs = {get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
+})();
+</script>
+</body>
+</html>
