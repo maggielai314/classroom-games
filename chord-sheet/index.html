@@ -222,13 +222,14 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
       <select class="txt" id="hSong" style="flex:1;min-width:200px"></select>
       <input class="txt" id="hSongName" maxlength="30" placeholder="歌名" style="flex:1;min-width:180px">
     </div>
-    <div class="row"><button class="btn btn-soft" id="hSave">💾 儲存</button><button class="btn btn-soft" id="hSaveNew">＋ 另存新歌</button><button class="btn btn-soft" id="hDel">🗑 刪除呢首</button></div>
+    <div class="row"><button class="btn btn-soft" id="hSave">💾 儲存</button><button class="btn btn-soft" id="hSaveNew">＋ 另存新歌</button><button class="btn btn-soft" id="hDel">🗑 刪除呢首</button><span class="note" id="hSaved"></span></div>
     <h2>歌詞</h2>
     <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）；用 | 劃小節線，例如：甲乙|丙丁戊|己庚"></textarea>
     <h2>唱名（可以唔填）</h2>
     <p class="note">每隻字一個唱名，用空格分開，可以成段貼落嚟（會按歌詞字數順序分配）。拍子長短寫喺括號：mi(0.5) 半拍、do(2) 兩拍，冇寫就當一拍；一隻字唱幾個音用 - 連住：mi(0.25)-re(0.25)；休止(0.5) 係休止；高八度加 '（do'），低八度加 ,（so,）；| 係小節線。前面可以照寫返隻字（例如「無 so,(0.5)」），會用嚟核對；「第1節：」之類標籤會自動略過。</p>
     <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
     <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><button class="btn btn-soft" id="hLink">🔗 複製老師連結（成個歌曲庫）</button><span class="note" id="hLyrMsg"></span></div>
+    <div id="hLinkBox" hidden style="display:grid;gap:6px"><textarea class="txt" id="hLinkTxt" readonly style="min-height:80px;font-size:13px;font-weight:400"></textarea><p class="note" id="hLinkMsg"></p></div>
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
@@ -575,7 +576,7 @@ function openHost(pin){
   $("hPin").textContent = pin.replace(/(\d{3})(\d{3})/, "$1 $2");
   const url = location.origin + location.pathname + "?pin=" + pin; $("hUrl").textContent = url;
   if (window.qrcode) { const q = qrcode(0,"M"); q.addData(url); q.make(); $("hQr").innerHTML = q.createSvgTag({cellSize:4, margin:1, scalable:true}); }
-  loadSong(curSong); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
+  if (curSong && songs().some(y => y.id === curSong)) loadSong(curSong); else fillSongSelects(); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
   if ($("hLyr").value.trim()) sendSong(true);
 }
 function readTeacher(){
@@ -638,7 +639,9 @@ async function sendSong(auto){
 }
 // ---- song library: kept in this browser; a teacher link carries the whole library to another computer ----
 const songs = () => store.get("chordsheet.songs", []);
-const setSongs = v => store.set("chordsheet.songs", v);
+const storageOk = (() => { try { localStorage.setItem("cs.t", "1"); const v = localStorage.getItem("cs.t"); localStorage.removeItem("cs.t"); return v === "1"; } catch { return false; } })();
+const setSongs = v => { store.set("chordsheet.songs", v); return JSON.stringify(store.get("chordsheet.songs", null)) === JSON.stringify(v); };
+const NOSTORE = "呢個瀏覽器唔俾儲存資料（可能係私密瀏覽或者封鎖咗網站資料），歌曲庫存唔到。請用普通視窗開，或者用「複製老師連結」保存。";
 (() => { // first run: keep whatever was typed before as a song
   if (!songs().length && (store.get("chordsheet.lyrics", "") || "").trim()) setSongs([{id:pidMake(), name:"未命名歌曲", l:store.get("chordsheet.lyrics", ""), s:store.get("chordsheet.sol", "")}]);
 })();
@@ -652,22 +655,27 @@ function fillSongSelects(){
     for (const x of list) el.append(new Option(x.name, x.id));
     el.value = list.some(x => x.id === curSong) ? curSong : "";
   }
-  $("hostNote").textContent = list.length ? `歌曲庫有 ${list.length} 首。` : "未有歌：開局後貼歌詞同唱名，撳「儲存」就會記住。";
+  $("hostNote").textContent = !storageOk ? NOSTORE : list.length ? `歌曲庫有 ${list.length} 首。` : "未有歌：開局後貼歌詞同唱名，會自動儲存。";
 }
 function loadSong(id){
   const x = songs().find(y => y.id === id); curSong = x ? x.id : null; store.set("chordsheet.cur", curSong);
   $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSongName").value = x ? x.name : ""; fillSongSelects();
 }
-function saveSong(asNew){
+function saveSong(asNew, auto){
   const name = $("hSongName").value.trim() || ($("hLyr").value.split(/\n/)[0] || "").replace(/[|｜\s]/g, "").slice(0, 12) || "未命名歌曲";
   const list = songs(); let x = !asNew && list.find(y => y.id === curSong);
-  if (x) Object.assign(x, {name, l:$("hLyr").value, s:$("hSol").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value}; list.push(x); }
-  setSongs(list); curSong = x.id; store.set("chordsheet.cur", curSong); $("hSongName").value = name; fillSongSelects(); return x;
+  if (x) Object.assign(x, {name: auto ? x.name : name, l:$("hLyr").value, s:$("hSol").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value}; list.push(x); }
+  const ok = setSongs(list); curSong = x.id; store.set("chordsheet.cur", curSong); $("hSongName").value = x.name; fillSongSelects(); x.ok = ok; return x;
 }
+// auto-save while typing, so nothing is lost when leaving the room
+let autoT = null;
+for (const id of ["hLyr", "hSol"]) $(id).addEventListener("input", () => {
+  clearTimeout(autoT); autoT = setTimeout(() => { if (!$("hLyr").value.trim()) return; const x = saveSong(false, true); $("hSaved").textContent = x.ok ? `已自動儲存「${x.name}」` : NOSTORE; }, 700);
+});
 $("hSong").onchange = () => { loadSong($("hSong").value); if (H && $("hLyr").value.trim()) sendSong(true); };
 $("songSel").onchange = () => { curSong = $("songSel").value || null; store.set("chordsheet.cur", curSong); };
-$("hSave").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(false); $("hLyrMsg").textContent = `已儲存「${x.name}」。`; };
-$("hSaveNew").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(true); $("hLyrMsg").textContent = `已另存新歌「${x.name}」。`; };
+$("hSave").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(false); $("hLyrMsg").textContent = x.ok ? `已儲存「${x.name}」。` : NOSTORE; };
+$("hSaveNew").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(true); $("hLyrMsg").textContent = x.ok ? `已另存新歌「${x.name}」。` : NOSTORE; };
 $("hDel").onclick = () => { const b = $("hDel"); if (!curSong) return;
   if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "再撳一下確認刪除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; }, 2500); return; }
   delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; setSongs(songs().filter(y => y.id !== curSong)); loadSong(null); $("hLyrMsg").textContent = "已刪除。"; };
@@ -675,9 +683,14 @@ const b64 = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").r
 const unb64 = str => decodeURIComponent(escape(atob(str.replace(/-/g, "+").replace(/_/g, "/"))));
 function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s})))); }
 $("hLink").onclick = async () => {
-  if ($("hLyr").value.trim()) saveSong(false); const url = libLink();
-  try { await navigator.clipboard.writeText(url); $("hLyrMsg").textContent = `老師連結已複製（${songs().length} 首歌）：貼喺備忘錄或者加書籤，喺另一部電腦開呢條連結，歌曲庫就會載入。`; }
-  catch { prompt("複製呢條老師連結：", url); }
+  if ($("hLyr").value.trim()) saveSong(false);
+  const n = songs().length || 0, url = n ? libLink() : location.origin + location.pathname + "#lib=" + b64(JSON.stringify([{n:$("hSongName").value || "未命名歌曲", l:$("hLyr").value, s:$("hSol").value}]));
+  const box = $("hLinkTxt"); box.value = url; $("hLinkBox").hidden = false; box.focus(); box.select();
+  let ok = false;
+  try { await navigator.clipboard.writeText(url); ok = true; } catch {}
+  if (!ok) { try { ok = document.execCommand("copy"); } catch {} }
+  $("hLinkMsg").textContent = ok ? `已複製老師連結（${Math.max(n, 1)} 首歌）。貼喺備忘錄、電郵或者加書籤；喺另一部電腦開呢條連結，歌曲庫就會載入。`
+                                 : "自動複製唔到：上面條連結已經揀好，按 Cmd+C（iPad 長按 → 拷貝）自己複製。";
 };
 fillSongSelects();
 (() => { const m = /#lib=([\w-]+)/.exec(location.hash); if (!m) return;
