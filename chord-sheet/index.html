@@ -58,7 +58,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .whites{position:relative;display:flex;height:100%;gap:3px}
 .key{position:relative}
 .white{flex:1;background:#fff;border-radius:0 0 10px 10px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:10px}
-.white .nm{font-weight:900;font-size:clamp(16px,2.6vw,24px);color:var(--plum)}
+.white .nm{font-weight:700;font-size:clamp(12px,1.6vw,16px);color:var(--muted)}
 .black{position:absolute;top:10px;height:58%;background:#2B2340;border-radius:0 0 8px 8px;z-index:2}
 .key.sel{background:var(--lilac)!important}.black.sel{background:#8A6CF0!important}
 .picked{font-family:var(--f-hud);font-size:20px;color:var(--plum)}
@@ -76,9 +76,13 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .chip.erase{font-family:var(--f-ui);font-size:17px;border-color:#CFC4EC}
 .line{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;border-bottom:1px dashed var(--rule)}
 .line .num{font-family:var(--f-hud);color:var(--muted);font-size:14px;width:100%}
-.cell{display:grid;grid-template-rows:40px auto;justify-items:center;min-width:52px;padding:4px 2px 6px;border-radius:12px;background:#FBF9FF;border:1.5px solid var(--rule)}
+.cell{display:grid;grid-template-rows:40px auto auto;justify-items:center;min-width:52px;padding:4px 2px 6px;border-radius:12px;background:#FBF9FF;border:1.5px solid var(--rule)}
 .cell .ch{font-family:var(--f-hud);font-weight:700;font-size:24px;color:var(--hot);align-self:end;min-height:1em}
 .cell .w{font-weight:900;font-size:clamp(26px,4vw,36px);color:var(--ink)}
+.cell .ch small{font-family:var(--f-ui);font-size:.5em;color:var(--muted);margin-left:2px;font-weight:700}
+.cell .sf{font-size:13px;font-weight:700;color:#5B3FD0;min-height:1.2em;white-space:nowrap;line-height:1.2}
+.bar{width:3px;align-self:stretch;background:var(--plum);border-radius:2px;margin:6px 2px}
+.white .sf{font-weight:900;font-size:clamp(17px,2.4vw,24px);color:var(--plum)}
 .cell.has{background:#F3EDFF;border-color:var(--lilac)}
 .cell.drop{outline:3px solid var(--hot)}
 .lplay{align-self:end;min-width:52px;min-height:52px;border-radius:50%;background:var(--plum);color:#fff;font-size:20px;margin-left:6px}
@@ -102,7 +106,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .show .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .show .gname{font-weight:900;font-size:clamp(28px,4vw,44px);color:var(--plum)}
 .show .line{border-bottom:2px solid var(--rule);padding:14px 0;gap:4px}
-.show .cell{background:transparent;border:0;min-width:clamp(56px,6.5vw,92px);grid-template-rows:clamp(44px,6vw,70px) auto}
+.show .cell{background:transparent;border:0;min-width:clamp(56px,6.5vw,92px);grid-template-rows:clamp(44px,6vw,70px) auto auto}
+.show .cell .sf{font-size:clamp(14px,1.8vw,22px)}
 .show .cell .ch{font-size:clamp(28px,4.4vw,52px)}
 .show .cell .w{font-size:clamp(36px,5.6vw,70px)}
 .show .cell.now{background:#FFF1D2;border-radius:14px}
@@ -118,7 +123,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   #scP1 .task .q{font-size:clamp(22px,3.2vh,30px)}
   #scP1 .note{font-size:13px}
   #scP1 .kb{height:auto;min-height:0}
-  #scP1 .white .nm{font-size:clamp(20px,3.4vh,30px)}
+  #scP1 .white .sf{font-size:clamp(20px,3.6vh,32px)}
+  #scP1 .white .nm{font-size:clamp(14px,2.2vh,20px)}
   #p1res{position:fixed;inset:0;z-index:25;overflow:auto;border-radius:0;padding:24px max(24px,4vw)}
   #scP2 > .panel{padding:10px 14px 14px;margin-left:126px;gap:8px}
   #scP2 h2{font-size:18px;padding-right:110px}
@@ -126,7 +132,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   #scP2 .chip{min-width:0;width:100%;min-height:clamp(56px,12vh,96px);font-size:clamp(24px,4vh,34px)}
   #scP2 .line{padding:6px 0;gap:5px}
   #scP2 .line .num{display:none}
-  #scP2 .cell{min-width:0;width:calc((100vw - 126px - 60px - 12*5px - 58px) / 12);grid-template-rows:clamp(30px,6vh,52px) auto}
+  #scP2 .cell{min-width:0;width:calc((100vw - 126px - 60px - 12*5px - 58px - 30px) / 12);grid-template-rows:clamp(30px,6vh,52px) auto auto}
+  #scP2 .cell .sf{font-size:clamp(11px,2vh,15px)}
   #scP2 .cell .ch{font-size:clamp(20px,4.2vh,34px)}
   #scP2 .cell .w{font-size:clamp(26px,6.4vh,52px)}
 }
@@ -149,7 +156,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="panel">
     <h2>老師</h2>
-    <p class="note">開局之後，貼上歌詞（最多 4 句、每句最多 12 個字），學生部機會自動收到。歌詞只會存喺你部電腦同今次局入面。</p>
+    <p class="note">開局之後，貼上歌詞（最多 4 句、每句最多 12 個字，可以用 | 劃小節線），再填每隻字嘅唱名，學生部機會自動收到。歌詞同唱名只會存喺你部電腦同今次局入面。</p>
     <div class="row"><button class="btn btn-soft" id="hostBtn">開局（老師用）</button></div>
     <p class="err" id="hostErr"></p>
   </div>
@@ -160,7 +167,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="steps"><span class="on">① 砌和弦</span><span>② 和弦放落歌詞</span><span>③ 提交</span></div>
   <div class="panel" id="p1panel">
     <div class="task"><div class="q" id="p1q"></div><div class="dots" id="p1dots"></div></div>
-    <p class="note">規則：根音開始，隔一個白鍵，再隔一個白鍵。撳鍵揀音，再撳一下取消。</p>
+    <p class="note">規則：由根音開始，隔一個白鍵，再隔一個白鍵。撳鍵揀音，再撳一下取消。</p>
     <div class="kb" id="kb"><div class="whites" id="whites"></div></div>
     <div class="row" style="justify-content:space-between">
       <span class="picked" id="picked">已揀：—</span>
@@ -183,7 +190,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="steps"><span class="done">① 砌和弦</span><span class="on">② 和弦放落歌詞</span><span>③ 提交</span></div>
   <div class="panel">
     <h2>邊隻字轉和弦？</h2>
-    <p class="note">揀一個和弦（或者直接拉落去），再撳歌詞上面嗰隻字。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
+    <p class="note">每隻字下面有唱名，直線係小節線。揀一個和弦（或者直接拉落去），再撳歌詞上面嗰隻字。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
     <div class="chips" id="chips"></div>
     <div id="lyrics"></div>
     <p class="err" id="p2msg"></p>
@@ -201,8 +208,11 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="panel">
     <h2>歌詞</h2>
-    <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）"></textarea>
-    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><span class="note" id="hLyrMsg"></span></div>
+    <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）；用 | 劃小節線，例如：甲乙|丙丁戊|己庚"></textarea>
+    <h2>唱名（可以唔填）</h2>
+    <p class="note">每行對應上面一句；每隻字一個唱名，用空格分開。一隻字唱幾個音用 - 連住（so-la）；高八度加 '（do'），低八度加 ,（so,）；冇音用 _。小節線唔使再打。</p>
+    <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
+    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><span class="note" id="hLyrMsg"></span></div>
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
@@ -240,7 +250,22 @@ const CHIPS = ["C","G","Am","F"];
 const CODE = {C:"C", G:"G", Am:"a", F:"F", Dm:"d", Em:"e"};
 const DECODE = Object.fromEntries(Object.entries(CODE).map(([k,v]) => [v,k]));
 const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
-const MAXLEN = 12, MAXLINES = 4;
+const MAXLEN = 12, MAXLINES = 4, SCHUNKS = 6;
+const SF = {0:"Do",2:"Re",4:"Mi",5:"Fa",7:"So",9:"La",11:"Ti"};
+const sfOf = m => (SF[((m%12)+12)%12] || PC[((m%12)+12)%12]) + (m >= 72 ? "'" : m < 60 ? "," : "");
+const sfPlain = m => SF[((m%12)+12)%12] || PC[((m%12)+12)%12];
+const LET = {d:0,r:2,m:4,f:5,s:7,l:9,t:11};
+// teacher solfa token -> list of midi notes (C major, do = C4)
+function parseTok(tok){
+  if (tok === "_" || tok === "") return [];
+  return tok.split("-").map(t => { const m = /^(do|re|mi|fa|sol|so|la|ti|si|d|r|m|f|s|l|t)([',]*)$/i.exec(t.trim()); if (!m) throw new Error(t);
+    const base = LET[m[1][0].toLowerCase() === "s" && m[1].toLowerCase() === "si" ? "t" : m[1][0].toLowerCase()];
+    let o = 0; for (const c of m[2]) o += c === "'" ? 12 : -12; return 60 + base + o; });
+}
+// compact transport through the 12-character name field: one letter per note (upper case = high, ',' prefix = low), '.' between words
+const LETTER = {0:"d",2:"r",4:"m",5:"f",7:"s",9:"l",11:"t"};
+const encSol = line => line.map(ns => ns.map(n => { const L = LETTER[((n%12)+12)%12]; return n >= 72 ? L.toUpperCase() : n < 60 ? "," + L : L; }).join("")).join(".");
+const decSol = str => str.split(".").map(w => (w.match(/,?[a-zA-Z]/g) || []).map(t => { const low = t[0] === ","; const L = t.replace(",", ""); const n = 60 + LET[L.toLowerCase()] + (L === L.toUpperCase() ? 12 : 0) - (low ? 12 : 0); return n; }));
 const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
 const show = id => { for (const s of ["scHome","scP1","scP2","scHost"]) $(s).hidden = s !== id; window.scrollTo(0,0); };
 const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
@@ -290,7 +315,7 @@ const WHITE = [60,62,64,65,67,69,71,72,74,76], BLACK = {61:0,63:1,66:3,68:4,70:5
 let sel = new Set();
 function buildKb(){
   const w = $("whites"); w.textContent = "";
-  for (const m of WHITE) { const k = document.createElement("div"); k.className = "key white"; k.dataset.m = m; k.innerHTML = `<span class="nm">${PC[m%12]}</span>`; w.appendChild(k); }
+  for (const m of WHITE) { const k = document.createElement("div"); k.className = "key white"; k.dataset.m = m; k.innerHTML = `<span class="sf">${sfPlain(m)}</span><span class="nm">${PC[m%12]}</span>`; w.appendChild(k); }
   for (const [m,i] of Object.entries(BLACK)) { const k = document.createElement("div"); k.className = "key black"; k.dataset.m = m;
     k.style.left = `calc(${(i+1)*10}% - 3.2%)`; k.style.width = "6%"; w.appendChild(k); }
   w.onpointerdown = e => { const k = e.target.closest(".key"); if (!k) return; e.preventDefault(); unlock(); const m = +k.dataset.m;
@@ -298,8 +323,8 @@ function buildKb(){
 }
 function paintKb(){
   for (const k of document.querySelectorAll("#whites .key")) k.classList.toggle("sel", sel.has(+k.dataset.m));
-  const ns = [...sel].sort((a,b)=>a-b).map(m => PC[m%12]);
-  $("picked").textContent = "已揀：" + (ns.length ? ns.join("・") : "—");
+  const ms = [...sel].sort((a,b)=>a-b);
+  $("picked").textContent = "已揀：" + (ms.length ? ms.map(sfPlain).join("・") + "（" + ms.map(m => PC[m%12]).join("・") + "）" : "—");
 }
 
 /* ---------- part 1 ---------- */
@@ -310,7 +335,7 @@ function startP1(){
 }
 function saveAns(){ p1.ans[p1.i] = [...sel]; store.set("chordsheet.p1." + me.gid, p1); }
 function loadQ(){
-  const c = P1[p1.i]; $("p1q").innerHTML = `第 ${p1.i+1} 個：砌出 <b>${c}</b> 和弦`;
+  const c = P1[p1.i]; $("p1q").innerHTML = `第 ${p1.i+1} 個：砌出 <b>${ROMAN[c]}</b>（${c}）和弦`;
   sel = new Set(p1.ans[p1.i] || []); paintKb();
   $("p1dots").innerHTML = P1.map((_,i) => `<i class="${i===p1.i?"cur":(p1.ans[i]||[]).length?"fill":""}"></i>`).join("");
   $("p1prev").disabled = p1.i === 0; $("p1next").textContent = p1.i === P1.length-1 ? "提交對答案 ✓" : "下一個 ▸";
@@ -323,8 +348,9 @@ function checkP1(){
   const res = P1.map((c,i) => okChord(c, p1.ans[i] || []));
   const n = res.filter(Boolean).length; if (p1.first == null) p1.first = n; store.set("chordsheet.p1." + me.gid, p1);
   $("p1resT").textContent = `答啱 ${n} / ${P1.length}` + (n === P1.length ? "　全部啱晒！" : "");
-  $("p1list").innerHTML = P1.map((c,i) => { const got = (p1.ans[i]||[]).slice().sort((a,b)=>a-b).map(m=>PC[m%12]).join("・") || "（冇揀）";
-    return `<div class="res ${res[i]?"ok":"ng"}"><span class="c">${c}</span><span>你哋：${got}${res[i] ? "" : `<br>正確：${CH[c].map(m=>PC[m%12]).join("・")}`}</span><span class="m">${res[i]?"✓":"✗"}</span></div>`; }).join("");
+  const nm = ms => ms.map(sfPlain).join("・") + "（" + ms.map(m => PC[m%12]).join("・") + "）";
+  $("p1list").innerHTML = P1.map((c,i) => { const a = (p1.ans[i]||[]).slice().sort((x,y)=>x-y); const got = a.length ? nm(a) : "（冇揀）";
+    return `<div class="res ${res[i]?"ok":"ng"}"><span class="c">${ROMAN[c]}<small style="font-size:.5em;color:var(--muted)">（${c}）</small></span><span>你哋：${got}${res[i] ? "" : `<br>正確：${nm(CH[c])}`}</span><span class="m">${res[i]?"✓":"✗"}</span></div>`; }).join("");
   $("p1res").hidden = false; $("p1retry").hidden = n === P1.length; $("p1res").scrollIntoView({behavior:"smooth"});
   api({a:"finish", pin:me.pin, pid:me.gid + "g", name:me.name, score:p1.first, level:1, correct:n, answered:p2sent ? 1 : 0}).catch(() => {});
 }
@@ -332,12 +358,12 @@ $("p1retry").onclick = () => { const i = P1.findIndex((c,k) => !okChord(c, p1.an
 $("p1go").onclick = () => startP2();
 
 /* ---------- part 2 ---------- */
-let lines = [], place = [], tool = "C", p2sent = false;
+let lines = [], bars = [], sol = [], place = [], tool = "C", p2sent = false;
 async function startP2(){
   show("scP2"); const st = store.get("chordsheet.p2." + me.gid, null);
   $("p2msg").textContent = "載入歌詞中…";
   for (let k = 0; k < 40; k++) {
-    try { const r = await api({a:"board", pin:me.pin}); lines = hostLines(r.rows); } catch {}
+    try { const r = await api({a:"board", pin:me.pin}); ({lines, bars, sol} = hostSong(r.rows)); } catch {}
     if (lines.length) break;
     $("p2msg").textContent = "等老師傳歌詞過嚟…"; await new Promise(r => setTimeout(r, 3000));
   }
@@ -349,11 +375,17 @@ async function startP2(){
 function hostLines(rows){
   return rows.filter(r => /^h0stL\d$/.test(r.pid)).sort((a,b) => a.pid.localeCompare(b.pid)).map(r => String(r.name)).filter(s => s && s !== "—");
 }
+function hostSong(rows){
+  const ls = hostLines(rows), get = pid => { const r = rows.find(x => x.pid === pid); return r && r.name !== "—" ? String(r.name) : ""; };
+  const bs = ls.map((_, i) => new Set([...get("h0stB" + i)].map(c => parseInt(c, 36))));
+  const ss = ls.map((l, i) => { let str = ""; for (let k = 0; k < SCHUNKS; k++) str += get("h0stS" + i + k); const d = str ? decSol(str) : []; return [...l].map((_, j) => d[j] || []); });
+  return {lines:ls, bars:bs, sol:ss};
+}
 function renderChips(){
   const box = $("chips"); box.textContent = "";
   for (const c of [...CHIPS, "erase"]) {
     const b = document.createElement("button"); b.className = "chip" + (c === "erase" ? " erase" : ""); b.dataset.c = c;
-    b.innerHTML = c === "erase" ? "擦走" : `${c}<small>${ROMAN[c]}</small>`;
+    b.innerHTML = c === "erase" ? "擦走" : `${ROMAN[c]}<small>（${c}）</small>`;
     b.setAttribute("aria-pressed", String(tool === c));
     b.onpointerdown = e => startDrag(e, c);
     box.appendChild(b);
@@ -366,11 +398,14 @@ function renderLyrics(target = $("lyrics"), data = place, opts = {}){
     const row = document.createElement("div"); row.className = "line";
     if (!opts.big) row.innerHTML = `<span class="num">第 ${i+1} 句</span>`;
     [...l].forEach((w, j) => {
+      if (bars[i] && bars[i].has(j)) { const b = document.createElement("div"); b.className = "bar"; row.appendChild(b); }
       const c = document.createElement("div"); c.className = "cell" + (data[i][j] ? " has" : ""); c.dataset.i = i; c.dataset.j = j;
-      c.innerHTML = `<span class="ch">${data[i][j] || ""}</span><span class="w">${w}</span>`;
+      const ch = data[i][j], sf = (sol[i] && sol[i][j] || []).map(sfOf).join("-");
+      c.innerHTML = `<span class="ch">${ch ? `${ROMAN[ch]}<small>${ch}</small>` : ""}</span><span class="sf">${sf}</span><span class="w">${w}</span>`;
       if (!opts.big) c.onclick = () => applyTool(i, j);
       row.appendChild(c);
     });
+    if (bars[i] && bars[i].has([...l].length)) { const b = document.createElement("div"); b.className = "bar"; row.appendChild(b); }
     if (!opts.big) { const pb = document.createElement("button"); pb.className = "lplay"; pb.setAttribute("aria-label", `試聽第 ${i+1} 句`); pb.textContent = "▶";
       pb.onclick = () => playLines([i], pb); row.appendChild(pb); }
     target.appendChild(row);
@@ -382,6 +417,8 @@ function stopPreview(){ if (!pv) return; pv.timers.forEach(clearTimeout); for (c
   for (const b of document.querySelectorAll(".lplay.on,#p2all.on")) { b.classList.remove("on"); b.textContent = b.id === "p2all" ? "▶ 全首試聽" : "▶"; } pv = null; }
 function playLines(idx, btn){
   unlock(); const was = pv && pv.btn === btn; stopPreview(); if (was) return;
+  const hasMel = idx.some(i => (sol[i] || []).some(ns => ns.length));
+  if (hasMel) return playMelody(idx, btn);
   const seq = []; idx.forEach(i => place[i].forEach((c, j) => { if (c) seq.push({i, j, c}); }));
   if (!seq.length) { $("p2msg").textContent = idx.length > 1 ? "未放任何和弦。" : `第 ${idx[0]+1} 句未放和弦。`; return; }
   $("p2msg").textContent = ""; const gap = +($("p2speed").value) || 1.6;
@@ -392,6 +429,20 @@ function playLines(idx, btn){
     chord(CH[s.c], 0, gap * .95);
   }, k * gap * 1000)));
   pv.timers.push(setTimeout(stopPreview, seq.length * gap * 1000 + 300));
+}
+// with the teacher's solfa: every word gets one beat-ish slot, melody on top, each chord struck where it sits and held until the next one
+function playMelody(idx, btn){
+  $("p2msg").textContent = ""; const u = (+($("p2speed").value) || 1.6) / 2.4;
+  pv = {btn, timers:[]}; btn.classList.add("on"); btn.textContent = "■" + (btn.id === "p2all" ? " 停止" : "");
+  const slots = []; idx.forEach(i => [...lines[i]].forEach((_, j) => slots.push({i, j})));
+  const chordAt = slots.map(s => place[s.i][s.j]);
+  slots.forEach((s, k) => pv.timers.push(setTimeout(() => {
+    for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
+    const cell = document.querySelector(`#lyrics .cell[data-i="${s.i}"][data-j="${s.j}"]`); if (cell) { cell.classList.add("now"); cell.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+    const c = chordAt[k]; if (c) { let n = 1; while (k + n < slots.length && !chordAt[k + n]) n++; chord(CH[c].map(m => m - 12), 0, Math.min(n, 8) * u * .98); }
+    const ns = (sol[s.i] || [])[s.j] || []; ns.forEach((m, q) => note(m + 12, q * u / ns.length, u / ns.length * .95, .85));
+  }, k * u * 1000)));
+  pv.timers.push(setTimeout(stopPreview, slots.length * u * 1000 + 400));
 }
 function applyTool(i, j, c = tool){
   unlock();
@@ -405,7 +456,7 @@ function startDrag(e, c){
   drag = {c, x:e.clientX, y:e.clientY, moved:false, el:null};
   const move = ev => {
     if (!drag) return;
-    if (!drag.moved && Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 8) { drag.moved = true; drag.el = document.createElement("div"); drag.el.className = "ghostchip"; drag.el.textContent = c === "erase" ? "擦" : c; document.body.appendChild(drag.el); }
+    if (!drag.moved && Math.hypot(ev.clientX - drag.x, ev.clientY - drag.y) > 8) { drag.moved = true; drag.el = document.createElement("div"); drag.el.className = "ghostchip"; drag.el.textContent = c === "erase" ? "擦" : ROMAN[c]; document.body.appendChild(drag.el); }
     if (drag.moved) { drag.el.style.left = ev.clientX + "px"; drag.el.style.top = ev.clientY + "px";
       for (const x of document.querySelectorAll(".cell.drop")) x.classList.remove("drop");
       const t = document.elementFromPoint(ev.clientX, ev.clientY); const cell = t && t.closest("#lyrics .cell"); if (cell) cell.classList.add("drop"); }
@@ -451,15 +502,39 @@ function openHost(pin){
   $("hPin").textContent = pin.replace(/(\d{3})(\d{3})/, "$1 $2");
   const url = location.origin + location.pathname + "?pin=" + pin; $("hUrl").textContent = url;
   if (window.qrcode) { const q = qrcode(0,"M"); q.addData(url); q.make(); $("hQr").innerHTML = q.createSvgTag({cellSize:4, margin:1, scalable:true}); }
-  $("hLyr").value = store.get("chordsheet.lyrics", ""); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
+  $("hLyr").value = store.get("chordsheet.lyrics", ""); $("hSol").value = store.get("chordsheet.sol", ""); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
 }
+function readTeacher(){
+  const raw = $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g, "")).filter(Boolean);
+  if (!raw.length) throw new Error("未有歌詞。");
+  if (raw.length > MAXLINES) throw new Error(`最多 ${MAXLINES} 句。`);
+  const ls = [], bs = [];
+  raw.forEach((r, i) => { const b = new Set(); let txt = ""; for (const ch of r) { if (ch === "|" || ch === "｜") b.add([...txt].length); else txt += ch; }
+    if ([...txt].length > MAXLEN) throw new Error(`第 ${i+1} 句超過 ${MAXLEN} 個字（標點都計）。`); ls.push(txt); bs.push(b); });
+  const sraw = $("hSol").value.split(/\n/).map(s => s.trim()).filter(Boolean);
+  const ss = ls.map((l, i) => { const n = [...l].length; if (!sraw[i]) return [...l].map(() => []);
+    const toks = sraw[i].split(/\s+/).filter(t => t && t !== "|" && t !== "｜");
+    if (toks.length !== n) throw new Error(`第 ${i+1} 句：歌詞有 ${n} 個字，唱名有 ${toks.length} 個。`);
+    return toks.map(t => { try { return parseTok(t); } catch (e) { throw new Error(`第 ${i+1} 句：睇唔明「${t}」。`); } }); });
+  const enc = ss.map(encSol);
+  if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
+  return {ls, bs, ss, enc};
+}
+$("hLyrTest").onclick = () => { unlock(); try { const t = readTeacher(); let k = 0; t.ss.flat().forEach(ns => { ns.forEach((m, q) => note(m + 12, (k + q / ns.length) * .45, .4 / ns.length, .85)); k++; }); $("hLyrMsg").textContent = "試聽緊（每隻字一拍，冇節奏）"; } catch (e) { $("hLyrMsg").textContent = e.message; } };
 $("hLyrSend").onclick = async () => {
-  const ls = $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g, "")).filter(Boolean);
-  if (!ls.length) { $("hLyrMsg").textContent = "未有歌詞。"; return; }
-  if (ls.length > MAXLINES || ls.some(s => [...s].length > MAXLEN)) { $("hLyrMsg").textContent = `最多 ${MAXLINES} 句、每句最多 ${MAXLEN} 個字（標點都計）。`; return; }
-  store.set("chordsheet.lyrics", $("hLyr").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
+  let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
+  store.set("chordsheet.lyrics", $("hLyr").value); store.set("chordsheet.sol", $("hSol").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
+  const fin = (pid, name) => api({a:"finish", pin:H.pin, pid, name:name || "—", score:0, level:1, correct:0, answered:0});
   try {
-    for (let i = 0; i < MAXLINES; i++) await api({a:"finish", pin:H.pin, pid:"h0stL" + i, name:ls[i] || "—", score:0, level:1, correct:0, answered:0});
+    const jobs = [];
+    for (let i = 0; i < MAXLINES; i++) {
+      jobs.push(["h0stB" + i, t.bs[i] ? [...t.bs[i]].map(n => n.toString(36)).join("") : ""]);
+      const e = t.enc[i] && t.enc[i].replace(/\./g, "") ? t.enc[i] : "";
+      for (let k = 0; k < SCHUNKS; k++) jobs.push(["h0stS" + i + k, e.slice(k * 12, k * 12 + 12)]);
+    }
+    // bars and solfa first (in small parallel batches), lyric lines last so students never see lyrics without their solfa
+    for (let k = 0; k < jobs.length; k += 7) { await Promise.all(jobs.slice(k, k + 7).map(([pid, v]) => fin(pid, v))); $("hLyrMsg").textContent = `傳送中… ${Math.min(100, Math.round(100 * (k + 7) / (jobs.length + 4)))}%`; }
+    await Promise.all([0,1,2,3].map(i => fin("h0stL" + i, t.ls[i])));
     $("hLyrMsg").textContent = "已傳俾學生 ✓";
   } catch { $("hLyrMsg").textContent = "傳送失敗，請再試。"; }
   finally { $("hLyrSend").disabled = false; }
@@ -500,12 +575,12 @@ $("hExit").onclick = () => { clearInterval(H.iv); H = null; show("scHome"); };
 let S = null;
 function showGroup(g){
   H.shown.add(g.gid);
-  lines = hostLinesFromRows(); const data = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
+  ({lines, bars, sol} = hostSongFromRows()); const data = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
   const seq = []; data.forEach((row, i) => row.forEach((c, j) => { if (c) seq.push({i, j, c}); }));
   S = {g, data, seq, k:-1};
   $("sName").textContent = g.name; renderLyrics($("sLyr"), data, {big:true}); $("show").hidden = false; paintStep();
 }
-function hostLinesFromRows(){ return hostLines(H.rows).length ? hostLines(H.rows) : $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g,"")).filter(Boolean).slice(0, MAXLINES); }
+function hostSongFromRows(){ if (hostLines(H.rows).length) return hostSong(H.rows); try { const t = readTeacher(); return {lines:t.ls, bars:t.bs, sol:t.ss}; } catch { return {lines:[], bars:[], sol:[]}; } }
 function paintStep(){
   for (const c of document.querySelectorAll("#sLyr .cell")) c.classList.remove("now");
   const cur = S.seq[S.k]; if (!cur) { $("sStep").textContent = S.k >= S.seq.length ? "完 ✓（撳由頭再嚟）" : "下一個和弦 ▸"; return; }
