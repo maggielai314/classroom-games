@@ -190,7 +190,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     <div class="hud">
       <div class="score" id="hudScore">0<small>SCORE</small></div>
       <div class="prog">
-        <div class="prog-top"><b id="hudQ">1 / 12</b><span id="hudMode"></span></div>
+        <div class="prog-top"><b id="hudQ">1 / 6</b><span id="hudMode"></span></div>
         <div class="timebar"><i id="timeFill"></i></div>
       </div>
       <div class="streak" id="hudStreak"></div>
@@ -231,10 +231,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     </div>
     <div class="phases">
       <button class="btn btn-soft" id="phDemo">① 試聽四個和弦</button>
-      <button class="btn btn-soft" id="phPrac">② 試玩 6 題（唔計分）</button>
-      <button class="btn btn-soft" id="phReal">③ 正式比賽 12 題</button>
+      <button class="btn btn-soft" id="phPrac">② 試玩 4 題（唔計分）</button>
+      <button class="btn btn-soft" id="phReal">③ 正式比賽 6 題</button>
       <button class="btn btn-soft" id="phEnd">結束・排行榜</button>
-      <label class="row" style="font-size:15px;color:var(--muted)"><input type="checkbox" id="earRef" checked> 每題先播 C 做參考</label>
+      <label class="row" style="font-size:15px;color:var(--muted)"><input type="checkbox" id="earRef" checked> 每題先播一次 C 做參考，再播兩次要估嘅和弦</label>
       <button class="btn btn-soft" id="earExit">返回主頁</button>
     </div>
     <div class="demo" id="earDemo" hidden></div>
@@ -274,7 +274,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 (() => {
 "use strict";
 const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
-const NQ = 12;                      // listening challenge
+const NQ = 6;                       // listening challenge (formal / self-practice)
 const NQ_BASIC = 6;                 // stage 1: 3 build + 3 quick (12 was too long for a 35-min lesson)
 const nqOf = m => m === "basic" ? NQ_BASIC : NQ;
 // Shared backend only accepts its own stage ids; map them onto this game's modes.
@@ -290,7 +290,9 @@ const HOST_NAME = "★老師";
 const isHostRow = r => String(r.pid).startsWith("h0st");
 function rng(seed){ let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function seededShuffle(arr, r){ const a = arr.slice(); for (let i=a.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function earSeq(seed, phase){ const r = rng(seed + phase*7919); return phase === 3 ? seededShuffle(["C","F","G","Am","C","G"], r) : seededShuffle([...EAR_OPTS,...EAR_OPTS,...EAR_OPTS], r); }
+// trial: 4 (each chord once); formal: 6 (each chord once + two of F/G/Am again)
+function earSeq(seed, phase){ const r = rng(seed + phase*7919); if (phase === 3) return seededShuffle(EAR_OPTS, r);
+  const extra = seededShuffle(["F","G","Am"], r).slice(0, 2); return seededShuffle([...EAR_OPTS, ...extra], r); }
 
 const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
 const LOW = 60, HIGH = 76;             // C4 .. E5
@@ -332,15 +334,34 @@ async function loadAudio(){
 }
 function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
   ctx.resume(); const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1,1,22050); s.connect(ctx.destination); s.start(0); }
+// Master chain: boost + compressor so chords are loud enough for a classroom without clipping.
+let master = null;
+function out(){
+  if (!master && ctx) { const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 6; comp.ratio.value = 4; comp.attack.value = .003; comp.release.value = .2;
+    master = ctx.createGain(); master.gain.value = 2.0; master.connect(comp); comp.connect(ctx.destination); }
+  return master;
+}
+let voices = [];
+function stopAll(){ if (!ctx) return; const t = ctx.currentTime; voices.forEach(v => { try { v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, .02); v.src.stop(t + .12); } catch {} }); voices = []; }
 function note(m, when = 0, dur = 1.2, vel = .8){
   if (!ctx) return; const roots = Object.keys(SAMPLES).map(Number); let r = roots[0];
   for (const x of roots) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
   const buf = buffers[r]; if (!buf) return;
   const t = ctx.currentTime + when, src = ctx.createBufferSource(), g = ctx.createGain();
-  src.buffer = buf; src.playbackRate.value = Math.pow(2, (m-r)/12); src.connect(g); g.connect(ctx.destination);
-  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .15); src.start(t, .025); src.stop(t + dur + .8);
+  src.buffer = buf; src.playbackRate.value = Math.pow(2, (m-r)/12); src.connect(g); g.connect(out());
+  // short release so each chord is finished before the next one starts
+  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .07); src.start(t, .025); src.stop(t + dur + .45);
+  const v = {src, g}; voices.push(v); src.onended = () => { voices = voices.filter(x => x !== v); };
 }
-function chord(ms, when = 0, dur = 1.4){ ms.forEach(m => note(m, when, dur, .55)); }
+function chord(ms, when = 0, dur = 1.4){ ms.forEach(m => note(m, when, dur, .7)); }
+// Listening question: reference C once, then the answer chord twice, with clear silence between.
+const EAR_GAP = 1.0;
+function earPattern(ans, withRef){
+  stopAll(); let t = .08;
+  if (withRef) { chord(CHORDS.C, t, 1.1); t += 1.1 + EAR_GAP + .3; }
+  chord(CHORDS[ans], t, 1.3); t += 1.3 + EAR_GAP;
+  chord(CHORDS[ans], t, 1.3);
+}
 function blip(ok){
   if (!ctx) return; const t = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
   o.type = ok ? "triangle" : "sine";
@@ -442,7 +463,7 @@ function makeQuestions(mode){
     const b1 = shuffle(["C","F","G"]).slice(0, 2).concat(shuffle(["Dm","Em","Am"]).slice(0, 1)); for (let i = 0; i < 3; i++) { const c = b1[i]; qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0], hint:i < 2}); }
     const b2 = shuffle(["C","F","G","Am"]).filter(c => c !== b1[2]).slice(0, 3); for (let i = 0; i < 3; i++) { const c = b2[i]; qs.push({type:"name", chord:c, notes:CHORDS[c], hint:i === 0}); }
   } else {
-    let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(["F","G","Am","C","F","G"]); const c = bag.pop(); qs.push({type:"ear", chord:c, notes:CHORDS[c], opts:["C","F","G","Am"]}); }
+    const pool = shuffle([...EAR_OPTS, ...shuffle(["F","G","Am"]).slice(0, 2)]); for (let i = 0; i < NQ; i++) { const c = pool[i]; qs.push({type:"ear", chord:c, notes:CHORDS[c], opts:["C","F","G","Am"]}); }
   }
   return qs;
 }
@@ -474,7 +495,7 @@ function next(){
     const left = 1 - (performance.now() - me.t0)/1000/me.M.limit; $("timeFill").style.transform = `scaleX(${Math.max(0,left)})`;
     if (left <= 0) return judge(false, true); raf = requestAnimationFrame(tick); });
 }
-function playEar(q){ chord(CHORDS.C, .05, 1.1); chord(q.notes, 1.5, 1.6); }
+function playEar(q){ earPattern(q.chord, true); }
 function buildOpts(q){
   const box = $("opts"); box.textContent = "";
   for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = o; b.innerHTML = `${o}<small>${ROMAN[o]}</small>`; b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
@@ -513,7 +534,7 @@ function judge(ok, timeout = false){
       if (want.includes(m)) k.classList.add("right"); else if (G.sel.includes(m) && !keyMatch(m)) k.classList.add("wrong"); });
     want.forEach((m, j) => { const k = keyEl(m); if (k && k.classList.contains("white")) { const t = document.createElement("span"); t.className = "tag"; t.textContent = j === 0 ? "根音" : (j === 1 ? "三度" : "五度"); k.prepend(t); } });
     $("qHint").textContent = `${q.chord} 和弦（${ROMAN[q.chord]}）＝ ${want.map(m=>PC[m%12]).join("・")}（隔一個白鍵疊上去）`;
-    chord(want, .05, 1.0);
+    stopAll(); chord(want, .05, 1.0);
   }
   updateHud(); setTimeout(next, ok ? 1100 : 1900);
 }
@@ -548,13 +569,12 @@ function earPhaseUi(){
 function buildDemo(){
   const box = $("earDemo"); box.textContent = "";
   for (const c of EAR_OPTS) { const b = document.createElement("button"); b.innerHTML = `${c}<small>${ROMAN[c]}</small>`;
-    b.onclick = () => { unlock(); for (const x of box.children) x.classList.toggle("on", x === b); chord(CHORDS[c], .05, 1.6); }; box.appendChild(b); }
+    b.onclick = () => { unlock(); for (const x of box.children) x.classList.toggle("on", x === b); stopAll(); chord(CHORDS[c], .05, 1.6); }; box.appendChild(b); }
 }
 function earSeqNow(){ return earSeq(E.seed, E.phase); }
 function earPlay(){
-  unlock(); const c = earSeqNow()[E.q - 1]; if (!c) return; let t = .05;
-  if ($("earRef").checked) { chord(CHORDS.C, t, 1.0); t += 1.6; }
-  chord(CHORDS[c], t, 1.5); chord(CHORDS[c], t + 2.2, 1.5);
+  unlock(); const c = earSeqNow()[E.q - 1]; if (!c) return;
+  earPattern(c, $("earRef").checked);
 }
 function earShowQ(){
   const seq = earSeqNow(), N = seq.length;
@@ -572,7 +592,7 @@ $("phPrac").onclick = () => earSetPhase(3);
 $("phReal").onclick = () => earSetPhase(4);
 $("phEnd").onclick = () => earSetPhase(5);
 $("earPlay").onclick = () => earPlay();
-$("earReveal").onclick = async () => { E.rev = true; earShowQ(); const c = earSeqNow()[E.q-1]; chord(CHORDS[c], .05, 1.4); await hostPush(); };
+$("earReveal").onclick = async () => { E.rev = true; earShowQ(); const c = earSeqNow()[E.q-1]; stopAll(); chord(CHORDS[c], .05, 1.4); await hostPush(); };
 $("earNext").onclick = async () => {
   const N = earSeqNow().length;
   if (E.q >= N) return earSetPhase(E.phase === 3 ? 4 : 5);
