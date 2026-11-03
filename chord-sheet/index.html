@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>和弦工作紙</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +28,7 @@ input,textarea{-webkit-user-select:text;user-select:text}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;touch-action:manipulation}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
 .app{max-width:1100px;margin:0 auto;padding-block:18px 32px;display:grid;gap:16px}
+.app .app{margin:0;width:100%;max-width:none}
 h1{margin:0;font-family:var(--f-hud);font-weight:700;font-size:clamp(32px,6vw,52px);line-height:.95;color:var(--plum)}
 h1 small{display:block;font-family:var(--f-ui);font-weight:900;font-size:.42em;color:var(--hot);letter-spacing:.06em;margin-top:6px}
 h2{margin:0;font-size:22px;color:var(--plum)}
@@ -101,10 +104,33 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .show .cell.now{background:#FFF1D2;border-radius:14px}
 .show .cell.now .ch{color:var(--bad)}
 @media (max-width:560px){.host-top{grid-template-columns:1fr}.cell{min-width:44px}}
+.fsbtn{position:fixed;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));z-index:20;min-height:40px;padding:0 12px;border-radius:10px;background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum);font-weight:700;font-size:14px}
+/* iPad landscape: use the whole screen */
+@media (orientation:landscape) and (max-height:1050px){
+  .app{max-width:none}
+  #scP1,#scP2{padding-block:6px!important;gap:0}
+  #scP1 .steps,#scP2 .steps,#scP2 .note{display:none}
+  #p1panel{height:calc(100dvh - 20px);grid-template-rows:auto auto minmax(0,1fr) auto;gap:8px;padding:10px 14px}
+  #scP1 .task .q{font-size:clamp(22px,3.2vh,30px)}
+  #scP1 .note{font-size:13px}
+  #scP1 .kb{height:auto;min-height:0}
+  #scP1 .white .nm{font-size:clamp(20px,3.4vh,30px)}
+  #p1res{position:fixed;inset:0;z-index:25;overflow:auto;border-radius:0;padding:24px max(24px,4vw)}
+  #scP2 > .panel{padding:10px 14px 14px;margin-left:126px;gap:8px}
+  #scP2 h2{font-size:18px;padding-right:110px}
+  #scP2 .chips{position:fixed;left:max(10px,env(safe-area-inset-left,0px));top:10px;bottom:10px;width:112px;flex-direction:column;flex-wrap:nowrap;justify-content:center;background:transparent;padding:0}
+  #scP2 .chip{min-width:0;width:100%;min-height:clamp(56px,12vh,96px);font-size:clamp(24px,4vh,34px)}
+  #scP2 .line{padding:6px 0;gap:5px}
+  #scP2 .line .num{display:none}
+  #scP2 .cell{min-width:0;width:calc((100vw - 126px - 60px - 11*5px) / 12);grid-template-rows:clamp(30px,6vh,52px) auto}
+  #scP2 .cell .ch{font-size:clamp(20px,4.2vh,34px)}
+  #scP2 .cell .w{font-size:clamp(26px,6.4vh,52px)}
+}
 </style>
 </head>
 <body>
 <div class="app">
+<button class="fsbtn" id="fsBtn" hidden>⛶ 全螢幕</button>
 
 <!-- home -->
 <section id="scHome" class="app" style="padding:0">
@@ -128,7 +154,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 <!-- part 1 -->
 <section id="scP1" hidden class="app" style="padding:0">
   <div class="steps"><span class="on">① 砌和弦</span><span>② 和弦放落歌詞</span><span>③ 提交</span></div>
-  <div class="panel">
+  <div class="panel" id="p1panel">
     <div class="task"><div class="q" id="p1q"></div><div class="dots" id="p1dots"></div></div>
     <p class="note">規則：根音開始，隔一個白鍵，再隔一個白鍵。撳鍵揀音，再撳一下取消。</p>
     <div class="kb" id="kb"><div class="whites" id="whites"></div></div>
@@ -467,6 +493,15 @@ $("sNext").onclick = () => pickRandom();
 $("sClose").onclick = () => { $("show").hidden = true; S = null; };
 addEventListener("keydown", e => { if (!$("show").hidden && (e.code === "Space" || e.code === "ArrowRight")) { e.preventDefault(); step(); } });
 
+/* fullscreen toggle (iPad Safari supports it for the page; hidden where unsupported) */
+const fsEl = document.documentElement;
+const fsOn = () => document.fullscreenElement || document.webkitFullscreenElement;
+if (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen) {
+  $("fsBtn").hidden = false;
+  $("fsBtn").onclick = () => { if (fsOn()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen).call(fsEl); };
+  const upd = () => $("fsBtn").textContent = fsOn() ? "✕ 離開全螢幕" : "⛶ 全螢幕";
+  document.addEventListener("fullscreenchange", upd); document.addEventListener("webkitfullscreenchange", upd);
+}
 window.__cs = {get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
 })();
 </script>
