@@ -35,6 +35,7 @@ h2{margin:0;font-size:22px;color:var(--plum)}
 .lede{margin:0;color:var(--muted);line-height:1.6;max-width:64ch}
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:18px;display:grid;gap:12px;align-content:start;min-width:0}
 .txt{min-height:54px;width:100%;border-radius:12px;border:1.5px solid #CFC4EC;background:#FBF9FF;color:var(--ink);padding:0 14px;font:700 20px var(--f-ui)}
+select.txt{appearance:auto;font-size:18px}
 .txt.pin{font-family:var(--f-hud);font-size:28px;letter-spacing:.3em;text-align:center}
 textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;resize:vertical}
 .btn{min-height:52px;padding:0 22px;border-radius:12px;font-weight:900;font-size:18px}
@@ -157,7 +158,10 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="panel">
     <h2>老師</h2>
     <p class="note">開局之後，貼上歌詞（最多 4 句、每句最多 12 個字，可以用 | 劃小節線），再填每隻字嘅唱名，學生部機會自動收到。歌詞同唱名只會存喺你部電腦同今次局入面。</p>
+    <label class="note" for="songSel">揀歌（開局時自動傳俾學生）</label>
+    <select class="txt" id="songSel"></select>
     <div class="row"><button class="btn btn-soft" id="hostBtn">開局（老師用）</button></div>
+    <p class="note" id="hostNote"></p>
     <p class="err" id="hostErr"></p>
   </div>
 </section>
@@ -207,12 +211,18 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <div class="qr" id="hQr"></div>
   </div>
   <div class="panel">
+    <div class="row" style="justify-content:space-between"><h2>歌曲</h2><span class="note">歌曲庫存喺呢部電腦嘅瀏覽器；換電腦用「複製老師連結」帶過去。</span></div>
+    <div class="row">
+      <select class="txt" id="hSong" style="flex:1;min-width:200px"></select>
+      <input class="txt" id="hSongName" maxlength="30" placeholder="歌名" style="flex:1;min-width:180px">
+    </div>
+    <div class="row"><button class="btn btn-soft" id="hSave">💾 儲存</button><button class="btn btn-soft" id="hSaveNew">＋ 另存新歌</button><button class="btn btn-soft" id="hDel">🗑 刪除呢首</button></div>
     <h2>歌詞</h2>
     <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）；用 | 劃小節線，例如：甲乙|丙丁戊|己庚"></textarea>
     <h2>唱名（可以唔填）</h2>
     <p class="note">每隻字一個唱名，用空格分開，可以成段貼落嚟（會按歌詞字數順序分配）。拍子長短寫喺括號：mi(0.5) 半拍、do(2) 兩拍，冇寫就當一拍；一隻字唱幾個音用 - 連住：mi(0.25)-re(0.25)；休止(0.5) 係休止；高八度加 '（do'），低八度加 ,（so,）；| 係小節線。前面可以照寫返隻字（例如「無 so,(0.5)」），會用嚟核對；「第1節：」之類標籤會自動略過。</p>
     <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
-    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><span class="note" id="hLyrMsg"></span></div>
+    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><button class="btn btn-soft" id="hLink">🔗 複製老師連結（成個歌曲庫）</button><span class="note" id="hLyrMsg"></span></div>
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
@@ -535,11 +545,12 @@ $("hostBtn").onclick = async () => {
   catch { $("hostErr").textContent = "開局失敗，請再試。"; }
 };
 function openHost(pin){
-  H = {pin, rows:[], shown:new Set(), iv:null};
+  H = {pin, rows:[], shown:new Set(), iv:null, sent:new Set()};
   $("hPin").textContent = pin.replace(/(\d{3})(\d{3})/, "$1 $2");
   const url = location.origin + location.pathname + "?pin=" + pin; $("hUrl").textContent = url;
   if (window.qrcode) { const q = qrcode(0,"M"); q.addData(url); q.make(); $("hQr").innerHTML = q.createSvgTag({cellSize:4, margin:1, scalable:true}); }
-  $("hLyr").value = store.get("chordsheet.lyrics", ""); $("hSol").value = store.get("chordsheet.sol", ""); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
+  loadSong(curSong); show("scHost"); poll(); H.iv = setInterval(poll, 3000);
+  if ($("hLyr").value.trim()) sendSong(true);
 }
 function readTeacher(){
   const raw = $("hLyr").value.split(/\n/).map(s => s.replace(/\s+/g, "")).filter(Boolean);
@@ -577,24 +588,78 @@ $("hLyrTest").onclick = async () => {
   testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽完（${starts.length} 隻字）。冇問題就撳「傳俾學生」。`; }, total * 1000 + 300));
 };
 $("hLyrStop") && ($("hLyrStop").onclick = () => { stopAudio(); testTimers.forEach(clearTimeout); $("hLyrMsg").textContent = "已停止。"; });
-$("hLyrSend").onclick = async () => {
-  let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
-  store.set("chordsheet.lyrics", $("hLyr").value); store.set("chordsheet.sol", $("hSol").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
+$("hLyrSend").onclick = () => sendSong(false);
+async function sendSong(auto){
+  let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = (auto ? "自動傳送唔到：" : "") + e.message; return; }
+  if (!auto) saveSong(false); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = auto ? "用返上次嘅歌詞同唱名，自動傳送緊…" : "傳送中…";
   const fin = (pid, name) => api({a:"finish", pin:H.pin, pid, name:name || "—", score:0, level:1, correct:0, answered:0});
   try {
-    const jobs = [];
+    const want = {};
     for (let i = 0; i < MAXLINES; i++) {
-      jobs.push(["h0stB" + i, t.bs[i] ? [...t.bs[i]].map(n => n.toString(36)).join("") : ""]);
+      want["h0stB" + i] = t.bs[i] ? [...t.bs[i]].map(n => n.toString(36)).join("") : "";
       const e = t.enc[i] && t.enc[i].replace(/\./g, "") ? t.enc[i] : "";
-      for (let k = 0; k < SCHUNKS; k++) jobs.push(["h0stS" + i + k, e.slice(k * 12, k * 12 + 12)]);
+      for (let k = 0; k < SCHUNKS; k++) want["h0stS" + i + k] = e.slice(k * 12, k * 12 + 12);
     }
+    // a fresh room is empty, so only non-empty rows (and rows this room already holds) need sending
+    const jobs = Object.entries(want).filter(([pid, v]) => v || H.sent.has(pid));
     // bars and solfa first (in small parallel batches), lyric lines last so students never see lyrics without their solfa
     for (let k = 0; k < jobs.length; k += 7) { await Promise.all(jobs.slice(k, k + 7).map(([pid, v]) => fin(pid, v))); $("hLyrMsg").textContent = `傳送中… ${Math.min(100, Math.round(100 * (k + 7) / (jobs.length + 4)))}%`; }
-    await Promise.all([0,1,2,3].map(i => fin("h0stL" + i, t.ls[i])));
-    $("hLyrMsg").textContent = "已傳俾學生 ✓";
-  } catch { $("hLyrMsg").textContent = "傳送失敗，請再試。"; }
+    await Promise.all([0,1,2,3].filter(i => t.ls[i] || H.sent.has("h0stL" + i)).map(i => fin("h0stL" + i, t.ls[i])));
+    for (const [pid, v] of jobs) if (v) H.sent.add(pid); t.ls.forEach((_, i) => H.sent.add("h0stL" + i));
+    $("hLyrMsg").textContent = (auto ? "已自動傳俾學生 ✓（" : "已儲存並傳俾學生 ✓（") + ($("hSongName").value || "") + "，" + t.ls.length + " 句）";
+  } catch { $("hLyrMsg").textContent = "傳送失敗，請撳「傳俾學生」再試。"; }
   finally { $("hLyrSend").disabled = false; }
+}
+// ---- song library: kept in this browser; a teacher link carries the whole library to another computer ----
+const songs = () => store.get("chordsheet.songs", []);
+const setSongs = v => store.set("chordsheet.songs", v);
+(() => { // first run: keep whatever was typed before as a song
+  if (!songs().length && (store.get("chordsheet.lyrics", "") || "").trim()) setSongs([{id:pidMake(), name:"未命名歌曲", l:store.get("chordsheet.lyrics", ""), s:store.get("chordsheet.sol", "")}]);
+})();
+let curSong = store.get("chordsheet.cur", null);
+function fillSongSelects(){
+  const list = songs();
+  for (const id of ["songSel", "hSong"]) {
+    const el = $(id); el.textContent = "";
+    if (id === "songSel") el.append(new Option("（唔揀：開局後先貼歌詞）", ""));
+    else el.append(new Option("（新歌）", ""));
+    for (const x of list) el.append(new Option(x.name, x.id));
+    el.value = list.some(x => x.id === curSong) ? curSong : "";
+  }
+  $("hostNote").textContent = list.length ? `歌曲庫有 ${list.length} 首。` : "未有歌：開局後貼歌詞同唱名，撳「儲存」就會記住。";
+}
+function loadSong(id){
+  const x = songs().find(y => y.id === id); curSong = x ? x.id : null; store.set("chordsheet.cur", curSong);
+  $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSongName").value = x ? x.name : ""; fillSongSelects();
+}
+function saveSong(asNew){
+  const name = $("hSongName").value.trim() || ($("hLyr").value.split(/\n/)[0] || "").replace(/[|｜\s]/g, "").slice(0, 12) || "未命名歌曲";
+  const list = songs(); let x = !asNew && list.find(y => y.id === curSong);
+  if (x) Object.assign(x, {name, l:$("hLyr").value, s:$("hSol").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value}; list.push(x); }
+  setSongs(list); curSong = x.id; store.set("chordsheet.cur", curSong); $("hSongName").value = name; fillSongSelects(); return x;
+}
+$("hSong").onchange = () => { loadSong($("hSong").value); if (H && $("hLyr").value.trim()) sendSong(true); };
+$("songSel").onchange = () => { curSong = $("songSel").value || null; store.set("chordsheet.cur", curSong); };
+$("hSave").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(false); $("hLyrMsg").textContent = `已儲存「${x.name}」。`; };
+$("hSaveNew").onclick = () => { if (!$("hLyr").value.trim()) { $("hLyrMsg").textContent = "未有歌詞。"; return; } const x = saveSong(true); $("hLyrMsg").textContent = `已另存新歌「${x.name}」。`; };
+$("hDel").onclick = () => { const b = $("hDel"); if (!curSong) return;
+  if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "再撳一下確認刪除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; }, 2500); return; }
+  delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; setSongs(songs().filter(y => y.id !== curSong)); loadSong(null); $("hLyrMsg").textContent = "已刪除。"; };
+const b64 = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64 = str => decodeURIComponent(escape(atob(str.replace(/-/g, "+").replace(/_/g, "/"))));
+function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s})))); }
+$("hLink").onclick = async () => {
+  if ($("hLyr").value.trim()) saveSong(false); const url = libLink();
+  try { await navigator.clipboard.writeText(url); $("hLyrMsg").textContent = `老師連結已複製（${songs().length} 首歌）：貼喺備忘錄或者加書籤，喺另一部電腦開呢條連結，歌曲庫就會載入。`; }
+  catch { prompt("複製呢條老師連結：", url); }
 };
+fillSongSelects();
+(() => { const m = /#lib=([\w-]+)/.exec(location.hash); if (!m) return;
+  try { const inc = JSON.parse(unb64(m[1])); const list = songs(); let n = 0;
+    for (const o of inc) { const ex = list.find(y => y.name === o.n); if (ex) Object.assign(ex, {l:o.l, s:o.s}); else list.push({id:pidMake(), name:o.n, l:o.l, s:o.s}); n++; }
+    setSongs(list); if (!curSong && list.length) { curSong = list[0].id; store.set("chordsheet.cur", curSong); }
+    fillSongSelects(); $("hostNote").textContent = `已由老師連結載入 ${n} 首歌。揀歌，再撳「開局」。`; history.replaceState(null, "", location.pathname);
+  } catch {} })();
 async function poll(){
   if (!H || $("scHost").hidden) return;
   try { const r = await api({a:"board", pin:H.pin}); H.rows = r.rows; renderHost(); $("hStatus").textContent = "即時更新中"; }
