@@ -282,7 +282,9 @@ async function api(params){
 const AC = window.AudioContext || window.webkitAudioContext; const ctx = AC ? new AC() : null;
 const SAMPLES = {60:"C4",63:"Ds4",66:"Fs4",69:"A4",72:"C5",75:"Ds5",78:"Fs5",81:"A5",84:"C6"}; const buf = {};
 if (ctx) for (const [m,f] of Object.entries(SAMPLES)) fetch("../chord-hunter/audio/" + f + ".mp3").then(r => r.arrayBuffer()).then(ab => new Promise((ok,no) => { const p = ctx.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); })).then(b => buf[m] = b).catch(() => {});
-function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {} ctx.resume(); }
+function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  ctx.resume(); try { const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0); } catch {} }
+const audioOk = () => ctx && Object.keys(buf).length >= 5;
 function note(m, when = 0, dur = 1.2, vel = .7){
   if (!ctx) return; let r = 60; for (const x of Object.keys(SAMPLES).map(Number)) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
   const b = buf[r]; if (!b) return; const t = ctx.currentTime + when, s = ctx.createBufferSource(), g = ctx.createGain();
@@ -536,7 +538,21 @@ function readTeacher(){
   if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
   return {ls, bs, ss, enc};
 }
-$("hLyrTest").onclick = () => { unlock(); try { const t = readTeacher(); let k = 0; t.ss.flat().forEach(ns => { ns.forEach((m, q) => note(m + 12, (k + q / ns.length) * .45, .4 / ns.length, .85)); k++; }); $("hLyrMsg").textContent = "試聽緊（每隻字一拍，冇節奏）"; } catch (e) { $("hLyrMsg").textContent = e.message; } };
+let testTimers = [];
+$("hLyrTest").onclick = async () => {
+  unlock(); testTimers.forEach(clearTimeout); testTimers = [];
+  let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
+  if (!t.ss.flat().some(ns => ns.length)) { $("hLyrMsg").textContent = "未有唱名：喺「唱名」格貼入唱名先可以試聽。"; return; }
+  if (!audioOk()) { $("hLyrMsg").textContent = "鋼琴聲仲載入緊，等兩秒再撳。"; return; }
+  try { await ctx.resume(); } catch {}
+  const u = .45; let k = 0;
+  t.ls.forEach((l, i) => [...l].forEach((w, j) => {
+    const ns = t.ss[i][j] || [], at = k;
+    testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽緊：第 ${i+1} 句「${w}」${ns.length ? " " + ns.map(sfOf).join("-") : ""}（每隻字一拍，冇節奏；冇聲就檢查音量／靜音掣）`; }, at * u * 1000));
+    ns.forEach((m, q) => note(m + 12, .05 + (at + q / ns.length) * u, u / ns.length * .9, .9)); k++;
+  }));
+  testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽完（${k} 隻字）。冇問題就撳「傳俾學生」。`; }, k * u * 1000 + 300));
+};
 $("hLyrSend").onclick = async () => {
   let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
   store.set("chordsheet.lyrics", $("hLyr").value); store.set("chordsheet.sol", $("hSol").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
