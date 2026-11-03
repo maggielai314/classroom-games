@@ -81,6 +81,10 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .cell .w{font-weight:900;font-size:clamp(26px,4vw,36px);color:var(--ink)}
 .cell.has{background:#F3EDFF;border-color:var(--lilac)}
 .cell.drop{outline:3px solid var(--hot)}
+.lplay{align-self:end;min-width:52px;min-height:52px;border-radius:50%;background:var(--plum);color:#fff;font-size:20px;margin-left:6px}
+.lplay.on,#p2all.on{background:var(--hot);color:#fff;border-color:var(--hot)}
+#lyrics .cell.now{background:#FFF1D2;border-color:#E9B949}
+#lyrics .cell.now .ch{color:var(--bad)}
 .ghostchip{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-60%);min-width:70px;padding:8px 14px;border-radius:12px;background:var(--plum);color:#fff;font-family:var(--f-hud);font-weight:700;font-size:26px;text-align:center}
 
 /* teacher */
@@ -122,7 +126,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   #scP2 .chip{min-width:0;width:100%;min-height:clamp(56px,12vh,96px);font-size:clamp(24px,4vh,34px)}
   #scP2 .line{padding:6px 0;gap:5px}
   #scP2 .line .num{display:none}
-  #scP2 .cell{min-width:0;width:calc((100vw - 126px - 60px - 11*5px) / 12);grid-template-rows:clamp(30px,6vh,52px) auto}
+  #scP2 .cell{min-width:0;width:calc((100vw - 126px - 60px - 12*5px - 58px) / 12);grid-template-rows:clamp(30px,6vh,52px) auto}
   #scP2 .cell .ch{font-size:clamp(20px,4.2vh,34px)}
   #scP2 .cell .w{font-size:clamp(26px,6.4vh,52px)}
 }
@@ -183,7 +187,9 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <div class="chips" id="chips"></div>
     <div id="lyrics"></div>
     <p class="err" id="p2msg"></p>
-    <div class="row"><button class="btn btn-soft" id="p2clear">全部清除</button><button class="btn btn-main" id="p2send">提交俾老師</button></div>
+    <div class="row"><button class="btn btn-soft" id="p2all">▶ 全首試聽</button>
+      <label class="note" style="display:flex;align-items:center;gap:8px">快<input type="range" id="p2speed" min="0.8" max="2.6" step="0.2" value="1.6" style="width:120px;accent-color:var(--plum)">慢</label>
+      <span style="flex:1"></span><button class="btn btn-soft" id="p2clear">全部清除</button><button class="btn btn-main" id="p2send">提交俾老師</button></div>
   </div>
 </section>
 
@@ -365,13 +371,32 @@ function renderLyrics(target = $("lyrics"), data = place, opts = {}){
       if (!opts.big) c.onclick = () => applyTool(i, j);
       row.appendChild(c);
     });
+    if (!opts.big) { const pb = document.createElement("button"); pb.className = "lplay"; pb.setAttribute("aria-label", `試聽第 ${i+1} 句`); pb.textContent = "▶";
+      pb.onclick = () => playLines([i], pb); row.appendChild(pb); }
     target.appendChild(row);
   });
+}
+/* preview: play the chords in the order they sit on the lyrics, lighting up each word */
+let pv = null;
+function stopPreview(){ if (!pv) return; pv.timers.forEach(clearTimeout); for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
+  for (const b of document.querySelectorAll(".lplay.on,#p2all.on")) { b.classList.remove("on"); b.textContent = b.id === "p2all" ? "▶ 全首試聽" : "▶"; } pv = null; }
+function playLines(idx, btn){
+  unlock(); const was = pv && pv.btn === btn; stopPreview(); if (was) return;
+  const seq = []; idx.forEach(i => place[i].forEach((c, j) => { if (c) seq.push({i, j, c}); }));
+  if (!seq.length) { $("p2msg").textContent = idx.length > 1 ? "未放任何和弦。" : `第 ${idx[0]+1} 句未放和弦。`; return; }
+  $("p2msg").textContent = ""; const gap = +($("p2speed").value) || 1.6;
+  pv = {btn, timers:[]}; btn.classList.add("on"); btn.textContent = "■" + (btn.id === "p2all" ? " 停止" : "");
+  seq.forEach((s, k) => pv.timers.push(setTimeout(() => {
+    for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
+    const cell = document.querySelector(`#lyrics .cell[data-i="${s.i}"][data-j="${s.j}"]`); if (cell) { cell.classList.add("now"); cell.scrollIntoView({block:"nearest", behavior:"smooth"}); }
+    chord(CH[s.c], 0, gap * .95);
+  }, k * gap * 1000)));
+  pv.timers.push(setTimeout(stopPreview, seq.length * gap * 1000 + 300));
 }
 function applyTool(i, j, c = tool){
   unlock();
   if (c === "erase" || place[i][j] === c) place[i][j] = ""; else { place[i][j] = c; chord(CH[c], 0, 1.0); }
-  store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics();
+  stopPreview(); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics();
 }
 // drag a chip onto a character (works with finger or mouse); a short tap just selects the chip
 let drag = null;
@@ -395,6 +420,7 @@ function startDrag(e, c){
   };
   addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up);
 }
+$("p2all").onclick = () => playLines(lines.map((_, i) => i), $("p2all"));
 $("p2clear").onclick = () => { if (!confirmClear()) return; place = lines.map(l => Array(l.length).fill("")); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); };
 function confirmClear(){ const b = $("p2clear"); if (b.dataset.arm) { delete b.dataset.arm; b.textContent = "全部清除"; return true; } b.dataset.arm = "1"; b.textContent = "再撳一下確認清除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "全部清除"; }, 2500); return false; }
 $("p2send").onclick = async () => {
