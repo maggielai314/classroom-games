@@ -210,9 +210,9 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <h2>歌詞</h2>
     <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）；用 | 劃小節線，例如：甲乙|丙丁戊|己庚"></textarea>
     <h2>唱名（可以唔填）</h2>
-    <p class="note">每隻字一個唱名，用空格分開；可以每句一行，或者成段貼落嚟（會按歌詞字數順序分配）。一隻字唱幾個音用括號或者 - 連住：(so-la)；高八度加 '（do'），低八度加 ,（so,）；冇音用 _。| 係小節線，打喺唱名或者歌詞度都得。</p>
+    <p class="note">每隻字一個唱名，用空格分開，可以成段貼落嚟（會按歌詞字數順序分配）。拍子長短寫喺括號：mi(0.5) 半拍、do(2) 兩拍，冇寫就當一拍；一隻字唱幾個音用 - 連住：mi(0.25)-re(0.25)；休止(0.5) 係休止；高八度加 '（do'），低八度加 ,（so,）；| 係小節線。前面可以照寫返隻字（例如「無 so,(0.5)」），會用嚟核對；「第1節：」之類標籤會自動略過。</p>
     <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
-    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><span class="note" id="hLyrMsg"></span></div>
+    <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><span class="note" id="hLyrMsg"></span></div>
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
@@ -250,22 +250,60 @@ const CHIPS = ["C","G","Am","F"];
 const CODE = {C:"C", G:"G", Am:"a", F:"F", Dm:"d", Em:"e"};
 const DECODE = Object.fromEntries(Object.entries(CODE).map(([k,v]) => [v,k]));
 const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
-const MAXLEN = 12, MAXLINES = 4, SCHUNKS = 6;
+const MAXLEN = 12, MAXLINES = 4, SCHUNKS = 10;
 const SF = {0:"Do",2:"Re",4:"Mi",5:"Fa",7:"So",9:"La",11:"Ti"};
 const sfOf = m => (SF[((m%12)+12)%12] || PC[((m%12)+12)%12]) + (m >= 72 ? "'" : m < 60 ? "," : "");
 const sfPlain = m => SF[((m%12)+12)%12] || PC[((m%12)+12)%12];
 const LET = {d:0,r:2,m:4,f:5,s:7,l:9,t:11};
-// teacher solfa token -> list of midi notes (C major, do = C4)
-function parseTok(tok){
-  if (tok === "_" || tok === "") return [];
-  return tok.split("-").map(t => { const m = /^(do|re|mi|fa|sol|so|la|ti|si|d|r|m|f|s|l|t)([',]*)$/i.exec(t.trim()); if (!m) throw new Error(t);
-    const base = LET[m[1][0].toLowerCase() === "s" && m[1].toLowerCase() === "si" ? "t" : m[1][0].toLowerCase()];
-    let o = 0; for (const c of m[2]) o += c === "'" ? 12 : -12; return 60 + base + o; });
+// ---- melody model ----
+// Each lyric word holds a list of timed events {u, m}: u = length in quarter-beats (0.25 beat = 1), m = MIDI note or null for a rest.
+const NOTE_RE = /^(do|re|mi|fa|sol|so|la|ti|si|d|r|m|f|s|l|t)([',]*)(?:\(([\d.\/]+)\))?$/i;
+const beatsToU = str => { let v = str.includes("/") ? str.split("/").reduce((a, b) => +a / +b) : +str; if (!isFinite(v) || v <= 0) throw new Error(str); return Math.max(1, Math.round(v * 4)); };
+function noteMidi(name, marks){ const k = name.toLowerCase(); const base = LET[k === "si" ? "t" : k[0]]; let o = 0; for (const c of marks) o += c === "'" ? 12 : -12; return 60 + base + o; }
+// Reads the teacher's melody text, e.g.  "| 休止(0.5) 無 so,(0.5) 法 do(0.5) | 修 mi(0.5) … 一 mi(0.25)-re(0.25) …"
+// Lyric characters are optional (used only to double-check); labels like「第1節：」are ignored.
+// Without lengths every word gets one beat; "(mi-re)" with no lengths shares that beat.
+function parseMelody(text){
+  const t = text.replace(/[（]/g, "(").replace(/[）]/g, ")").replace(/[｜]/g, "|").replace(/[^\s|()]*[：:]/g, " ").replace(/\|/g, " | ");
+  const toks = t.split(/\s+/).filter(Boolean);
+  const words = [], bars = new Set(); let rest = 0, ch = null;
+  for (let tok of toks) {
+    if (tok === "|") { bars.add(words.length); continue; }
+    const r = /^(?:休止|rest|_|0)(?:\(([\d.\/]+)\))?$/i.exec(tok);
+    if (r) { rest += r[1] ? beatsToU(r[1]) : 4; continue; }
+    if (/^[^\x00-\x7F]+$/.test(tok)) { ch = tok; continue; }
+    if (tok.startsWith("(") && tok.endsWith(")") && !/\(.*\(/.test(tok.slice(1))) tok = tok.slice(1, -1);
+    const parts = tok.split("-").map(x => { const m = NOTE_RE.exec(x.trim()); if (!m) throw new Error(`睇唔明「${tok}」。`); return {m:noteMidi(m[1], m[2]), d:m[3]}; });
+    const anyLen = parts.some(x => x.d);
+    const ev = rest ? [{u:rest, m:null}] : []; rest = 0;
+    parts.forEach((x, q) => ev.push({u: x.d ? beatsToU(x.d) : anyLen ? 4 : (q < parts.length - 1 ? Math.floor(4 / parts.length) : 4 - Math.floor(4 / parts.length) * (parts.length - 1)) || 1, m:x.m}));
+    words.push({ev, ch}); ch = null;
+  }
+  if (rest && words.length) words[words.length - 1].ev.push({u:rest, m:null});
+  return {words, bars};
 }
-// compact transport through the 12-character name field: one letter per note (upper case = high, ',' prefix = low), '.' between words
+const evNotes = ev => (ev || []).filter(e => e.m != null).map(e => e.m);
+// transport through the 12-character name field: "<length><letter>" per event (upper case = high, ',' = low, '_' = rest), '.' between words
 const LETTER = {0:"d",2:"r",4:"m",5:"f",7:"s",9:"l",11:"t"};
-const encSol = line => line.map(ns => ns.map(n => { const L = LETTER[((n%12)+12)%12]; return n >= 72 ? L.toUpperCase() : n < 60 ? "," + L : L; }).join("")).join(".");
-const decSol = str => str.split(".").map(w => (w.match(/,?[a-zA-Z]/g) || []).map(t => { const low = t[0] === ","; const L = t.replace(",", ""); const n = 60 + LET[L.toLowerCase()] + (L === L.toUpperCase() ? 12 : 0) - (low ? 12 : 0); return n; }));
+const encEv = ev => ev.map(e => e.u + (e.m == null ? "_" : (() => { const m = Math.max(48, Math.min(83, e.m)), L = LETTER[((m%12)+12)%12]; return m >= 72 ? L.toUpperCase() : m < 60 ? "," + L : L; })())).join("");
+const encSol = line => line.map(encEv).join(".");
+const decSol = str => str.split(".").map(w => {
+  if (/\d/.test(w)) return [...w.matchAll(/(\d+)(,?[a-zA-Z_])/g)].map(([, u, t]) => ({u:+u, m: t === "_" ? null : (() => { const low = t[0] === ","; const L = t.replace(",", ""); return 60 + LET[L.toLowerCase()] + (L === L.toUpperCase() ? 12 : 0) - (low ? 12 : 0); })()}));
+  const ls = w.match(/,?[a-zA-Z]/g) || []; return ls.map(t => { const low = t[0] === ","; const L = t.replace(",", ""); return {u: Math.max(1, Math.floor(4 / ls.length)), m: 60 + LET[L.toLowerCase()] + (L === L.toUpperCase() ? 12 : 0) - (low ? 12 : 0)}; });
+});
+// schedules the melody (and optional chords) with real lengths; returns per-word start times for highlighting
+let playing = [];
+function stopAudio(){ for (const x of playing) { try { x.stop(); } catch {} } playing = []; }
+function scheduleSong(rows, secPerBeat, chordsOf){
+  const q = secPerBeat / 4, starts = [], strikes = []; let t = .08;
+  rows.forEach(({i, evs}) => evs.forEach((ev, j) => {
+    let tt = t, onset = null;
+    for (const e of (ev && ev.length ? ev : [{u:4, m:null}])) { if (e.m != null) { if (onset == null) onset = tt; { const n = note(e.m + 12, tt, e.u * q * .92, .9); if (n) playing.push(n); } } tt += e.u * q; }
+    starts.push({i, j, at: onset ?? t}); const c = chordsOf && chordsOf(i, j); if (c) strikes.push({at: onset ?? t, c}); t = tt;
+  }));
+  strikes.forEach((s, k) => { const end = k + 1 < strikes.length ? strikes[k + 1].at : t; CH[s.c].forEach(m => { const n = note(m - 12, s.at, Math.min(end - s.at, 8 * secPerBeat) * .97, .5); if (n) playing.push(n); }); });
+  return {starts, total: t};
+}
 const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
 const show = id => { for (const s of ["scHome","scP1","scP2","scHost"]) $(s).hidden = s !== id; window.scrollTo(0,0); };
 const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
@@ -286,10 +324,10 @@ function unlock(){ if (!ctx) return; try { if (navigator.audioSession) navigator
   ctx.resume(); try { const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0); } catch {} }
 const audioOk = () => ctx && Object.keys(buf).length >= 5;
 function note(m, when = 0, dur = 1.2, vel = .7){
-  if (!ctx) return; let r = 60; for (const x of Object.keys(SAMPLES).map(Number)) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
-  const b = buf[r]; if (!b) return; const t = ctx.currentTime + when, s = ctx.createBufferSource(), g = ctx.createGain();
+  if (!ctx) return null; let r = 60; for (const x of Object.keys(SAMPLES).map(Number)) if (Math.abs(x-m) < Math.abs(r-m)) r = x;
+  const b = buf[r]; if (!b) return null; const t = ctx.currentTime + when, s = ctx.createBufferSource(), g = ctx.createGain();
   s.buffer = b; s.playbackRate.value = Math.pow(2,(m-r)/12); s.connect(g); g.connect(ctx.destination);
-  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .15); s.start(t, .025); s.stop(t + dur + .8);
+  g.gain.setValueAtTime(vel, t); g.gain.setTargetAtTime(0, t + dur, .15); s.start(t, .025); s.stop(t + dur + .8); return s;
 }
 const chord = (ms, when = 0, dur = 1.4) => ms.forEach(m => note(m, when, dur, .55));
 
@@ -402,7 +440,7 @@ function renderLyrics(target = $("lyrics"), data = place, opts = {}){
     [...l].forEach((w, j) => {
       if (bars[i] && bars[i].has(j)) { const b = document.createElement("div"); b.className = "bar"; row.appendChild(b); }
       const c = document.createElement("div"); c.className = "cell" + (data[i][j] ? " has" : ""); c.dataset.i = i; c.dataset.j = j;
-      const ch = data[i][j], sf = (sol[i] && sol[i][j] || []).map(sfOf).join("-");
+      const ch = data[i][j], sf = evNotes(sol[i] && sol[i][j]).map(sfOf).join("-");
       c.innerHTML = `<span class="ch">${ch ? `${ROMAN[ch]}<small>${ch}</small>` : ""}</span><span class="sf">${sf}</span><span class="w">${w}</span>`;
       if (!opts.big) c.onclick = () => applyTool(i, j);
       row.appendChild(c);
@@ -415,11 +453,11 @@ function renderLyrics(target = $("lyrics"), data = place, opts = {}){
 }
 /* preview: play the chords in the order they sit on the lyrics, lighting up each word */
 let pv = null;
-function stopPreview(){ if (!pv) return; pv.timers.forEach(clearTimeout); for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
+function stopPreview(){ stopAudio(); if (!pv) return; pv.timers.forEach(clearTimeout); for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
   for (const b of document.querySelectorAll(".lplay.on,#p2all.on")) { b.classList.remove("on"); b.textContent = b.id === "p2all" ? "▶ 全首試聽" : "▶"; } pv = null; }
 function playLines(idx, btn){
   unlock(); const was = pv && pv.btn === btn; stopPreview(); if (was) return;
-  const hasMel = idx.some(i => (sol[i] || []).some(ns => ns.length));
+  const hasMel = idx.some(i => (sol[i] || []).some(ev => evNotes(ev).length));
   if (hasMel) return playMelody(idx, btn);
   const seq = []; idx.forEach(i => place[i].forEach((c, j) => { if (c) seq.push({i, j, c}); }));
   if (!seq.length) { $("p2msg").textContent = idx.length > 1 ? "未放任何和弦。" : `第 ${idx[0]+1} 句未放和弦。`; return; }
@@ -432,19 +470,16 @@ function playLines(idx, btn){
   }, k * gap * 1000)));
   pv.timers.push(setTimeout(stopPreview, seq.length * gap * 1000 + 300));
 }
-// with the teacher's solfa: every word gets one beat-ish slot, melody on top, each chord struck where it sits and held until the next one
+// with the teacher's melody: real note lengths, each chord struck where it sits and held until the next one
 function playMelody(idx, btn){
-  $("p2msg").textContent = ""; const u = (+($("p2speed").value) || 1.6) / 2.4;
+  $("p2msg").textContent = ""; const spb = (+($("p2speed").value) || 1.6) / 2;
   pv = {btn, timers:[]}; btn.classList.add("on"); btn.textContent = "■" + (btn.id === "p2all" ? " 停止" : "");
-  const slots = []; idx.forEach(i => [...lines[i]].forEach((_, j) => slots.push({i, j})));
-  const chordAt = slots.map(s => place[s.i][s.j]);
-  slots.forEach((s, k) => pv.timers.push(setTimeout(() => {
+  const {starts, total} = scheduleSong(idx.map(i => ({i, evs: sol[i] || []})), spb, (i, j) => place[i][j]);
+  starts.forEach(s => pv.timers.push(setTimeout(() => {
     for (const x of document.querySelectorAll("#lyrics .cell.now")) x.classList.remove("now");
     const cell = document.querySelector(`#lyrics .cell[data-i="${s.i}"][data-j="${s.j}"]`); if (cell) { cell.classList.add("now"); cell.scrollIntoView({block:"nearest", behavior:"smooth"}); }
-    const c = chordAt[k]; if (c) { let n = 1; while (k + n < slots.length && !chordAt[k + n]) n++; chord(CH[c].map(m => m - 12), 0, Math.min(n, 8) * u * .98); }
-    const ns = (sol[s.i] || [])[s.j] || []; ns.forEach((m, q) => note(m + 12, q * u / ns.length, u / ns.length * .95, .85));
-  }, k * u * 1000)));
-  pv.timers.push(setTimeout(stopPreview, slots.length * u * 1000 + 400));
+  }, s.at * 1000)));
+  pv.timers.push(setTimeout(stopPreview, total * 1000 + 600));
 }
 function applyTool(i, j, c = tool){
   unlock();
@@ -513,26 +548,18 @@ function readTeacher(){
   const ls = [], bs = [];
   raw.forEach((r, i) => { const b = new Set(); let txt = ""; for (const ch of r) { if (ch === "|" || ch === "｜") b.add([...txt].length); else txt += ch; }
     if ([...txt].length > MAXLEN) throw new Error(`第 ${i+1} 句超過 ${MAXLEN} 個字（標點都計）。`); ls.push(txt); bs.push(b); });
-  // solfa: brackets are ignored ("(mi-re)" = one word sung on two notes); "|" marks a bar line.
-  // Either one line per lyric line, or everything in one go — then it is shared out word by word in order.
-  const tokLine = str => str.replace(/[()（）]/g, " ").replace(/[|｜]/g, " | ").split(/\s+/).filter(Boolean);
-  const sraw = $("hSol").value.split(/\n/).map(tokLine).filter(t => t.length);
-  const counts = ls.map(l => [...l].length), notes = t => t.filter(x => x !== "|").length;
-  const parse = (t, where) => { try { return parseTok(t); } catch (e) { throw new Error(`${where}睇唔明「${t}」。`); } };
-  let ss;
-  if (!sraw.length) ss = ls.map(l => [...l].map(() => []));
-  else if (sraw.length === ls.length && sraw.every((t, i) => notes(t) === counts[i])) {
-    ss = sraw.map((t, i) => { let j = 0; const out = [];
-      for (const x of t) { if (x === "|") bs[i].add(j); else { out.push(parse(x, `第 ${i+1} 句：`)); j++; } } return out; });
-  } else {
-    const all = sraw.flat(), total = counts.reduce((a, b) => a + b, 0);
-    if (notes(all) !== total) throw new Error(`唱名一共有 ${notes(all)} 個，歌詞一共有 ${total} 個字，數目要一樣（一隻字唱幾個音用括號或者 - 連埋）。`);
-    ss = ls.map(() => []); let i = 0;
-    for (const x of all) {
-      while (i < ls.length && ss[i].length === counts[i]) i++;
-      if (x === "|") { const li = i < ls.length ? i : ls.length - 1; bs[li].add(ss[li].length); continue; }
-      ss[i].push(parse(x, `第 ${i+1} 句：`));
-    }
+  // melody: one long paste (or several lines) shared out over the lyric words in order; "|" = bar line
+  const counts = ls.map(l => [...l].length), total = counts.reduce((a, b) => a + b, 0);
+  const txt = $("hSol").value.trim(); let ss;
+  if (!txt) ss = ls.map(l => [...l].map(() => []));
+  else {
+    const mel = parseMelody(txt);
+    if (mel.words.length !== total) throw new Error(`唱名一共有 ${mel.words.length} 隻字嘅音，歌詞一共有 ${total} 個字，數目要一樣（一隻字唱幾個音用 - 連埋）。`);
+    ss = []; let g = 0;
+    ls.forEach((l, i) => { ss.push([]); [...l].forEach((w, j) => { const wd = mel.words[g];
+      if (wd.ch && wd.ch !== w) throw new Error(`第 ${i+1} 句第 ${j+1} 隻字：歌詞係「${w}」，唱名嗰度寫咗「${wd.ch}」。`);
+      if (g > 0 && mel.bars.has(g)) bs[i].add(j); ss[i].push(wd.ev); g++; }); });
+    if (mel.bars.has(total)) bs[ls.length - 1].add(counts[ls.length - 1]);
   }
   const enc = ss.map(encSol);
   if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
@@ -542,17 +569,14 @@ let testTimers = [];
 $("hLyrTest").onclick = async () => {
   unlock(); testTimers.forEach(clearTimeout); testTimers = [];
   let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
-  if (!t.ss.flat().some(ns => ns.length)) { $("hLyrMsg").textContent = "未有唱名：喺「唱名」格貼入唱名先可以試聽。"; return; }
+  if (!t.ss.flat().some(ev => evNotes(ev).length)) { $("hLyrMsg").textContent = "未有唱名：喺「唱名」格貼入唱名先可以試聽。"; return; }
   if (!audioOk()) { $("hLyrMsg").textContent = "鋼琴聲仲載入緊，等兩秒再撳。"; return; }
   try { await ctx.resume(); } catch {}
-  const u = .45; let k = 0;
-  t.ls.forEach((l, i) => [...l].forEach((w, j) => {
-    const ns = t.ss[i][j] || [], at = k;
-    testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽緊：第 ${i+1} 句「${w}」${ns.length ? " " + ns.map(sfOf).join("-") : ""}（每隻字一拍，冇節奏；冇聲就檢查音量／靜音掣）`; }, at * u * 1000));
-    ns.forEach((m, q) => note(m + 12, .05 + (at + q / ns.length) * u, u / ns.length * .9, .9)); k++;
-  }));
-  testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽完（${k} 隻字）。冇問題就撳「傳俾學生」。`; }, k * u * 1000 + 300));
+  stopAudio(); const {starts, total} = scheduleSong(t.ls.map((_, i) => ({i, evs: t.ss[i]})), .8, null);
+  starts.forEach(s => testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽緊：第 ${s.i+1} 句「${[...t.ls[s.i]][s.j]}」${evNotes(t.ss[s.i][s.j]).map(sfOf).join("-")}（冇聲就檢查音量／靜音掣）`; }, s.at * 1000)));
+  testTimers.push(setTimeout(() => { $("hLyrMsg").textContent = `試聽完（${starts.length} 隻字）。冇問題就撳「傳俾學生」。`; }, total * 1000 + 300));
 };
+$("hLyrStop") && ($("hLyrStop").onclick = () => { stopAudio(); testTimers.forEach(clearTimeout); $("hLyrMsg").textContent = "已停止。"; });
 $("hLyrSend").onclick = async () => {
   let t; try { t = readTeacher(); } catch (e) { $("hLyrMsg").textContent = e.message; return; }
   store.set("chordsheet.lyrics", $("hLyr").value); store.set("chordsheet.sol", $("hSol").value); $("hLyrSend").disabled = true; $("hLyrMsg").textContent = "傳送中…";
