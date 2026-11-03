@@ -210,7 +210,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <h2>歌詞</h2>
     <textarea class="txt" id="hLyr" placeholder="每行一句（最多 4 句，每句最多 12 個字）；用 | 劃小節線，例如：甲乙|丙丁戊|己庚"></textarea>
     <h2>唱名（可以唔填）</h2>
-    <p class="note">每行對應上面一句；每隻字一個唱名，用空格分開。一隻字唱幾個音用 - 連住（so-la）；高八度加 '（do'），低八度加 ,（so,）；冇音用 _。小節線唔使再打。</p>
+    <p class="note">每隻字一個唱名，用空格分開；可以每句一行，或者成段貼落嚟（會按歌詞字數順序分配）。一隻字唱幾個音用括號或者 - 連住：(so-la)；高八度加 '（do'），低八度加 ,（so,）；冇音用 _。| 係小節線，打喺唱名或者歌詞度都得。</p>
     <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
     <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><span class="note" id="hLyrMsg"></span></div>
   </div>
@@ -511,11 +511,27 @@ function readTeacher(){
   const ls = [], bs = [];
   raw.forEach((r, i) => { const b = new Set(); let txt = ""; for (const ch of r) { if (ch === "|" || ch === "｜") b.add([...txt].length); else txt += ch; }
     if ([...txt].length > MAXLEN) throw new Error(`第 ${i+1} 句超過 ${MAXLEN} 個字（標點都計）。`); ls.push(txt); bs.push(b); });
-  const sraw = $("hSol").value.split(/\n/).map(s => s.trim()).filter(Boolean);
-  const ss = ls.map((l, i) => { const n = [...l].length; if (!sraw[i]) return [...l].map(() => []);
-    const toks = sraw[i].split(/\s+/).filter(t => t && t !== "|" && t !== "｜");
-    if (toks.length !== n) throw new Error(`第 ${i+1} 句：歌詞有 ${n} 個字，唱名有 ${toks.length} 個。`);
-    return toks.map(t => { try { return parseTok(t); } catch (e) { throw new Error(`第 ${i+1} 句：睇唔明「${t}」。`); } }); });
+  // solfa: brackets are ignored ("(mi-re)" = one word sung on two notes); "|" marks a bar line.
+  // Either one line per lyric line, or everything in one go — then it is shared out word by word in order.
+  const tokLine = str => str.replace(/[()（）]/g, " ").replace(/[|｜]/g, " | ").split(/\s+/).filter(Boolean);
+  const sraw = $("hSol").value.split(/\n/).map(tokLine).filter(t => t.length);
+  const counts = ls.map(l => [...l].length), notes = t => t.filter(x => x !== "|").length;
+  const parse = (t, where) => { try { return parseTok(t); } catch (e) { throw new Error(`${where}睇唔明「${t}」。`); } };
+  let ss;
+  if (!sraw.length) ss = ls.map(l => [...l].map(() => []));
+  else if (sraw.length === ls.length && sraw.every((t, i) => notes(t) === counts[i])) {
+    ss = sraw.map((t, i) => { let j = 0; const out = [];
+      for (const x of t) { if (x === "|") bs[i].add(j); else { out.push(parse(x, `第 ${i+1} 句：`)); j++; } } return out; });
+  } else {
+    const all = sraw.flat(), total = counts.reduce((a, b) => a + b, 0);
+    if (notes(all) !== total) throw new Error(`唱名一共有 ${notes(all)} 個，歌詞一共有 ${total} 個字，數目要一樣（一隻字唱幾個音用括號或者 - 連埋）。`);
+    ss = ls.map(() => []); let i = 0;
+    for (const x of all) {
+      while (i < ls.length && ss[i].length === counts[i]) i++;
+      if (x === "|") { const li = i < ls.length ? i : ls.length - 1; bs[li].add(ss[li].length); continue; }
+      ss[i].push(parse(x, `第 ${i+1} 句：`));
+    }
+  }
   const enc = ss.map(encSol);
   if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
   return {ls, bs, ss, enc};
