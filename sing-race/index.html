@@ -106,6 +106,7 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
     <span class="chip" id="chipAcc">伴奏</span>
     <span class="chip" id="chipLyr">歌詞</span>
     <span class="chip" id="chipPitch">音準</span>
+    <span class="chip" id="chipMic">咪</span>
   </div>
 </div>
 
@@ -113,6 +114,11 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
   <div class="dlg">
     <header><h2>老師設定</h2><div class="spacer"></div><button class="btn btn-main sm" id="dlgClose">完成</button></header>
     <div class="body">
+      <section>
+        <h3>咪</h3>
+        <div class="row"><select id="micSel" style="min-width:260px"></select><button class="btn btn-soft sm" id="micRefresh">重新整理</button><span id="micInfo"></span></div>
+        <p class="hint">預設用 MacBook 本身個咪，唔會自動轉去 iPhone（唔會中斷你部電話錄緊嘅片）。揀咗會記住。第一次要先撳「① 校準」允許用咪，先會見到咪嘅名。</p>
+      </section>
       <section>
         <h3>1. 伴奏</h3>
         <div class="row"><label class="btn btn-soft sm file">載入伴奏檔<input type="file" id="accFile" accept="audio/*,.mp3,.m4a,.wav,.aac"></label><span id="accInfo">未載入</span></div>
@@ -173,7 +179,7 @@ const DIFF = {
 /* ---------- saved settings ---------- */
 const LS = "singrace2";
 const cfg = Object.assign({diff:"mid", lyrics:"", times:[], timesFor:-1, end:null, fullIntro:false,
-  accName:"", accVol:70, pm:"key", key:"auto", autoKey:null, guide:null, gOff:0, shift:0, singOn:true, thr:.45}, loadCfg());
+  accName:"", accVol:70, pm:"key", key:"auto", autoKey:null, guide:null, gOff:0, shift:0, singOn:true, thr:.45, micId:"", micLabel:""}, loadCfg());
 function loadCfg(){ try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return {}; } }
 function save(){ try { localStorage.setItem(LS, JSON.stringify(cfg)); } catch(e){} }
 function idb(){ return new Promise((res, rej) => { const r = indexedDB.open("singrace2", 1);
@@ -234,14 +240,50 @@ function pitchOf(fr, fs){
   const tau = pt + (den ? (a - c)/(2*den) : 0);
   return {vol, clar:Math.max(0, b), midi:69 + 12*Math.log2(f2/tau/440)};
 }
-let an = null, micBuf = null;
-async function initMic(){
-  if (an) return true;
+// Microphone: always open a specific device (never "default"), so macOS switching its input to a nearby iPhone
+// (Continuity) does not pull the game onto the phone's mic and stop the phone's own recording.
+let an = null, micBuf = null, micStream = null, micSrc = null, micLabel = "";
+const PHONE = /iphone|ipad|continuity|接續/i, BUILTIN = /macbook|built.?in|內置|內建|internal/i;
+async function audioInputs(){ try { return (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "audioinput" && d.deviceId !== "default" && d.deviceId !== "communications"); } catch(e){ return []; } }
+function pickMic(list){
+  const saved = cfg.micId && list.find(d => d.deviceId === cfg.micId) || cfg.micLabel && list.find(d => d.label === cfg.micLabel);
+  if (saved) return saved;
+  return list.find(d => BUILTIN.test(d.label) && !PHONE.test(d.label)) || list.find(d => !PHONE.test(d.label)) || list[0];
+}
+async function openMic(deviceId){
+  const base = {echoCancellation:false, noiseSuppression:false, autoGainControl:false};
+  return navigator.mediaDevices.getUserMedia({audio: deviceId ? {...base, deviceId:{exact:deviceId}} : base});
+}
+function closeMic(){ if (micStream) micStream.getTracks().forEach(t => t.stop()); if (micSrc) micSrc.disconnect(); micStream = null; micSrc = null; an = null; }
+async function initMic(force){
+  if (an && !force) return true;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
-    const c = AC(); await c.resume(); const src = c.createMediaStreamSource(stream);
-    an = c.createAnalyser(); an.fftSize = 2048; src.connect(an); micBuf = new Float32Array(an.fftSize); return true;
+    closeMic();
+    let list = await audioInputs(), dev = list.some(d => d.label) ? pickMic(list) : null, stream;
+    if (dev) { try { stream = await openMic(dev.deviceId); } catch(e){ stream = null; } }
+    if (!stream) {
+      // first visit: labels are hidden until permission is given, so open once, then re-pick the built-in mic
+      stream = await openMic(cfg.micId || null);
+      list = await audioInputs(); dev = pickMic(list);
+      const cur = stream.getAudioTracks()[0]?.getSettings().deviceId;
+      if (dev && cur !== dev.deviceId) { stream.getTracks().forEach(t => t.stop()); stream = await openMic(dev.deviceId); }
+    }
+    const tr = stream.getAudioTracks()[0]; micLabel = tr ? tr.label : "";
+    const id = tr?.getSettings().deviceId; if (id) { cfg.micId = id; cfg.micLabel = micLabel; save(); }
+    tr && tr.addEventListener("ended", () => { an = null; renderChips(); });
+    const c = AC(); await c.resume(); micStream = stream; micSrc = c.createMediaStreamSource(stream);
+    an = c.createAnalyser(); an.fftSize = 2048; micSrc.connect(an); micBuf = new Float32Array(an.fftSize);
+    renderChips(); fillMics(); return true;
   } catch(e) { alert("用唔到咪：請喺瀏覽器網址列旁邊允許使用咪，再試一次。"); return false; }
+}
+async function fillMics(){
+  const sel = $("micSel"); if (!sel) return; const list = await audioInputs(); sel.textContent = "";
+  if (!list.some(d => d.label)) { sel.add(new Option("（先撳「① 校準」允許用咪）", "")); sel.disabled = true; $("micInfo").textContent = ""; return; }
+  sel.disabled = false; const cur = cfg.micId;
+  list.forEach(d => sel.add(new Option((PHONE.test(d.label) ? "⚠ " : "") + d.label, d.deviceId)));
+  sel.value = list.some(d => d.deviceId === cur) ? cur : (pickMic(list)?.deviceId || "");
+  const now = list.find(d => d.deviceId === sel.value);
+  $("micInfo").innerHTML = now && PHONE.test(now.label) ? `<span class="bad-t">呢個係電話嘅咪，會中斷電話錄影</span>` : (an ? `<span class="ok-t">用緊</span>` : "");
 }
 const pHist = [];
 function analyse(){
@@ -356,6 +398,7 @@ function judgePitch(t, midi){
 function renderDiff(){ document.querySelectorAll("#diff button").forEach(b => { b.setAttribute("aria-checked", b.dataset.d === cfg.diff); b.disabled = ["run","count","pause"].includes(state); }); }
 document.querySelectorAll("#diff button").forEach(b => b.onclick = () => { cfg.diff = b.dataset.d; save(); renderDiff(); if (state !== "run") hearts = DIFF[cfg.diff].hearts; });
 function renderChips(){
+  const cm = $("chipMic"); if (cm) { const ph = PHONE.test(micLabel); cm.textContent = micLabel ? (ph ? "⚠ 咪：" : "咪：") + micLabel.replace(/\s*\(.*?\)\s*$/, "") : "咪：未開"; cm.className = "chip " + (micLabel && !ph ? "on" : "off"); }
   const c1 = $("chipAcc"), c2 = $("chipLyr"), c3 = $("chipPitch");
   c1.textContent = accBuf ? "伴奏 ✓" : "伴奏：未載入"; c1.className = "chip " + (accBuf ? "on" : "off");
   const L = lines(), timed = L.length && vTimes().length === L.length;
@@ -363,6 +406,7 @@ function renderChips(){
   const pm = pitchMode(); c3.textContent = "音準：" + {guide:"跟導唱", key:`調內（do=${NN[keyPc()]}）`, off:"唔計"}[pm]; c3.className = "chip on";
 }
 function renderSettings(){
+  fillMics();
   $("accInfo").innerHTML = accBuf ? `<b>${esc(cfg.accName || "伴奏")}</b>・${fmt(accBuf.duration)}` : "未載入";
   $("accVol").value = cfg.accVol; $("accVolV").textContent = cfg.accVol;
   $("lyr").value = cfg.lyrics; $("fullIntro").checked = cfg.fullIntro;
@@ -391,6 +435,10 @@ $("keySel").onchange = e => { cfg.key = e.target.value; save(); renderChips(); }
 $("gOff").oninput = e => { cfg.gOff = +e.target.value/100; $("gOffV").textContent = cfg.gOff.toFixed(2); save(); };
 $("shift").oninput = e => { cfg.shift = +e.target.value; $("shiftV").textContent = (cfg.shift > 0 ? "+" : "") + cfg.shift; save(); };
 $("singOn").onchange = e => { cfg.singOn = e.target.checked; save(); };
+$("micSel").onchange = async e => { const list = await audioInputs(), d = list.find(x => x.deviceId === e.target.value); if (!d) return;
+  cfg.micId = d.deviceId; cfg.micLabel = d.label; save(); if (an || micStream) { await initMic(true); base = null; $("goBtn").disabled = true; if (state === "ready") { state = "idle"; showBanner(`<h2>換咗咪</h2><p>請再撳「① 校準」</p>`); } } fillMics(); };
+$("micRefresh").onclick = fillMics;
+navigator.mediaDevices && navigator.mediaDevices.addEventListener && navigator.mediaDevices.addEventListener("devicechange", () => { if ($("dlg").open) fillMics(); });
 $("thr").oninput = e => { cfg.thr = +e.target.value/100; $("thrV").textContent = Math.round(cfg.thr*100); save(); };
 
 async function setAcc(ab, name, store){
