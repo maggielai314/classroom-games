@@ -255,7 +255,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     <div class="res-head">
       <div><span class="label" id="resMode"></span><div class="big" id="resScore">0</div></div>
       <div class="stats">
-        <div class="stat"><b id="resCorrect">0</b><span>答對（共 12 題）</span></div>
+        <div class="stat"><b id="resCorrect">0</b><span id="resOf">答對（共 12 題）</span></div>
         <div class="stat"><b id="resBest">0</b><span>最長連續答對</span></div>
         <div class="stat"><b id="resRank">—</b><span>排名</span></div>
       </div>
@@ -274,7 +274,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 (() => {
 "use strict";
 const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
-const NQ = 12;
+const NQ = 12;                      // listening challenge
+const NQ_BASIC = 6;                 // stage 1: 3 build + 3 quick (12 was too long for a 35-min lesson)
+const nqOf = m => m === "basic" ? NQ_BASIC : NQ;
 // Shared backend only accepts its own stage ids; map them onto this game's modes.
 const MODES = [
   {id:"basic", stage:"terms", name:"第 1 關：砌和弦", short:"砌和弦", limit:10},
@@ -408,7 +410,7 @@ function renderTable(el, rows, meId, limit, showStatus, caption){
   let shown = sorted.slice(0, limit); const mi = sorted.findIndex(r => r.pid === meId); if (mi >= limit) shown.push(sorted[mi]);
   for (const r of shown) {
     const tr = t.insertRow(); if (r.pid === meId) tr.className = "me";
-    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[r.status==="done"?`${r.correct||0}/${NQ}`:"—",""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
+    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[r.status==="done"?`${r.correct||0}/${r.level === 1 ? NQ_BASIC : NQ}`:"—",""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
     for (const [v,c] of cells) { const td = tr.insertCell(); td.textContent = v; if (c) td.className = c; }
   }
   el.appendChild(t);
@@ -437,8 +439,8 @@ let G = null, raf = 0;
 function makeQuestions(mode){
   const qs = [];
   if (mode === "basic") {
-    const b1 = shuffle(ROOTS); for (let i = 0; i < 6; i++) { const c = b1[i]; qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0], hint:i < 2}); }
-    const b2 = shuffle(["C","F","G","Am"]).concat(shuffle(["Dm","Em"])); for (let i = 0; i < 6; i++) { const c = b2[i]; qs.push({type:"name", chord:c, notes:CHORDS[c], hint:i === 0}); }
+    const b1 = shuffle(["C","F","G"]).slice(0, 2).concat(shuffle(["Dm","Em","Am"]).slice(0, 1)); for (let i = 0; i < 3; i++) { const c = b1[i]; qs.push({type:"build", chord:c, notes:CHORDS[c], root:CHORDS[c][0], hint:i < 2}); }
+    const b2 = shuffle(["C","F","G","Am"]).filter(c => c !== b1[2]).slice(0, 3); for (let i = 0; i < 3; i++) { const c = b2[i]; qs.push({type:"name", chord:c, notes:CHORDS[c], hint:i === 0}); }
   } else {
     let bag = []; for (let i = 0; i < NQ; i++) { if (!bag.length) bag = shuffle(["F","G","Am","C","F","G"]); const c = bag.pop(); qs.push({type:"ear", chord:c, notes:CHORDS[c], opts:["C","F","G","Am"]}); }
   }
@@ -453,9 +455,9 @@ function startGame(opts){
   const iv = setInterval(() => { n--; if (n > 0) cd.textContent = n; else { clearInterval(iv); cd.hidden = true; next(); } }, 650);
 }
 function next(){
-  G.i++; if (G.i >= NQ) return finish();
+  G.i++; if (G.i >= G.qs.length) return finish();
   const q = G.q = G.qs[G.i]; G.sel = q.type === "build" ? [q.root] : []; G.lock = false; G.t0 = performance.now();
-  $("hudQ").textContent = `${G.i+1} / ${NQ}`; $("fb").textContent = ""; $("fb").className = "fb";
+  $("hudQ").textContent = `${G.i+1} / ${G.qs.length}`; $("fb").textContent = ""; $("fb").className = "fb";
   const isEar = q.type === "ear"; $("opts").hidden = !isEar; kb.hidden = isEar; $("replayBtn").hidden = !isEar; $("clearBtn").hidden = isEar;
   if (q.type === "build") {
     $("qKick").textContent = "疊三度"; $("qText").innerHTML = `根音係 <span class="chord">${PC[q.root%12]}</span>，撳埋另外兩個音`;
@@ -647,12 +649,12 @@ $("liveQuit").onclick = () => { if (L) clearInterval(L.iv); L = null; show("scHo
 async function finish(){
   const g = G; g.lock = true; show("scResults");
   $("resMode").textContent = g.M.name + (g.room ? " · PIN " + g.room.pin : " · 練習");
-  $("resScore").textContent = g.score; $("resCorrect").textContent = `${g.correct}`; $("resBest").textContent = g.best; $("resRank").textContent = "—";
+  $("resScore").textContent = g.score; $("resCorrect").textContent = `${g.correct}`; $("resOf").textContent = `答對（共 ${g.qs.length} 題）`; $("resBest").textContent = g.best; $("resRank").textContent = "—";
   const st = $("resStatus");
   if (!g.room) { st.className = "status"; st.textContent = "練習模式：分數不會上排行榜。"; $("resTop").textContent = ""; return; }
   st.className = "status"; st.textContent = "上傳分數中…"; $("resTopTitle").textContent = "房間排行榜 · PIN " + g.room.pin;
   try {
-    await api({a:"finish", pin:g.room.pin, pid:g.room.pid, name:g.room.name, score:g.score, level:MODES.indexOf(g.M)+1, correct:g.correct, answered:NQ});
+    await api({a:"finish", pin:g.room.pin, pid:g.room.pid, name:g.room.name, score:g.score, level:MODES.indexOf(g.M)+1, correct:g.correct, answered:g.qs.length});
     st.className = "status ok"; st.textContent = "分數已上傳。";
     const refresh = async () => { try { const r = await api({a:"board", pin:g.room.pin}); const s = r.rows.slice().sort((a,b)=>b.score-a.score||a.updated-b.updated);
       $("resRank").textContent = (s.findIndex(x => x.pid === g.room.pid)+1) + " / " + s.length; renderTable($("resTop"), r.rows, g.room.pid, 10, false, ""); } catch {} };
