@@ -75,7 +75,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 .whites{position:relative;display:flex;height:100%;gap:3px}
 .key{position:relative}
 .white{flex:1;background:#fff;border-radius:0 0 10px 10px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:10px;gap:6px}
-.white .nm{font-weight:900;font-size:clamp(16px,2.6vw,26px);color:var(--plum)}
+.white .sf{font-weight:900;font-size:clamp(17px,2.6vw,26px);color:var(--plum);line-height:1}
+.white .nm{font-weight:700;font-size:clamp(12px,1.6vw,16px);color:var(--muted);line-height:1}
 .black{position:absolute;top:10px;height:58%;background:#2B2340;border-radius:0 0 8px 8px;z-index:2}
 .key.sel{background:var(--lilac)!important}
 .black.sel{background:#8A6CF0!important}
@@ -86,6 +87,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 .key .tag{font-size:12px;font-weight:900;color:#fff;background:var(--hot);border-radius:999px;padding:2px 8px}
 .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .opt{min-height:96px;border-radius:16px;background:var(--card);border:2px solid var(--plum);font-family:var(--f-hud);font-weight:700;font-size:40px;color:var(--plum)}
+.chord small{font-family:var(--f-ui);font-size:.5em;font-weight:700;color:var(--muted);letter-spacing:0}
 .opt.right{background:#BDEBD6;border-color:var(--good)}.opt.wrong{background:#F7B3C2;border-color:var(--bad)}
 .ctrl{display:flex;gap:10px;justify-content:space-between;align-items:center}
 .ctrl .btn{min-height:46px;font-size:16px}
@@ -295,6 +297,13 @@ function earSeq(seed, phase){ const r = rng(seed + phase*7919); if (phase === 3)
   const extra = seededShuffle(["F","G","Am"], r).slice(0, 2); return seededShuffle([...EAR_OPTS, ...extra], r); }
 
 const PC = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
+// Students know solfa (fixed to C major here) better than letter names: solfa / numerals lead, letters support.
+const SF = {0:"Do",2:"Re",4:"Mi",5:"Fa",7:"So",9:"La",11:"Ti"};
+const sfOf = m => SF[m%12] || PC[m%12];
+const chName = c => `${ROMAN[c]}（${c}）`;                                     // IV（F）
+const notesName = ms => `${ms.map(sfOf).join("・")}（${ms.map(m => PC[m%12]).join("・")}）`; // Fa・La・Do（F・A・C）
+const optHtml = c => `${ROMAN[c]}<small>${c}</small>`;
+const bigLbl = (main, sub) => `<span class="chord">${main}<small>（${sub}）</small></span>`;   // prompt: big main + small letter name
 const LOW = 60, HIGH = 76;             // C4 .. E5
 const CHORDS = {C:[60,64,67], Dm:[62,65,69], Em:[64,67,71], F:[65,69,72], G:[67,71,74], Am:[69,72,76]};
 const ROOTS = ["C","Dm","Em","F","G","Am"];
@@ -440,7 +449,7 @@ function renderTable(el, rows, meId, limit, showStatus, caption){
 /* ---------- keyboard ---------- */
 const kb = $("kb"), whites = $("whites"); const wl = [];
 for (let m = LOW; m <= HIGH; m++) { if ([1,3,6,8,10].includes(m%12)) continue;
-  const d = document.createElement("div"); d.className = "key white"; d.dataset.m = m; d.innerHTML = `<span class="nm">${PC[m%12]}</span>`; whites.appendChild(d); wl.push(m); }
+  const d = document.createElement("div"); d.className = "key white"; d.dataset.m = m; d.innerHTML = `<span class="sf">${sfOf(m)}</span><span class="nm">${PC[m%12]}</span>`; whites.appendChild(d); wl.push(m); }
 function placeBlacks(){
   kb.querySelectorAll(".black").forEach(e => e.remove()); const els = [...whites.children];
   for (let m = LOW; m < HIGH; m++) { if (![1,3,6,8,10].includes(m%12)) continue;
@@ -481,13 +490,13 @@ function next(){
   $("hudQ").textContent = `${G.i+1} / ${G.qs.length}`; $("fb").textContent = ""; $("fb").className = "fb";
   const isEar = q.type === "ear"; $("opts").hidden = !isEar; kb.hidden = isEar; $("replayBtn").hidden = !isEar; $("clearBtn").hidden = isEar;
   if (q.type === "build") {
-    $("qKick").textContent = "疊三度"; $("qText").innerHTML = `根音係 <span class="chord">${PC[q.root%12]}</span>，撳埋另外兩個音`;
+    $("qKick").textContent = "疊三度"; $("qText").innerHTML = `根音係 ${bigLbl(sfOf(q.root), PC[q.root%12])}，撳埋另外兩個音`;
     $("qHint").textContent = q.hint ? "提示：由根音開始，隔一個白鍵，再隔一個白鍵。" : "";
   } else if (q.type === "name") {
-    $("qKick").textContent = "速認和弦"; $("qText").innerHTML = `撳出 <span class="chord">${q.chord}</span> 和弦嘅三個音`;
+    $("qKick").textContent = "速認和弦"; $("qText").innerHTML = `撳出 ${bigLbl(ROMAN[q.chord], q.chord)} 和弦嘅三個音`;
     $("qHint").textContent = q.hint ? "下半場：而家要自己搵根音，再疊兩個三度。" : (q.chord.endsWith("m") ? "小和弦：一樣係隔一個白鍵。" : "");
   } else {
-    $("qKick").textContent = "聽和弦"; $("qText").innerHTML = `先聽 <span class="chord">C</span>，再聽神秘和弦：係邊個？`;
+    $("qKick").textContent = "聽和弦"; $("qText").innerHTML = `先聽 ${bigLbl("I", "C")}，再聽神秘和弦：係邊個？`;
     $("qHint").textContent = "可以撳「再聽」。"; buildOpts(q); playEar(q);
   }
   paintKeys(); updateHud();
@@ -498,7 +507,7 @@ function next(){
 function playEar(q){ earPattern(q.chord, true); }
 function buildOpts(q){
   const box = $("opts"); box.textContent = "";
-  for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = o; b.innerHTML = `${o}<small>${ROMAN[o]}</small>`; b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
+  for (const o of q.opts) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = o; b.innerHTML = optHtml(o); b.onclick = () => { if (G.lock) return; G.pick = o; judge(o === q.chord); }; box.appendChild(b); }
 }
 function tapKey(m){
   const q = G.q; note(m, 0, .7, .7);
@@ -516,7 +525,7 @@ function paintKeys(){
     if (q.type === "build" && m === q.root) k.classList.add("root"); else if (G.sel.includes(m)) k.classList.add("sel");
     if (q.type === "build" && G.i === 0 && !G.lock && q.notes.includes(m) && m !== q.root) k.classList.add("ghost");
     const old = k.querySelector(".tag"); if (old) old.remove(); });
-  $("picked").textContent = G.sel.length ? "已揀：" + G.sel.slice().sort((a,b)=>a-b).map(m => PC[m%12]).join(" ") : "";
+  $("picked").textContent = G.sel.length ? "已揀：" + (ms => `${ms.map(sfOf).join(" ")}（${ms.map(m => PC[m%12]).join(" ")}）`)(G.sel.slice().sort((a,b)=>a-b)) : "";
 }
 function judge(ok, timeout = false){
   if (G.lock) return; G.lock = true; cancelAnimationFrame(raf);
@@ -527,13 +536,13 @@ function judge(ok, timeout = false){
   else { G.streak = 0; $("fb").textContent = timeout ? "夠鐘！" : "唔啱"; $("fb").className = "fb ng"; blip(false); }
   // reveal
   if (q.type === "ear") { for (const b of $("opts").children) { if (b.dataset.c === q.chord) b.classList.add("right"); else if (b.dataset.c === G.pick) b.classList.add("wrong"); } G.pick = null;
-    $("qHint").textContent = `答案：${q.chord}（${ROMAN[q.chord]}）＝ ${q.notes.map(m=>PC[m%12]).join("・")}`; }
+    $("qHint").textContent = `答案：${chName(q.chord)}＝ ${notesName(q.notes)}`; }
   else {
     const want = q.notes, keyMatch = m => q.type === "name" ? want.some(w => w%12 === m%12) : want.includes(m);
     kb.querySelectorAll(".key").forEach(k => { const m = +k.dataset.m; k.classList.remove("ghost","sel");
       if (want.includes(m)) k.classList.add("right"); else if (G.sel.includes(m) && !keyMatch(m)) k.classList.add("wrong"); });
     want.forEach((m, j) => { const k = keyEl(m); if (k && k.classList.contains("white")) { const t = document.createElement("span"); t.className = "tag"; t.textContent = j === 0 ? "根音" : (j === 1 ? "三度" : "五度"); k.prepend(t); } });
-    $("qHint").textContent = `${q.chord} 和弦（${ROMAN[q.chord]}）＝ ${want.map(m=>PC[m%12]).join("・")}（隔一個白鍵疊上去）`;
+    $("qHint").textContent = `${chName(q.chord)}＝ ${notesName(want)}　隔一個白鍵疊上去`;
     stopAll(); chord(want, .05, 1.0);
   }
   updateHud(); setTimeout(next, ok ? 1100 : 1900);
@@ -568,7 +577,7 @@ function earPhaseUi(){
 }
 function buildDemo(){
   const box = $("earDemo"); box.textContent = "";
-  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.innerHTML = `${c}<small>${ROMAN[c]}</small>`;
+  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.innerHTML = optHtml(c);
     b.onclick = () => { unlock(); for (const x of box.children) x.classList.toggle("on", x === b); stopAll(); chord(CHORDS[c], .05, 1.6); }; box.appendChild(b); }
 }
 function earSeqNow(){ return earSeq(E.seed, E.phase); }
@@ -579,7 +588,7 @@ function earPlay(){
 function earShowQ(){
   const seq = earSeqNow(), N = seq.length;
   $("earQn").textContent = (E.phase === 3 ? "試玩（唔計分）" : "正式比賽") + ` · 第 ${E.q} / ${N} 題`;
-  const c = seq[E.q - 1]; $("earAns").innerHTML = E.rev ? `${c}<small> ${ROMAN[c]}</small>` : "？";
+  const c = seq[E.q - 1]; $("earAns").innerHTML = E.rev ? `${ROMAN[c]}<small> ${c}</small>` : "？";
   $("earReveal").disabled = E.rev; $("earNext").disabled = !E.rev;
   $("earNext").textContent = E.q >= N ? (E.phase === 3 ? "開始正式比賽 ▸" : "結束・排行榜 ▸") : "下一題 ▸";
 }
@@ -616,7 +625,7 @@ function startLive(room){
   L = {room, score:0, correct:0, answered:0, key:"", t0:0, pick:null, timer:0, phase:1};
   show("scLive"); $("liveMode").textContent = "PIN " + room.pin; $("liveScore").innerHTML = `0<small>SCORE</small>`;
   const box = $("liveOpts"); box.textContent = "";
-  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = c; b.innerHTML = `${c}<small>${ROMAN[c]}</small>`; b.onclick = () => livePick(c); box.appendChild(b); }
+  for (const c of EAR_OPTS) { const b = document.createElement("button"); b.className = "opt"; b.dataset.c = c; b.innerHTML = optHtml(c); b.onclick = () => livePick(c); box.appendChild(b); }
   livePoll(); L.iv = setInterval(livePoll, 2200 + Math.floor(Math.random()*600));
 }
 async function livePoll(){
@@ -628,7 +637,7 @@ async function livePoll(){
   const msg = $("liveMsg"), opts = $("liveOpts");
   if (ph <= 2 || ph === 5) {
     opts.hidden = true; $("liveFill").style.transform = "scaleX(0)";
-    if (ph === 2) { $("liveQ").textContent = "試聽"; msg.innerHTML = "聽老師播四個和弦<small>C（I）・F（IV）・G（V）・Am（vi）</small>"; }
+    if (ph === 2) { $("liveQ").textContent = "試聽"; msg.innerHTML = "聽老師播四個和弦<small>I（C）・IV（F）・V（G）・vi（Am）</small>"; }
     else if (ph === 5) { $("liveQ").textContent = "完成"; const s = r.rows.filter(x => !isHostRow(x)).sort((a,b)=>b.score-a.score); const i = s.findIndex(x => x.pid === L.room.pid);
       msg.innerHTML = `比賽完！你嘅分數：${L.score}<small>排名 ${i >= 0 ? (i+1) + " / " + s.length : "—"}・答對 ${L.correct} 題</small>`; }
     else { $("liveQ").textContent = "挑戰關：聽和弦"; msg.innerHTML = "已加入！<small>望大螢幕，等老師開始</small>"; }
@@ -649,7 +658,7 @@ async function livePoll(){
     cancelAnimationFrame(L.timer); $("liveFill").style.transform = "scaleX(0)";
     for (const b of opts.children) { b.disabled = true; b.style.background = ""; if (b.dataset.c === ans) b.classList.add("right"); else if (b.dataset.c === L.pick) b.classList.add("wrong"); }
     const ok = L.pick === ans;
-    msg.innerHTML = (ok ? "答啱！" : L.pick ? "唔啱" : "冇作答") + `<small>答案：${ans}（${ROMAN[ans]}）${ph === 3 ? "・試玩唔計分" : ""}</small>`;
+    msg.innerHTML = (ok ? "答啱！" : L.pick ? "唔啱" : "冇作答") + `<small>答案：${chName(ans)}${ph === 3 ? "・試玩唔計分" : ""}</small>`;
     if (ok) blip(true); else blip(false);
   }
 }
