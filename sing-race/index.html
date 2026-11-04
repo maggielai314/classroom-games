@@ -29,6 +29,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .btn.sm{min-height:38px;font-size:14.5px;padding:0 12px}
 .btn-main{background:var(--plum);color:#fff}.btn-soft{background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum)}
 .btn:disabled{opacity:.4;cursor:default}
+.songpick{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:3px 6px 3px 12px;font-weight:900;color:var(--muted)}
+.songpick select{border:0;font-weight:900;color:var(--plum);min-height:38px;max-width:220px;padding:0 6px;background:transparent}
+.warnbox{background:#FFF1F4;border:1.5px solid #F1B8C6;color:var(--bad);border-radius:12px;padding:10px 12px;font-size:14px;font-weight:700;line-height:1.5;margin-top:8px}
 .seg{display:flex;background:var(--card);border:1.5px solid var(--rule);border-radius:12px;padding:3px;gap:3px}
 .seg button{min-height:38px;padding:0 14px;border-radius:9px;font-weight:900;color:var(--muted);display:flex;align-items:center;gap:6px}
 .seg button span{font-family:var(--f-hud);font-size:13px;color:var(--hot);font-weight:700}
@@ -81,6 +84,7 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
 <div class="app">
   <div class="top">
     <h1>SING RACE<small>合唱過關</small></h1>
+    <label class="songpick"><span>歌</span><select id="songSel" aria-label="揀歌"></select></label>
     <div class="seg" id="diff" role="radiogroup" aria-label="難度">
       <button role="radio" data-d="easy">易 <span>♥5</span></button>
       <button role="radio" data-d="mid">中 <span>♥4</span></button>
@@ -114,6 +118,15 @@ dialog::backdrop{background:rgba(42,33,64,.35)}
   <div class="dlg">
     <header><h2>老師設定</h2><div class="spacer"></div><button class="btn btn-main sm" id="dlgClose">完成</button></header>
     <div class="body">
+      <section>
+        <h3>歌單</h3>
+        <div class="row"><b>而家：</b><input id="songTitle" maxlength="30" style="border:1.5px solid #CFC4EC;border-radius:10px;padding:6px 10px;font:inherit;color:var(--plum);font-weight:700;width:240px" aria-label="歌名">
+          <button class="btn btn-main sm" id="songNew">＋ 新增一首歌</button><button class="btn btn-soft sm" id="songDel">🗑 刪除呢首</button></div>
+        <div class="row"><button class="btn btn-soft sm" id="songExport">⬇ 匯出備份檔</button>
+          <label class="btn btn-soft sm file">⬆ 匯入備份檔<input type="file" id="songImport" accept=".json,application/json"></label><span id="songMsg"></span></div>
+        <p class="hint">每首歌各自記住伴奏、歌詞、時間、導唱同音準設定，一改就自動儲存喺呢部電腦，閂咗頁再開都會喺度。上堂喺最頂「歌」揀邊首。<br>「匯出備份檔」會將呢首歌（連伴奏）存成一個檔；換電腦、換瀏覽器或者資料冇咗，撳「匯入備份檔」揀返個檔就還原晒。建議每首歌整好之後匯出一次，放喺 Google Drive。</p>
+        <div class="warnbox" id="storeWarn" hidden></div>
+      </section>
       <section>
         <h3>咪</h3>
         <div class="row"><select id="micSel" style="min-width:260px"></select><button class="btn btn-soft sm" id="micRefresh">重新整理</button><span id="micInfo"></span></div>
@@ -181,10 +194,19 @@ const LS = "singrace2";
 const cfg = Object.assign({diff:"mid", lyrics:"", times:[], timesFor:-1, end:null, fullIntro:false,
   accName:"", accVol:70, pm:"key", key:"auto", autoKey:null, guide:null, gOff:0, shift:0, singOn:true, thr:.45, micId:"", micLabel:""}, loadCfg());
 function loadCfg(){ try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch(e){ return {}; } }
-function save(){ try { localStorage.setItem(LS, JSON.stringify(cfg)); } catch(e){} }
+// Song library: the current song's fields live at the top of cfg (what the game reads); every save also copies them into cfg.songs.
+const SONG_KEYS = ["title","accName","lyrics","times","timesFor","end","fullIntro","key","autoKey","autoLabel","guide","gOff","pm"];
+const SONG_DEF = {title:"新歌", accName:"", lyrics:"", times:[], timesFor:-1, end:null, fullIntro:false, key:"auto", autoKey:null, autoLabel:"", guide:null, gOff:0, pm:"key"};
+const songOf = () => { const o = {}; SONG_KEYS.forEach(k => o[k] = cfg[k] ?? SONG_DEF[k]); return JSON.parse(JSON.stringify(o)); };
+if (!cfg.songs) { cfg.songs = {}; cfg.cur = "s1"; cfg.title = cfg.title || (cfg.accName ? cfg.accName.replace(/\.[^.]+$/, "").replace(/_/g, " ") : "歌曲 1"); }
+let storeOk = true;
+function save(){ try { cfg.songs[cfg.cur] = songOf(); localStorage.setItem(LS, JSON.stringify(cfg)); storeOk = localStorage.getItem(LS) != null; } catch(e){ storeOk = false; } }
+save();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
 function idb(){ return new Promise((res, rej) => { const r = indexedDB.open("singrace2", 1);
   r.onupgradeneeded = () => r.result.createObjectStore("m"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 async function idbPut(k, v){ try { const db = await idb(); await new Promise((res, rej) => { const tx = db.transaction("m", "readwrite"); tx.objectStore("m").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); } catch(e){} }
+async function idbDel(k){ try { const db = await idb(); await new Promise(res => { const tx = db.transaction("m", "readwrite"); tx.objectStore("m").delete(k); tx.oncomplete = res; tx.onerror = res; }); } catch(e){} }
 async function idbGet(k){ try { const db = await idb(); return await new Promise(res => { const q = db.transaction("m").objectStore("m").get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); } catch(e){ return null; } }
 
 const lines = () => cfg.lyrics.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
@@ -395,7 +417,7 @@ function judgePitch(t, midi){
 }
 
 /* ---------- UI: difficulty, chips, settings ---------- */
-function renderDiff(){ document.querySelectorAll("#diff button").forEach(b => { b.setAttribute("aria-checked", b.dataset.d === cfg.diff); b.disabled = ["run","count","pause"].includes(state); }); }
+function renderDiff(){ if ($("songSel")) $("songSel").disabled = ["run","count","pause","timing","rec","cal"].includes(state); document.querySelectorAll("#diff button").forEach(b => { b.setAttribute("aria-checked", b.dataset.d === cfg.diff); b.disabled = ["run","count","pause"].includes(state); }); }
 document.querySelectorAll("#diff button").forEach(b => b.onclick = () => { cfg.diff = b.dataset.d; save(); renderDiff(); if (state !== "run") hearts = DIFF[cfg.diff].hearts; });
 function renderChips(){
   const cm = $("chipMic"); if (cm) { const ph = PHONE.test(micLabel); cm.textContent = micLabel ? (ph ? "⚠ 咪：" : "咪：") + micLabel.replace(/\s*\(.*?\)\s*$/, "") : "咪：未開"; cm.className = "chip " + (micLabel && !ph ? "on" : "off"); }
@@ -441,14 +463,73 @@ $("micRefresh").onclick = fillMics;
 navigator.mediaDevices && navigator.mediaDevices.addEventListener && navigator.mediaDevices.addEventListener("devicechange", () => { if ($("dlg").open) fillMics(); });
 $("thr").oninput = e => { cfg.thr = +e.target.value/100; $("thrV").textContent = Math.round(cfg.thr*100); save(); };
 
-async function setAcc(ab, name, store){
-  const c = AC(); let buf;
+async function setAcc(ab, name, store, keepKey){
+  const id = cfg.cur, c = AC(); let buf;
   try { buf = await c.decodeAudioData(ab.slice(0)); } catch(e) { alert("讀唔到呢個聲音檔，試下 mp3、m4a 或 wav。"); return; }
-  accBuf = buf; cfg.accName = name; save();
-  if (store) idbPut("acc", {name, data:ab});
+  if (id !== cfg.cur) return;                       // switched song while decoding
+  accBuf = buf; cfg.accName = name; if (store && (!cfg.title || /^(新歌|歌曲 \d+)$/.test(cfg.title))) cfg.title = name.replace(/\.[^.]+$/, "").replace(/_/g, " ").slice(0, 30);
+  save(); renderSongs();
+  if (store) await idbPut("acc:" + id, {name, data:ab});
   renderSettings();
-  const k = await detectKey(buf, songEnd()); cfg.autoKey = k.doPc; cfg.autoLabel = k.label; save(); renderSettings();
+  if (keepKey && cfg.autoKey != null) return;
+  const k = await detectKey(buf, songEnd()); if (id !== cfg.cur) return; cfg.autoKey = k.doPc; cfg.autoLabel = k.label; save(); renderSettings();
 }
+async function loadAccFor(id){
+  let v = await idbGet("acc:" + id);
+  if (!v && id === "s1") { v = await idbGet("acc"); if (v) { await idbPut("acc:s1", v); idbDel("acc"); } }   // older single-song storage
+  if (id === cfg.cur && v && v.data) setAcc(v.data, v.name, false, true);
+}
+function renderSongs(){
+  const sel = $("songSel"); sel.textContent = "";
+  Object.entries(cfg.songs).forEach(([id, sg]) => sel.add(new Option(sg.title || "（未命名）", id)));
+  sel.value = cfg.cur; sel.disabled = typeof state !== "undefined" && ["run","count","pause","timing","rec","cal"].includes(state);
+  const t = $("songTitle"); if (t && document.activeElement !== t) t.value = cfg.title || "";
+  $("songDel").disabled = Object.keys(cfg.songs).length < 2;
+  const w = $("storeWarn"); w.hidden = storeOk; w.textContent = "⚠ 呢個瀏覽器唔俾儲存資料（可能係私密瀏覽，或者封鎖咗網站資料），閂咗頁就會冇晒。請用普通視窗開，或者整好之後「匯出備份檔」。";
+}
+function switchSong(id){
+  if (id === cfg.cur || !cfg.songs[id]) return;
+  stopPreview(); stopAcc(); save();
+  cfg.cur = id; Object.assign(cfg, SONG_DEF, JSON.parse(JSON.stringify(cfg.songs[id]))); accBuf = null; clockOff = 0; save();
+  calcRange(); renderSongs(); renderSettings(); renderChips();
+  if (base != null) { state = "ready"; showBanner(`<h2>${esc(cfg.title)}</h2><p>換咗歌。伴奏唔同，建議再撳「① 校準」，然後「② 開始」。</p>`); $("goBtn").textContent = "② 開始"; $("goBtn").disabled = false; }
+  else idleBanner();
+  loadAccFor(id);
+}
+const newId = () => { let n = 1; while (cfg.songs["s" + n]) n++; return "s" + n; };
+$("songSel").onchange = e => switchSong(e.target.value);
+$("songTitle").oninput = e => { cfg.title = e.target.value.trim() || "（未命名）"; save(); const o = [...$("songSel").options].find(x => x.value === cfg.cur); if (o) o.text = cfg.title; };
+$("songNew").onclick = () => { save(); const id = newId(); cfg.songs[id] = {...SONG_DEF, times:[], title:`歌曲 ${Object.keys(cfg.songs).length + 1}`}; switchSong(id); $("songTitle").focus(); $("songTitle").select(); };
+$("songDel").onclick = () => {
+  const ids = Object.keys(cfg.songs); if (ids.length < 2) return;
+  if (!confirm(`刪除「${cfg.title}」？伴奏、歌詞、導唱會一齊刪走。（建議先匯出備份檔）`)) return;
+  const gone = cfg.cur, next = ids.find(x => x !== gone); delete cfg.songs[gone]; idbDel("acc:" + gone);
+  cfg.cur = next; Object.assign(cfg, SONG_DEF, JSON.parse(JSON.stringify(cfg.songs[next]))); accBuf = null; save();
+  calcRange(); renderSongs(); renderSettings(); renderChips(); idleBanner(); loadAccFor(next);
+};
+// Backup file: one song with its accompaniment, as JSON (audio as a data: URL)
+$("songExport").onclick = async () => {
+  save(); const msg = $("songMsg"); msg.textContent = "整緊…";
+  const v = await idbGet("acc:" + cfg.cur);
+  const acc = v && v.data ? {name:v.name, url:await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(new Blob([v.data])); })} : null;
+  const data = {app:"sing-race", v:1, saved:new Date().toISOString(), song:songOf(), acc};
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], {type:"application/json"}));
+  a.download = `${(cfg.title || "歌曲").replace(/[\\/:*?"<>|]/g, "_")}_合唱過關.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  msg.innerHTML = acc ? `<span class="ok-t">已匯出（連伴奏）</span>` : `<span class="ok-t">已匯出</span>（未有伴奏）`;
+};
+$("songImport").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return; const msg = $("songMsg");
+  let d; try { d = JSON.parse(await f.text()); } catch(err) { msg.innerHTML = `<span class="bad-t">讀唔到呢個檔</span>`; return; }
+  if (!d || d.app !== "sing-race" || !d.song) { msg.innerHTML = `<span class="bad-t">呢個唔係合唱過關嘅備份檔</span>`; return; }
+  save(); const id = newId(), sg = {...SONG_DEF}; SONG_KEYS.forEach(k => { if (k in d.song) sg[k] = d.song[k]; });
+  let t = sg.title || "匯入歌曲"; const names = Object.values(cfg.songs).map(x => x.title); if (names.includes(t)) t += "（匯入）"; sg.title = t;
+  // replace an untouched empty song (e.g. the blank one a fresh browser starts with)
+  const prev = cfg.cur, empty = !accBuf && !cfg.lyrics.trim() && !cfg.guide;
+  cfg.songs[id] = sg;
+  if (d.acc && d.acc.url) { try { const ab = await (await fetch(d.acc.url)).arrayBuffer(); await idbPut("acc:" + id, {name:d.acc.name, data:ab}); } catch(err) {} }
+  switchSong(id); if (empty && prev !== id) { delete cfg.songs[prev]; idbDel("acc:" + prev); save(); renderSongs(); }
+  msg.innerHTML = `<span class="ok-t">已匯入「${esc(t)}」</span>`;
+};
 $("accFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; $("accInfo").textContent = "載入緊…"; await setAcc(await f.arrayBuffer(), f.name, true); e.target.value = ""; };
 $("guideFile").onchange = async e => {
   const f = e.target.files[0]; if (!f) return; e.target.value = "";
@@ -479,7 +560,7 @@ function showBanner(html){ ban.hidden = false; ban.innerHTML = html; }
 function idleBanner(){
   showBanner(`<h2>全班一齊唱，帶佢飛過終點！</h2>
     <p>人嘅高低＝音高，跟住紫色線唱；左邊條 bar＝聲量，要停喺綠色範圍。<br>頭頂有刺：越大聲刺就越低，太大聲會撞到；太細聲、走音、亂嗌太耐都會扣心心。</p>
-    <ol><li>撳「老師設定」：載入伴奏、貼歌詞、定時間（第一次先要）</li><li>撳「① 校準」：播住伴奏，全班唔好出聲 5 秒</li><li>揀難度，撳「② 開始」</li></ol>`);
+    <ol><li>最頂「歌」揀首歌（新歌：撳「老師設定」載入伴奏、貼歌詞、定時間，會自動儲存）</li><li>撳「① 校準」：播住伴奏，全班唔好出聲 5 秒</li><li>揀難度，撳「② 開始」</li></ol>`);
 }
 $("calBtn").onclick = async () => {
   if (!(await initMic())) return; stopPreview();
@@ -795,8 +876,8 @@ function roundRect(x, y, w, h, r){ r = Math.min(r, w/2, h/2); g.beginPath(); g.m
 
 /* ---------- boot ---------- */
 window.__sr = {force:null, cfg, get s(){ return {state, hearts, mood, band, base, badT, spikes, t:songTime(), midiNow, swimY, end:songEnd(), start:songStart(), acc:!!accBuf}; }, analyseGuideBuffer, judgePitch};
-calcRange(); renderDiff(); renderSettings(); idleBanner();
-idbGet("acc").then(v => { if (v && v.data) setAcc(v.data, v.name, false); });
+calcRange(); renderSongs(); renderDiff(); renderSettings(); idleBanner();
+loadAccFor(cfg.cur);
 requestAnimationFrame(t => { lastT = t; frame(t); });
 })();
 </script>
