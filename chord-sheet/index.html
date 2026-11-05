@@ -237,7 +237,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
-    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hExit">結束</button></div>
+    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hTeacher">🎵 老師版本</button><button class="btn btn-soft" id="hExit">結束</button><span class="note" id="hMsg"></span></div>
     <table class="lb"><thead><tr><th>組</th><th>① 砌和弦</th><th>② 歌詞和弦</th><th></th></tr></thead><tbody id="hTable"></tbody></table>
   </div>
 </section>
@@ -249,13 +249,15 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="top">
     <div class="gname" id="sName"></div>
     <div class="row">
-      <button class="btn btn-main" id="sStep">下一個和弦 ▸</button>
-      <button class="btn btn-soft" id="sReset">由頭</button>
+      <button class="btn btn-main" id="sPlay">▶ 播放</button>
+      <label class="note" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="sMel" checked style="width:20px;height:20px;accent-color:var(--plum)">播埋旋律</label>
+      <label class="note" style="display:flex;align-items:center;gap:8px">快<input type="range" id="sSpeed" min="0.8" max="2.6" step="0.2" value="1.6" style="width:110px;accent-color:var(--plum)">慢</label>
+      <button class="btn btn-soft" id="sTeacher" hidden>🎵 老師版本</button>
       <button class="btn btn-soft" id="sNext">🎲 再抽</button>
       <button class="btn btn-soft" id="sClose">返回</button>
     </div>
   </div>
-  <p class="note">全班睇住彈：撳「下一個和弦」（或者空白鍵）亮起下一個要彈嘅和弦，同時會彈一下。</p>
+  <p class="note">第 1 次：靜靜聽。第 2 次：一路播一路全班一齊唱。諗吓：和弦放得啱唔啱位？用嘅和弦啱唔啱？（空白鍵＝播放／停）</p>
   <span class="legend" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
   <div id="sLyr"></div>
 </div>
@@ -316,11 +318,11 @@ const decSol = str => str.split(".").map(w => {
 // schedules the melody (and optional chords) with real lengths; returns per-word start times for highlighting
 let playing = [];
 function stopAudio(){ for (const x of playing) { try { x.stop(); } catch {} } playing = []; }
-function scheduleSong(rows, secPerBeat, chordsOf){
+function scheduleSong(rows, secPerBeat, chordsOf, noMel){
   const q = secPerBeat / 4, starts = [], strikes = []; let t = .08;
   rows.forEach(({i, evs}) => evs.forEach((ev, j) => {
     let tt = t, onset = null;
-    for (const e of (ev && ev.length ? ev : [{u:4, m:null}])) { if (e.m != null) { if (onset == null) onset = tt; { const n = note(e.m + 12, tt, e.u * q * .92, .9); if (n) playing.push(n); } } tt += e.u * q; }
+    for (const e of (ev && ev.length ? ev : [{u:4, m:null}])) { if (e.m != null) { if (onset == null) onset = tt; if (!noMel) { const n = note(e.m + 12, tt, e.u * q * .92, .9); if (n) playing.push(n); } } tt += e.u * q; }
     starts.push({i, j, at: onset ?? t}); const c = chordsOf && chordsOf(i, j); if (c) strikes.push({at: onset ?? t, c}); t = tt;
   }));
   strikes.forEach((s, k) => { const end = k + 1 < strikes.length ? strikes[k + 1].at : t; CH[s.c].forEach(m => { const n = note(m - 12, s.at, Math.min(end - s.at, 8 * secPerBeat) * .97, .5); if (n) playing.push(n); }); });
@@ -773,28 +775,51 @@ function pickRandom(){
 $("hRand").onclick = () => { unlock(); pickRandom(); };
 $("hExit").onclick = () => { clearInterval(H.iv); H = null; show("scHome"); };
 
-/* projection: big lead sheet + step-through for the class to play along */
+/* projection: play a group's version (melody + their chords at the real rhythm) for the class to listen, then sing along */
 let S = null;
+function showSheet(name, data){
+  stopShow(); S = {name, data, timers:[]};
+  $("sName").textContent = name; renderLyrics($("sLyr"), data, {big:true}); $("show").hidden = false;
+  $("sTeacher").hidden = !teacherVersion();
+}
 function showGroup(g){
   H.shown.add(g.gid);
-  ({lines, bars, sol} = hostSongFromRows()); const data = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
-  const seq = []; data.forEach((row, i) => row.forEach((c, j) => { if (c) seq.push({i, j, c}); }));
-  S = {g, data, seq, k:-1};
-  $("sName").textContent = g.name; renderLyrics($("sLyr"), data, {big:true}); $("show").hidden = false; paintStep();
+  ({lines, bars, sol} = hostSongFromRows());
+  showSheet(g.name, lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || "")));
 }
-function hostSongFromRows(){ if (hostLines(H.rows).length) return hostSong(H.rows); try { const t = readTeacher(); return {lines:t.ls, bars:t.bs, sol:t.ss}; } catch { return {lines:[], bars:[], sol:[]}; } }
-function paintStep(){
-  for (const c of document.querySelectorAll("#sLyr .cell")) c.classList.remove("now");
-  const cur = S.seq[S.k]; if (!cur) { $("sStep").textContent = S.k >= S.seq.length ? "完 ✓（撳由頭再嚟）" : "下一個和弦 ▸"; return; }
-  const cell = document.querySelector(`#sLyr .cell[data-i="${cur.i}"][data-j="${cur.j}"]`); if (cell) { cell.classList.add("now"); cell.scrollIntoView({block:"nearest"}); }
-  $("sStep").textContent = `下一個和弦 ▸（${S.k + 1} / ${S.seq.length}）`;
+function hostSongFromRows(){ if (hostLines(H.rows).length) return hostSong(H.rows); try { const t = readTeacher(); return {lines:t.ls, bars:t.bs, sol:t.ss, seq:t.seq}; } catch { return {lines:[], bars:[], sol:[], seq:[]}; } }
+// teacher version: the chord order placed one per strong beat (only when the counts match)
+function teacherVersion(){
+  const {seq: order = []} = hostSongFromRows(); if (!order.length) return null;
+  const strong = strongMarks(), cells = [];
+  lines.forEach((l, i) => [...l].forEach((_, j) => { if (strong.has(i + ":" + j)) cells.push([i, j]); }));
+  if (cells.length !== order.length) return null;
+  const data = lines.map(l => [...l].map(() => "")); cells.forEach(([i, j], k) => data[i][j] = order[k]); return data;
 }
-function step(){ if (!S) return; unlock(); if (S.k < S.seq.length) S.k++; const cur = S.seq[S.k]; if (cur) chord(CH[cur.c], 0, 1.6); paintStep(); }
-$("sStep").onclick = step;
-$("sReset").onclick = () => { S.k = -1; paintStep(); };
+function clearNow(){ for (const x of document.querySelectorAll("#sLyr .cell.now")) x.classList.remove("now"); }
+function lightCell(i, j){ clearNow(); const c = document.querySelector(`#sLyr .cell[data-i="${i}"][data-j="${j}"]`); if (c) { c.classList.add("now"); c.scrollIntoView({block:"nearest", behavior:"smooth"}); } }
+function stopShow(){ stopAudio(); if (S) { S.timers.forEach(clearTimeout); S.timers = []; S.on = false; } clearNow(); $("sPlay").textContent = "▶ 播放"; }
+function playShow(){
+  if (!S) return; unlock(); if (S.on) return stopShow(); stopShow();
+  S.on = true; $("sPlay").textContent = "■ 停"; const spb = (+$("sSpeed").value || 1.6) / 2;
+  const hasMel = sol.some(r => (r || []).some(ev => evNotes(ev).length));
+  if (hasMel) {
+    const rows = lines.map((_, i) => ({i, evs: sol[i] || []}));
+    const {starts, total} = scheduleSong(rows, spb, (i, j) => S.data[i][j], !$("sMel").checked);
+    starts.forEach(x => S.timers.push(setTimeout(() => lightCell(x.i, x.j), x.at * 1000)));
+    S.timers.push(setTimeout(stopShow, total * 1000 + 600));
+  } else {
+    const seq = []; S.data.forEach((row, i) => row.forEach((c, j) => { if (c) seq.push({i, j, c}); })); const gap = spb * 2;
+    seq.forEach((x, k) => S.timers.push(setTimeout(() => { lightCell(x.i, x.j); chord(CH[x.c], 0, gap * .95); }, k * gap * 1000)));
+    S.timers.push(setTimeout(stopShow, seq.length * gap * 1000 + 300));
+  }
+}
+$("sPlay").onclick = playShow;
+$("hTeacher").onclick = () => { unlock(); ({lines, bars, sol} = hostSongFromRows()); const d = teacherVersion(); if (d) showSheet("老師版本", d); else $("hMsg").textContent = "要先填「和弦次序」，而且和弦數目要等於 ★ 強拍數目，先有老師版本。"; };
+$("sTeacher").onclick = () => { const d = teacherVersion(); if (d) showSheet("老師版本", d); };
 $("sNext").onclick = () => pickRandom();
-$("sClose").onclick = () => { $("show").hidden = true; S = null; };
-addEventListener("keydown", e => { if (!$("show").hidden && (e.code === "Space" || e.code === "ArrowRight")) { e.preventDefault(); step(); } });
+$("sClose").onclick = () => { stopShow(); $("show").hidden = true; S = null; };
+addEventListener("keydown", e => { if (!$("show").hidden && e.code === "Space") { e.preventDefault(); playShow(); } });
 
 /* fullscreen toggle (iPad Safari supports it for the page; hidden where unsupported) */
 const fsEl = document.documentElement;
