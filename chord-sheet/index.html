@@ -98,7 +98,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .ghostchip{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-60%);min-width:70px;padding:8px 14px;border-radius:12px;background:var(--plum);color:#fff;font-family:var(--f-hud);font-weight:700;font-size:26px;text-align:center}
 
 /* teacher */
-.host-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.host-top{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;padding-right:150px}
+.host-top .qr{order:-1}
 .pinbig{font-family:var(--f-hud);font-weight:700;font-size:clamp(52px,9vw,96px);letter-spacing:.12em;color:var(--plum);line-height:1}
 .qr{background:#fff;border-radius:12px;padding:8px;border:1px solid var(--rule);width:clamp(120px,16vw,170px)}
 .qr svg{display:block;width:100%;height:auto}
@@ -108,7 +109,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .lb th{font-size:13px;color:var(--muted);font-weight:700}
 .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:14px;font-weight:700}
 .tag.y{background:var(--mint)}.tag.n{background:#EFEAFB;color:var(--muted)}
-.show{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:24px max(24px,4vw)}
+.show{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:64px max(24px,4vw) 24px}
 .show .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .show .gname{font-weight:900;font-size:clamp(28px,4vw,44px);color:var(--plum)}
 .show .line{border-bottom:2px solid var(--rule);padding:14px 0;gap:4px}
@@ -199,7 +200,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="steps"><span class="done">① 砌和弦</span><span class="on">② 和弦放落歌詞</span><span>③ 提交</span></div>
   <div class="panel">
     <h2>邊隻字轉和弦？</h2>
-    <p class="note">每隻字下面有唱名，直線係小節線。揀一個和弦（或者直接拉落去），再撳歌詞上面嗰隻字。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
+    <p class="note">每隻字上面有唱名，直線係小節線。將和弦拉落字度（或者撳和弦再撳字）；有和弦次序嘅話，放一個就少一個。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
     <span class="legend" id="strongNote" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
     <div class="chips" id="chips"></div>
     <div id="lyrics"></div>
@@ -228,6 +229,9 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <h2>唱名（可以唔填）</h2>
     <p class="note">每隻字一個唱名，用空格分開，可以成段貼落嚟（會按歌詞字數順序分配）。拍子長短寫喺括號：mi(0.5) 半拍、do(2) 兩拍，冇寫就當一拍；一隻字唱幾個音用 - 連住：mi(0.25)-re(0.25)；休止(0.5) 係休止；高八度加 '（do'），低八度加 ,（so,）；| 係小節線。前面可以照寫返隻字（例如「無 so,(0.5)」），會用嚟核對；「第1節：」之類標籤會自動略過。</p>
     <textarea class="txt" id="hSol" style="min-height:140px;font-size:18px" placeholder="例如：so so la so do' ti"></textarea>
+    <h2>和弦次序（可以唔填）</h2>
+    <p class="note">填咗之後，學生畫面會將呢啲和弦按次序排好，拉一個落字度就少一個，減少入錯。用空格分開，例如：I V vi IV I V I（亦可以打 C G Am F C G C），最多 12 個。</p>
+    <input class="txt" id="hSeq" placeholder="I V vi IV I V I">
     <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><button class="btn btn-soft" id="hLink">🔗 複製老師連結（成個歌曲庫）</button><span class="note" id="hLyrMsg"></span></div>
     <div id="hLinkBox" hidden style="display:grid;gap:6px"><textarea class="txt" id="hLinkTxt" readonly style="min-height:80px;font-size:13px;font-weight:400"></textarea><p class="note" id="hLinkMsg"></p></div>
   </div>
@@ -416,12 +420,12 @@ $("p1retry").onclick = () => { const i = P1.findIndex((c,k) => !okChord(c, p1.an
 $("p1go").onclick = () => startP2();
 
 /* ---------- part 2 ---------- */
-let lines = [], bars = [], sol = [], place = [], tool = "C", p2sent = false;
+let lines = [], bars = [], sol = [], seq = [], place = [], tool = "C", p2sent = false;
 async function startP2(){
   show("scP2"); const st = store.get("chordsheet.p2." + me.gid, null);
   $("p2msg").textContent = "載入歌詞中…";
   for (let k = 0; k < 40; k++) {
-    try { const r = await api({a:"board", pin:me.pin}); ({lines, bars, sol} = hostSong(r.rows)); } catch {}
+    try { const r = await api({a:"board", pin:me.pin}); ({lines, bars, sol, seq} = hostSong(r.rows)); } catch {}
     if (lines.length) break;
     $("p2msg").textContent = "等老師傳歌詞過嚟…"; await new Promise(r => setTimeout(r, 3000));
   }
@@ -437,10 +441,32 @@ function hostSong(rows){
   const ls = hostLines(rows), get = pid => { const r = rows.find(x => x.pid === pid); return r && r.name !== "—" ? String(r.name) : ""; };
   const bs = ls.map((_, i) => new Set([...get("h0stB" + i)].map(c => parseInt(c, 36))));
   const ss = ls.map((l, i) => { let str = ""; for (let k = 0; k < SCHUNKS; k++) str += get("h0stS" + i + k); const d = str ? decSol(str) : []; return [...l].map((_, j) => d[j] || []); });
-  return {lines:ls, bars:bs, sol:ss};
+  const q = get("h0stQ"); const sq = [...q].map(ch => DECODE[ch]).filter(Boolean);
+  return {lines:ls, bars:bs, sol:ss, seq:sq};
+}
+// with a chord order from the teacher: one token per chord, in order; a placed chord uses up the first unused token of that kind
+function leftTokens(){
+  if (!seq.length) return null;
+  const used = {}; place.flat().forEach(c => { if (c) used[c] = (used[c] || 0) + 1; });
+  return seq.map((c, k) => { const take = (used[c] || 0) > 0; if (take) used[c]--; return {c, k, left: !take}; });
 }
 function renderChips(){
   const box = $("chips"); box.textContent = "";
+  const toks = leftTokens();
+  if (toks) {
+    const left = toks.filter(t => t.left);
+    if (tool !== "erase" && !left.some(t => t.c === tool)) tool = left.length ? left[0].c : "erase";
+    for (const t of left) {
+      const b = document.createElement("button"); b.className = "chip"; b.dataset.c = t.c;
+      b.innerHTML = `${ROMAN[t.c]}<small>（${t.c}）</small>`;
+      b.setAttribute("aria-pressed", String(tool === t.c && t === left.find(x => x.c === tool)));
+      b.onpointerdown = e => startDrag(e, t.c); box.appendChild(b);
+    }
+    if (!left.length) { const d = document.createElement("span"); d.className = "note"; d.textContent = "和弦用晒 ✓"; box.appendChild(d); }
+    const er = document.createElement("button"); er.className = "chip erase"; er.dataset.c = "erase"; er.textContent = "擦走";
+    er.setAttribute("aria-pressed", String(tool === "erase")); er.onpointerdown = e => startDrag(e, "erase"); box.appendChild(er);
+    return;
+  }
   for (const c of [...CHIPS, "erase"]) {
     const b = document.createElement("button"); b.className = "chip" + (c === "erase" ? " erase" : ""); b.dataset.c = c;
     b.innerHTML = c === "erase" ? "擦走" : `${ROMAN[c]}<small>（${c}）</small>`;
@@ -449,7 +475,7 @@ function renderChips(){
     box.appendChild(b);
   }
 }
-function setTool(c){ tool = c; for (const b of $("chips").children) b.setAttribute("aria-pressed", String(b.dataset.c === c)); }
+function setTool(c){ tool = c; let on = false; for (const b of $("chips").children) { const hit = !on && b.dataset.c === c; if (hit) on = true; b.setAttribute("aria-pressed", String(hit)); } }
 // strong beats (4/4: beats 1 and 3) from the bar lines and note lengths; a short first bar is a pickup, counted back from its end
 function strongMarks(){
   const words = [], marks = new Set();
@@ -520,8 +546,13 @@ function playMelody(idx, btn){
 }
 function applyTool(i, j, c = tool){
   unlock();
-  if (c === "erase" || place[i][j] === c) place[i][j] = ""; else { place[i][j] = c; chord(CH[c], 0, 1.0); }
-  stopPreview(); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics();
+  if (c === "erase" || place[i][j] === c) place[i][j] = "";
+  else {
+    const toks = leftTokens();
+    if (toks && !toks.some(t => t.left && t.c === c)) { $("p2msg").textContent = `${ROMAN[c]}（${c}）已經用晒。撳歌詞上面嘅和弦可以擦走。`; return; }
+    place[i][j] = c; chord(CH[c], 0, 1.0); $("p2msg").textContent = "";
+  }
+  stopPreview(); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); renderChips();
 }
 // drag a chip onto a character (works with finger or mouse); a short tap just selects the chip
 let drag = null;
@@ -546,7 +577,7 @@ function startDrag(e, c){
   addEventListener("pointermove", move); addEventListener("pointerup", up); addEventListener("pointercancel", up);
 }
 $("p2all").onclick = () => playLines(lines.map((_, i) => i), $("p2all"));
-$("p2clear").onclick = () => { if (!confirmClear()) return; place = lines.map(l => Array(l.length).fill("")); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); };
+$("p2clear").onclick = () => { if (!confirmClear()) return; place = lines.map(l => Array(l.length).fill("")); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); renderChips(); };
 function confirmClear(){ const b = $("p2clear"); if (b.dataset.arm) { delete b.dataset.arm; b.textContent = "全部清除"; return true; } b.dataset.arm = "1"; b.textContent = "再撳一下確認清除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "全部清除"; }, 2500); return false; }
 $("p2send").onclick = async () => {
   const n = place.flat().filter(Boolean).length;
@@ -599,9 +630,19 @@ function readTeacher(){
       if (g > 0 && mel.bars.has(g)) bs[i].add(j); ss[i].push(wd.ev); g++; }); });
     if (mel.bars.has(total)) bs[ls.length - 1].add(counts[ls.length - 1]);
   }
+  const seq = parseSeq($("hSeq").value);
   const enc = ss.map(encSol);
   if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
-  return {ls, bs, ss, enc};
+  return {ls, bs, ss, enc, seq};
+}
+// chord order typed by the teacher: roman numerals or letter names
+const FROM_ROMAN = {"I":"C", "ii":"Dm", "iii":"Em", "IV":"F", "V":"G", "vi":"Am"};
+function parseSeq(txt){
+  const toks = txt.replace(/[,，、→\-]/g, " ").split(/\s+/).filter(Boolean);
+  const out = toks.map(t => FROM_ROMAN[t] || (CH[t] ? t : CH[t[0].toUpperCase() + t.slice(1)] ? t[0].toUpperCase() + t.slice(1) : null));
+  const bad = toks.filter((t, k) => !out[k]); if (bad.length) throw new Error(`和弦次序睇唔明「${bad[0]}」：用 I ii iii IV V vi 或者 C Dm Em F G Am。`);
+  if (out.length > 12) throw new Error("和弦次序最多 12 個。");
+  return out;
 }
 let testTimers = [];
 $("hLyrTest").onclick = async () => {
@@ -628,6 +669,7 @@ async function sendSong(auto){
       for (let k = 0; k < SCHUNKS; k++) want["h0stS" + i + k] = e.slice(k * 12, k * 12 + 12);
     }
     // a fresh room is empty, so only non-empty rows (and rows this room already holds) need sending
+    want["h0stQ"] = t.seq.map(c => CODE[c]).join("");
     const jobs = Object.entries(want).filter(([pid, v]) => v || H.sent.has(pid));
     // bars and solfa first (in small parallel batches), lyric lines last so students never see lyrics without their solfa
     for (let k = 0; k < jobs.length; k += 7) { await Promise.all(jobs.slice(k, k + 7).map(([pid, v]) => fin(pid, v))); $("hLyrMsg").textContent = `傳送中… ${Math.min(100, Math.round(100 * (k + 7) / (jobs.length + 4)))}%`; }
@@ -659,17 +701,17 @@ function fillSongSelects(){
 }
 function loadSong(id){
   const x = songs().find(y => y.id === id); curSong = x ? x.id : null; store.set("chordsheet.cur", curSong);
-  $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSongName").value = x ? x.name : ""; fillSongSelects();
+  $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSeq").value = x ? (x.q || "") : ""; $("hSongName").value = x ? x.name : ""; fillSongSelects();
 }
 function saveSong(asNew, auto){
   const name = $("hSongName").value.trim() || ($("hLyr").value.split(/\n/)[0] || "").replace(/[|｜\s]/g, "").slice(0, 12) || "未命名歌曲";
   const list = songs(); let x = !asNew && list.find(y => y.id === curSong);
-  if (x) Object.assign(x, {name: auto ? x.name : name, l:$("hLyr").value, s:$("hSol").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value}; list.push(x); }
+  if (x) Object.assign(x, {name: auto ? x.name : name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}; list.push(x); }
   const ok = setSongs(list); curSong = x.id; store.set("chordsheet.cur", curSong); $("hSongName").value = x.name; fillSongSelects(); x.ok = ok; return x;
 }
 // auto-save while typing, so nothing is lost when leaving the room
 let autoT = null;
-for (const id of ["hLyr", "hSol"]) $(id).addEventListener("input", () => {
+for (const id of ["hLyr", "hSol", "hSeq"]) $(id).addEventListener("input", () => {
   clearTimeout(autoT); autoT = setTimeout(() => { if (!$("hLyr").value.trim()) return; const x = saveSong(false, true); $("hSaved").textContent = x.ok ? `已自動儲存「${x.name}」` : NOSTORE; }, 700);
 });
 $("hSong").onchange = () => { loadSong($("hSong").value); if (H && $("hLyr").value.trim()) sendSong(true); };
@@ -681,10 +723,10 @@ $("hDel").onclick = () => { const b = $("hDel"); if (!curSong) return;
   delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; setSongs(songs().filter(y => y.id !== curSong)); loadSong(null); $("hLyrMsg").textContent = "已刪除。"; };
 const b64 = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const unb64 = str => decodeURIComponent(escape(atob(str.replace(/-/g, "+").replace(/_/g, "/"))));
-function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s})))); }
+function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s, q:x.q || ""})))); }
 $("hLink").onclick = async () => {
   if ($("hLyr").value.trim()) saveSong(false);
-  const n = songs().length || 0, url = n ? libLink() : location.origin + location.pathname + "#lib=" + b64(JSON.stringify([{n:$("hSongName").value || "未命名歌曲", l:$("hLyr").value, s:$("hSol").value}]));
+  const n = songs().length || 0, url = n ? libLink() : location.origin + location.pathname + "#lib=" + b64(JSON.stringify([{n:$("hSongName").value || "未命名歌曲", l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}]));
   const box = $("hLinkTxt"); box.value = url; $("hLinkBox").hidden = false; box.focus(); box.select();
   let ok = false;
   try { await navigator.clipboard.writeText(url); ok = true; } catch {}
@@ -695,7 +737,7 @@ $("hLink").onclick = async () => {
 fillSongSelects();
 (() => { const m = /#lib=([\w-]+)/.exec(location.hash); if (!m) return;
   try { const inc = JSON.parse(unb64(m[1])); const list = songs(); let n = 0;
-    for (const o of inc) { const ex = list.find(y => y.name === o.n); if (ex) Object.assign(ex, {l:o.l, s:o.s}); else list.push({id:pidMake(), name:o.n, l:o.l, s:o.s}); n++; }
+    for (const o of inc) { const ex = list.find(y => y.name === o.n); if (ex) Object.assign(ex, {l:o.l, s:o.s, q:o.q || ex.q || ""}); else list.push({id:pidMake(), name:o.n, l:o.l, s:o.s, q:o.q || ""}); n++; }
     setSongs(list); if (!curSong && list.length) { curSong = list[0].id; store.set("chordsheet.cur", curSong); }
     fillSongSelects(); $("hostNote").textContent = `已由老師連結載入 ${n} 首歌。揀歌，再撳「開局」。`; history.replaceState(null, "", location.pathname);
   } catch {} })();
