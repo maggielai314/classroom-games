@@ -118,6 +118,10 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .show .cell .ch{font-size:clamp(28px,4.4vw,52px)}
 .show .cell .w{font-size:clamp(36px,5.6vw,70px)}
 .show .cell.now{background:#FFF1D2;border-radius:14px}
+.timer{position:fixed;right:max(16px,3vw);bottom:max(16px,3vh);z-index:31;background:#fff;border:3px solid var(--plum);border-radius:22px;padding:10px 22px;text-align:center;box-shadow:0 6px 0 var(--rule)}
+.timer b{display:block;font-size:clamp(44px,7vw,84px);line-height:1.05;color:var(--plum);font-variant-numeric:tabular-nums}
+.timer span{font-size:clamp(14px,1.6vw,18px);color:var(--ink)}
+.timer.end b{color:#C2410C}
 .show .cell.now .ch{color:var(--bad)}
 @media (max-width:560px){.host-top{grid-template-columns:1fr}.cell{min-width:44px}}
 .fsbtn{position:fixed;top:max(8px,env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));z-index:20;min-height:40px;padding:0 12px;border-radius:10px;background:var(--card);border:1.5px solid #CFC4EC;color:var(--plum);font-weight:700;font-size:14px}
@@ -252,12 +256,14 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
       <button class="btn btn-main" id="sPlay">▶ 播放</button>
       <label class="note" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="sMel" checked style="width:20px;height:20px;accent-color:var(--plum)">播埋旋律</label>
       <label class="note" style="display:flex;align-items:center;gap:8px">快<input type="range" id="sSpeed" min="0.8" max="2.6" step="0.2" value="1.6" style="width:110px;accent-color:var(--plum)">慢</label>
+      <button class="btn btn-soft" id="sTimer">⏱ 挑機時間</button>
       <button class="btn btn-soft" id="sTeacher" hidden>🎵 老師版本</button>
       <button class="btn btn-soft" id="sNext">🎲 再抽</button>
       <button class="btn btn-soft" id="sClose">返回</button>
     </div>
   </div>
-  <p class="note">第 1 次：靜靜聽。第 2 次：一路播一路全班一齊唱。諗吓：和弦放得啱唔啱位？用嘅和弦啱唔啱？（空白鍵＝播放／停）</p>
+  <div class="timer" id="tBox" hidden><b id="tNum">2:00</b><span>音準・節奏・和弦配搭・合奏整齊度・團隊精神</span></div>
+  <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「⏱ 挑機時間」用功能卡。（空白鍵＝播放／停）</p>
   <span class="legend" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
   <div id="sLyr"></div>
 </div>
@@ -778,7 +784,7 @@ $("hExit").onclick = () => { clearInterval(H.iv); H = null; show("scHome"); };
 /* projection: play a group's version (melody + their chords at the real rhythm) for the class to listen, then sing along */
 let S = null;
 function showSheet(name, data){
-  stopShow(); S = {name, data, timers:[]};
+  stopShow(); if (typeof stopTimer === "function") stopTimer(); S = {name, data, timers:[]};
   $("sName").textContent = name; renderLyrics($("sLyr"), data, {big:true}); $("show").hidden = false;
   $("sTeacher").hidden = !teacherVersion();
 }
@@ -818,7 +824,19 @@ $("sPlay").onclick = playShow;
 $("hTeacher").onclick = () => { unlock(); ({lines, bars, sol} = hostSongFromRows()); const d = teacherVersion(); if (d) showSheet("老師版本", d); else $("hMsg").textContent = "要先填「和弦次序」，而且和弦數目要等於 ★ 強拍數目，先有老師版本。"; };
 $("sTeacher").onclick = () => { const d = teacherVersion(); if (d) showSheet("老師版本", d); };
 $("sNext").onclick = () => pickRandom();
-$("sClose").onclick = () => { stopShow(); $("show").hidden = true; S = null; };
+/* 2-minute 挑機時間 countdown */
+let T = null;
+function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "⏱ 挑機時間"; }
+function startTimer(){
+  if (T) return stopTimer(); unlock(); stopShow();
+  const end = Date.now() + 120000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
+  const tick = () => { const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
+    $("tNum").textContent = left ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "時間到";
+    if (!left) { clearInterval(T.id); $("tBox").classList.add("end"); chord(CH.C, 0, 1.2); } };
+  T = {id: setInterval(tick, 250)}; tick();
+}
+$("sTimer").onclick = startTimer;
+$("sClose").onclick = () => { stopTimer(); stopShow(); $("show").hidden = true; S = null; };
 addEventListener("keydown", e => { if (!$("show").hidden && e.code === "Space") { e.preventDefault(); playShow(); } });
 
 /* fullscreen toggle (iPad Safari supports it for the page; hidden where unsupported) */
