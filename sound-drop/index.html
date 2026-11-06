@@ -168,6 +168,22 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 .joinurl{font-size:15px;color:var(--muted);word-break:break-all}
 .host .lb td{font-size:clamp(17px,2.2vw,26px);padding:10px 8px}
 .host .lb td.s{font-size:clamp(20px,2.8vw,32px)}
+.timeleft{font-family:var(--f-hud);font-weight:700;font-size:22px;color:#B4528A;font-variant-numeric:tabular-nums}
+.ready .sheet{width:min(460px,100%)}
+.ready .big1{font-family:var(--f-hud);font-weight:700;font-size:56px;color:var(--plum);line-height:1}
+.ready ul{margin:0;padding:0 0 0 1.2em;text-align:left;color:var(--ink);line-height:1.7}
+.hostbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn-end{background:#B4528A;color:#fff}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:14px;max-width:820px;margin:8px auto 0;width:100%}
+.pod{display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;transform:translateY(24px);transition:opacity .5s,transform .5s}
+.pod.show{opacity:1;transform:none}
+.pod .nm{font-weight:900;font-size:clamp(20px,3vw,34px);color:var(--plum);text-align:center;word-break:break-all}
+.pod .sc{font-family:var(--f-hud);font-weight:700;font-size:clamp(18px,2.4vw,28px);color:#B4528A}
+.pod .blk{width:100%;border-radius:14px 14px 4px 4px;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-family:var(--f-hud);font-weight:700;font-size:clamp(34px,5vw,60px);color:#fff}
+.pod.p1 .blk{height:clamp(150px,22vh,230px);background:var(--plum)}
+.pod.p2 .blk{height:clamp(110px,16vh,170px);background:#8E75D6}
+.pod.p3 .blk{height:clamp(80px,11vh,120px);background:#D9779F}
+.restlist{max-width:820px;margin:0 auto;width:100%}
 @media (max-width:560px){.score{font-size:32px}.basket{height:100px}.term.dyn{font-size:44px}.host-top{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
@@ -181,7 +197,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
       <h1>SOUND DROP<small>排位賽</small></h1>
       <div class="meter" aria-hidden="true"><i></i><i style="animation-delay:-.3s"></i><i style="animation-delay:-.7s"></i><i style="animation-delay:-.1s"></i><i style="animation-delay:-.5s"></i><i style="animation-delay:-.9s"></i><i style="animation-delay:-.2s"></i></div>
     </div>
-    <p class="lede">卡片或聲音由上方跌落，在過線前撳正確的籃。共 10 關，每關 12 秒，越後越快。答得越快，分數越高。答錯或漏接失一條命。</p>
+    <p class="lede">卡片或聲音由上方跌落，在過線前撳正確的籃。限時 90 秒，越後越快：答得越多、越快，分數越高。答錯或漏接失一條命，三條命用晒就完。</p>
     <div class="paths">
       <div class="path main">
         <h2>加入遊戲</h2>
@@ -219,12 +235,17 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
       </div>
       <div class="qr" id="hostQr" aria-label="加入遊戲二維碼"></div>
     </div>
-    <div class="row">
+    <div class="hostbar">
+      <button class="btn btn-end" id="hostEnd">結束・顯示排名</button>
       <button class="btn btn-soft" id="hostNew">新一局（新 PIN）</button>
       <button class="btn btn-soft" id="hostExit">返回主頁</button>
       <span class="status" id="hostStatus"></span>
     </div>
-    <div class="panel"><div id="hostTable"></div></div>
+    <div class="panel" id="hostLive"><div id="hostTable"></div></div>
+    <div id="hostFinal" hidden>
+      <div class="podium" id="podium"></div>
+      <div class="panel restlist"><div id="restTable"></div></div>
+    </div>
   </section>
 
   <!-- GAME -->
@@ -259,12 +280,27 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     </div>
   </div>
 
+  <div class="pause ready" id="readyBox" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+      <h2 id="rdTitle">準備好未？</h2>
+      <div class="big1">90 秒</div>
+      <ul>
+        <li><b>呢局只可以玩一次</b>，開始咗就唔可以重新嚟過。</li>
+        <li>答得越多、越快，分數越高；三條命用晒就完。</li>
+        <li>玩緊唔好閂頁或者轉 app。</li>
+      </ul>
+      <p id="rdInfo"></p>
+      <button class="btn btn-main" id="rdGo">準備好，開始！</button>
+      <button class="btn btn-soft" id="rdWait">等陣先</button>
+    </div>
+  </div>
+
   <!-- RESULTS -->
   <section class="screen scroll" id="scResults" hidden>
     <div class="res-head">
       <div><span class="label" id="resMode"></span><div class="big" id="resScore">0</div></div>
       <div class="stats">
-        <div class="stat"><b id="resLvl">1</b><span>到達關數</span></div>
+        <div class="stat"><b id="resLvl">0</b><span>答咗題數</span></div>
         <div class="stat"><b id="resCorrect">0</b><span>答對</span></div>
         <div class="stat"><b id="resAcc">—</b><span>準確率</span></div>
         <div class="stat"><b id="resRank">—</b><span>排名</span></div>
@@ -272,7 +308,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
     </div>
     <p class="status" id="resStatus"></p>
     <div class="row">
-      <button class="btn btn-main" id="againBtn">再玩一次</button>
+      <button class="btn btn-main" id="againBtn">再練習一次</button>
       <button class="btn btn-soft" id="homeBtn">返回主頁</button>
     </div>
     <div class="two">
@@ -288,7 +324,8 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-o
 /* ================= CONFIG ================= */
 // Google Apps Script web app URL for rooms & leaderboard (filled in at deploy time).
 const API = "https://script.google.com/macros/s/AKfycbxmDk9W5k5P4uyUDlD7TbyyD-npfmjZhwyK7Gul6mdvV5CjLykSq_zeqQoPAuCVzIdV/exec";
-const LEVELS = 10, LEVEL_SEC = 12;
+const LEVELS = 10, LEVEL_SEC = 9, GAME_SEC = LEVELS*LEVEL_SEC;   // 90 s, speeding up every 9 s
+const END_PID = "h0stend";                                        // teacher row that closes a room
 
 /* ================= DATA ================= */
 const BINSETS = {
@@ -337,18 +374,41 @@ function seg(el, items, getSel, onPick){
 const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
 
 /* ================= NETWORK ================= */
-async function api(params){
+// Apps Script serialises writes with a lock, so ~35 iPads joining or finishing together can time out.
+// Retry with growing, jittered waits (about half a minute in total) instead of giving up after one failure.
+const FINAL_ERR = ["noroom", "badaction", "nopid", "noapi", "ended", "dupname"];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function api(params, tries = 2, onRetry){
   if (!API) throw new Error("noapi");
   const qs = new URLSearchParams(params).toString();
   let lastErr;
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < tries; i++) {
+    if (i) { onRetry && onRetry(i); await sleep(Math.min(6000, 900*i) + Math.random()*900); }
     try {
-      const r = await fetch(API + "?" + qs, {method:"GET", redirect:"follow"});
+      const ac = new AbortController(), to = setTimeout(() => ac.abort(), 15000);
+      const r = await fetch(API + "?" + qs + "&_=" + Date.now(), {method:"GET", redirect:"follow", signal:ac.signal}); clearTimeout(to);
       const j = await r.json(); if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j;
-    } catch (e) { lastErr = e; if (e.server) break; await new Promise(r => setTimeout(r, 600 + Math.random()*600)); }
+    } catch (e) { lastErr = e; if (FINAL_ERR.includes(e.message)) break; }
   }
   throw lastErr;
 }
+// Leaderboard rows: drop teacher rows; one row per nickname (the first finished one), so opening a new window to replay doesn't count.
+function cleanRows(rows){
+  const by = new Map();
+  for (const r of rows) {
+    if (String(r.pid).startsWith("h0st")) continue;
+    const k = (r.name || "").trim().toLowerCase() || r.pid, cur = by.get(k);
+    if (!cur) { by.set(k, r); continue; }
+    const rd = r.status === "done", cd = cur.status === "done";
+    if (rd && (!cd || r.updated < cur.updated)) by.set(k, r);
+  }
+  return [...by.values()];
+}
+const isEnded = rows => rows.some(r => r.pid === END_PID);
+// One attempt per device per room, kept on the device.
+const roomKey = pin => "sounddrop.room." + pin;
+const roomGet = pin => store.get(roomKey(pin), null);
+const roomSet = (pin, v) => store.set(roomKey(pin), v);
 
 /* ================= AUDIO ================= */
 const AC = window.AudioContext || window.webkitAudioContext;
@@ -394,7 +454,8 @@ nameInput.value = prefs.name || "";
 const urlPin = new URLSearchParams(location.search).get("pin");
 if (urlPin && /^\d{6}$/.test(urlPin)) pinInput.value = urlPin;
 function checkHome(){
-  $("joinBtn").disabled = !(audioReady && /^\d{6}$/.test(pinInput.value) && nameInput.value.trim());
+  if ($("joinBtn").dataset.busy) return;
+  $("joinBtn").disabled = !(/^\d{6}$/.test(pinInput.value) && nameInput.value.trim());
   $("practiceBtn").disabled = !audioReady;
 }
 pinInput.addEventListener("input", () => { pinInput.value = pinInput.value.replace(/\D/g,"").slice(0,6); checkHome(); });
@@ -405,14 +466,43 @@ if (!API) { $("joinErr").textContent = "這個版本只可以練習。正式網�
 $("practiceBtn").onclick = () => { unlockAudio(); savePrefs(); startGame({stage:practiceStage, room:null}); };
 $("joinBtn").onclick = async () => {
   unlockAudio(); savePrefs();
-  const err = $("joinErr"), btn = $("joinBtn"); err.textContent = ""; btn.disabled = true; btn.textContent = "加入中…";
+  const err = $("joinErr"), btn = $("joinBtn"); err.textContent = ""; btn.disabled = true; btn.dataset.busy = "1"; btn.textContent = "加入中…";
+  const pin = pinInput.value, name = nameInput.value.trim().slice(0,12);
   try {
-    const pin = pinInput.value, name = nameInput.value.trim().slice(0,12), pid = pidMake();
-    const room = await api({a:"join", pin, pid, name});
-    startGame({stage: room.stage, room: {pin, pid, name}});
+    let my = roomGet(pin);
+    // already played on this device: show the result, no second attempt
+    if (my && my.phase === "done") { showRoomResult(my); return; }
+    if (my && my.phase === "started") { my.phase = "done"; roomSet(pin, my); showRoomResult(my); return; }
+    const retry = n => { btn.textContent = `加入中…（再試第 ${n} 次）`; };
+    const b = await api({a:"board", pin}, 6, retry);
+    if (isEnded(b.rows)) throw new Error("ended");
+    const norm = x => (x || "").trim().toLowerCase();
+    if (b.rows.some(r => !String(r.pid).startsWith("h0st") && norm(r.name) === norm(name) && (!my || r.pid !== my.pid))) throw new Error("dupname");
+    if (!my) my = {pin, pid:pidMake(), name, phase:"joined", stage:b.stage};
+    my.name = name; my.stage = b.stage; roomSet(pin, my);                       // same pid on every retry: no duplicate players
+    await api({a:"join", pin, pid:my.pid, name}, 8, retry);
+    askReady(my);
   } catch (e) {
-    err.textContent = e.message === "noapi" ? "這個版本只可以練習。" : e.message === "noroom" ? "找不到這個 PIN，請再檢查。" : "連線失敗，請再試一次。";
-  } finally { btn.textContent = "加入"; checkHome(); }
+    err.textContent = e.message === "noapi" ? "這個版本只可以練習。" : e.message === "noroom" ? "找不到這個 PIN，請再檢查。"
+      : e.message === "ended" ? "呢一局已經結束咗。" : e.message === "dupname" ? "呢個暱稱已經有人用咗，請改一個（例如加學號）。" : "連線唔穩定，請等幾秒再撳一次「加入」（唔會重複計人數）。";
+  } finally { btn.textContent = "加入"; delete btn.dataset.busy; checkHome(); }
+};
+// ready check before the single attempt
+let readyFor = null;
+function askReady(my){
+  readyFor = my; show("scHome"); $("readyBox").hidden = false; updateReady();
+}
+function needsAudio(stage){ return stage !== "terms"; }
+function updateReady(){
+  if (!readyFor) return; const wait = needsAudio(readyFor.stage) && !audioReady;
+  $("rdGo").disabled = wait; $("rdGo").textContent = wait ? "載入錄音中…" : "準備好，開始！";
+  $("rdInfo").textContent = `${stageName(readyFor.stage)} · PIN ${readyFor.pin} · ${readyFor.name}`;
+}
+$("rdWait").onclick = () => { $("readyBox").hidden = true; readyFor = null; };
+$("rdGo").onclick = () => {
+  const my = readyFor; if (!my) return; $("readyBox").hidden = true; readyFor = null; unlockAudio();
+  my.phase = "started"; my.prog = {score:0, level:1, correct:0, answered:0}; roomSet(my.pin, my);
+  startGame({stage:my.stage, room:{pin:my.pin, pid:my.pid, name:my.name}});
 };
 
 /* ================= HOST ================= */
@@ -429,20 +519,56 @@ async function openRoom(){
     $("hostUrl").textContent = url;
     const q = $("hostQr"); q.textContent = "";
     if (window.qrcode) { const qr = qrcode(0, "M"); qr.addData(url); qr.make(); q.innerHTML = qr.createSvgTag({cellSize:5, margin:1, scalable:true}); } else q.hidden = true;
+    H.t0 = Date.now(); H.ended = false; $("hostLive").hidden = false; $("hostFinal").hidden = true; $("hostEnd").hidden = false;
     show("scHost"); renderHost([]);
-    pollHost(); H.iv = setInterval(pollHost, 3000);
+    pollHost(); H.iv = setInterval(pollHost, 2500);
   } catch (e) { err.textContent = e.message === "noapi" ? "正式網址才可以開局。" : "開局失敗，請再試一次。"; }
 }
 async function pollHost(){
   if (!H || $("scHost").hidden) return;
-  try { const r = await api({a:"board", pin:H.pin}); renderHost(r.rows); $("hostStatus").textContent = "即時更新中"; }
-  catch { $("hostStatus").textContent = "連線不穩定，稍後自動重試"; }
+  try {
+    const r = await api({a:"board", pin:H.pin}); const rows = cleanRows(r.rows); H.rows = rows;
+    if (H.ended) { if (isEnded(r.rows)) H.endSent = true; else lockRoom(); renderFinal(rows); $("hostStatus").textContent = H.endSent ? "已結束・最後排名（已鎖房）" : "已結束・鎖緊房間…"; return; }
+    renderHost(rows); $("hostStatus").textContent = "即時更新中";
+    // everyone who joined has finished (and the room has been open long enough for a full game) -> show the podium
+    const done = rows.filter(x => x.status === "done").length;
+    if (rows.length >= 2 && done === rows.length && Date.now() - H.t0 > (GAME_SEC + 10)*1000) endRoom(true);
+  } catch { $("hostStatus").textContent = "連線不穩定，稍後自動重試"; }
 }
 function renderHost(rows){
   const playing = rows.filter(r => r.status !== "done").length, done = rows.length - playing;
   renderTable($("hostTable"), rows, null, 50, true, rows.length ? `${rows.length} 人加入 · ${playing} 人遊戲中 · ${done} 人完成` : "");
   if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "等待學生加入…學生輸入上面的 PIN 碼或掃描二維碼即可。"; $("hostTable").replaceChildren(p); }
 }
+async function endRoom(auto){
+  if (!H || H.ended) return; H.ended = true; $("hostEnd").hidden = true;
+  $("hostStatus").textContent = auto ? "全部人完成！" : "已結束";
+  // lock the room: later joins are refused, students' result screens show the final ranking
+  lockRoom();
+  $("hostLive").hidden = true; $("hostFinal").hidden = false; renderFinal(H.rows || [], true);
+}
+async function lockRoom(){
+  if (!H || H.endSent || H.locking) return; H.locking = true; const h = H;
+  try { await api({a:"finish", pin:h.pin, pid:END_PID, name:"★老師", score:0, level:10, correct:0, answered:0}, 8); h.endSent = true; }
+  catch {} finally { h.locking = false; }
+}
+function renderFinal(rows, animate){
+  const done = rows.filter(r => r.status === "done").sort((a,b) => b.score - a.score || a.updated - b.updated);
+  const pod = $("podium");
+  if (animate || !pod.children.length || pod.dataset.sig !== done.slice(0,3).map(r => r.pid + r.score).join()) {
+    pod.dataset.sig = done.slice(0,3).map(r => r.pid + r.score).join(); pod.textContent = "";
+    [[1,"p2"],[0,"p1"],[2,"p3"]].forEach(([i, cls]) => {
+      const r = done[i], d = document.createElement("div"); d.className = "pod " + cls;
+      if (r) { const n = document.createElement("div"); n.className = "nm"; n.textContent = r.name || "—"; const sc = document.createElement("div"); sc.className = "sc"; sc.textContent = r.score + " 分";
+        const b = document.createElement("div"); b.className = "blk"; b.textContent = i + 1; d.append(n, sc, b); }
+      pod.appendChild(d);
+    });
+    const order = [pod.children[2], pod.children[0], pod.children[1]];        // reveal 3rd, 2nd, then 1st
+    order.forEach((el, k) => setTimeout(() => el && el.classList.add("show"), animate ? 600 + k*1300 : 0));
+  }
+  renderTable($("restTable"), done, null, 60, false, `${done.length} 人完成` + (rows.length > done.length ? `（${rows.length - done.length} 人未交分）` : ""));
+}
+$("hostEnd").onclick = () => endRoom(false);
 $("hostBtn").onclick = () => { savePrefs(); openRoom(); };
 $("hostNew").onclick = () => openRoom();
 $("hostExit").onclick = () => { if (H) clearInterval(H.iv); H = null; show("scHome"); };
@@ -453,11 +579,11 @@ function renderTable(el, rows, meId, limit, showStatus, caption){
   if (!rows.length) { const p = document.createElement("p"); p.className = "empty"; p.textContent = "未有分數。"; el.appendChild(p); return; }
   const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
   const t = document.createElement("table"); t.className = "lb";
-  const head = t.insertRow(); for (const h of ["#","暱稱","關數", ...(showStatus?["狀態"]:[]), "分數"]) { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); }
+  const head = t.insertRow(); for (const h of ["#","暱稱","答對", ...(showStatus?["狀態"]:[]), "分數"]) { const th = document.createElement("th"); th.textContent = h; head.appendChild(th); }
   let shown = sorted.slice(0, limit); const mi = sorted.findIndex(r => r.pid === meId); if (mi >= limit) shown.push(sorted[mi]);
   for (const r of shown) {
     const tr = t.insertRow(); if (r.pid === meId) tr.className = "me";
-    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[String(r.level||1),""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
+    const cells = [[String(sorted.indexOf(r)+1),"r"],[r.name||"—",""],[r.status==="done"?String(r.correct||0):"—",""], ...(showStatus?[[r.status==="done"?"完成":"遊戲中","st"]]:[]), [String(r.score||0),"s"]];
     for (const [v,c] of cells) { const td = tr.insertCell(); td.textContent = v; if (c) td.className = c; }
   }
   el.appendChild(t);
@@ -468,8 +594,12 @@ const drop = $("drop"), stage = $("stage"), basketsEl = $("baskets"), toastEl = 
 let G = null;
 const fallDur = (it, L) => it.kind === "sound" ? Math.max(1.7, 5.0 - .37*(L-1)) : Math.max(1.3, 4.2 - .32*(L-1));
 
+let cdIv = null;
 function startGame(opts){
-  stopClip();
+  stopClip(); clearInterval(cdIv);
+  // clear anything left from an earlier game (stray cards / countdown) so no card can be stranded at the top
+  for (const el of stage.querySelectorAll(".card, .countdown")) el.remove();
+  $("pauseBox").hidden = true; $("pauseBtn").hidden = !!opts.room;          // a room game can't be paused (one timed attempt)
   G = { ...opts, score:0, lives:3, level:1, levelT:0, correct:0, answered:0, misses:[], bag:[], item:null, card:null,
         state:"countdown", last:performance.now(), binset:null, cardNo:0 };
   $("hudMode").textContent = stageName(G.stage) + (G.room ? " · PIN " + G.room.pin : " · 練習");
@@ -477,7 +607,9 @@ function startGame(opts){
   renderHud(); show("scGame");
   setBaskets(G.stage === "mix" ? "terms" : G.stage);
   let n = 3; const cd = document.createElement("div"); cd.className = "countdown"; cd.textContent = n; drop.appendChild(cd);
-  const iv = setInterval(() => { n--; if (n > 0) cd.textContent = n; else { clearInterval(iv); cd.remove(); G.state = "play"; G.last = performance.now(); nextCard(); const me = G; requestAnimationFrame(t => loop(t, me)); } }, 700);
+  const me = G;
+  cdIv = setInterval(() => { if (G !== me) { clearInterval(cdIv); cd.remove(); return; }
+    n--; if (n > 0) cd.textContent = n; else { clearInterval(cdIv); cd.remove(); G.state = "play"; G.last = performance.now(); nextCard(); requestAnimationFrame(t => loop(t, me)); } }, 700);
 }
 function setBaskets(setId){
   if (G.binset === setId) return; G.binset = setId;
@@ -502,6 +634,7 @@ function draw(){
 }
 function nextCard(){
   if (!G || G.state !== "play") return;
+  if (G.card) { G.card.el.remove(); G.card = null; }                          // never two live cards
   const it = draw(); G.item = it; G.cardNo++; setBaskets(it.set);
   const c = document.createElement("div"); c.className = "card";
   const strip = document.createElement("div"); strip.className = "strip";
@@ -529,8 +662,8 @@ function loop(now, me){
   const dt = Math.min(.1, (now - G.last)/1000); G.last = now;
   G.levelT += dt;
   if (G.levelT >= LEVEL_SEC) {
-    if (G.level >= LEVELS) { renderHud(); return endGame("完成 10 關！"); }
-    G.level++; G.levelT = 0; renderHud(); toast("lv", "LEVEL " + G.level, "更快了！", 800);
+    if (G.level >= LEVELS) { G.levelT = LEVEL_SEC; renderHud(); return endGame("時間到！"); }
+    G.level++; G.levelT = 0; renderHud(); if (G.level % 3 === 1) toast("lv", "更快了！", `剩 ${timeLeft()} 秒`, 700);
   }
   if (G.state === "play" && G.card) {
     const k = G.card, h = k.el.offsetHeight, y0 = -h*.3, yEnd = lineY() - h;
@@ -538,12 +671,14 @@ function loop(now, me){
     if (p >= 1) wrong(null, "漏接了");
   }
   const cur = $("hudSegs").children[G.level-1]; if (cur) cur.style.setProperty("--p", Math.min(1, G.levelT/LEVEL_SEC));
+  const tl = timeLeft(); if (tl !== G.shownT) { G.shownT = tl; $("hudLvl").textContent = `剩 ${tl} 秒`; }
   requestAnimationFrame(t => loop(t, me));
 }
 const HEART = '<svg viewBox="0 0 24 24" class="life{c}" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+const timeLeft = () => Math.max(0, Math.ceil(GAME_SEC - ((G.level-1)*LEVEL_SEC + G.levelT)));
 function renderHud(){
   $("hudScore").firstChild.nodeValue = G.score;
-  $("hudLvl").textContent = `LEVEL ${G.level}/${LEVELS}`;
+  $("hudLvl").textContent = `剩 ${timeLeft()} 秒`;
   $("hudSpeed").textContent = "速度 ×" + (fallDur({kind:"term"},1) / fallDur({kind:"term"},G.level)).toFixed(1);
   $("hudLives").innerHTML = [0,1,2].map(i => HEART.replace("{c}", i < G.lives ? "" : " off")).join("");
   [...$("hudSegs").children].forEach((s,i) => { s.className = i < G.level-1 ? "done" : i === G.level-1 ? "now" : ""; });
@@ -570,7 +705,7 @@ function answer(key, basket){
     const pts = 10 + Math.max(0, Math.round(10*(1 - p)));
     G.correct++; G.score += pts; blip(true); stopClip(.25);
     basket.classList.remove("catch"); void basket.offsetWidth; basket.classList.add("catch");
-    flyInto(basket); renderHud(); toast("ok", "+" + pts, reveal(it), 600);
+    flyInto(basket); renderHud(); toast("ok", "+" + pts, reveal(it), 600); saveProg();
     G.state = "feedback"; setTimeout(() => { if (G && G.state === "feedback") { G.state = "play"; nextCard(); } }, 280);
   } else wrong(basket, "答錯了");
 }
@@ -579,7 +714,7 @@ function wrong(basket, why){
   if (basket) { basket.classList.add("miss"); setTimeout(() => basket.classList.remove("miss"), 600); }
   if (G.card) G.card.el.classList.add("ng");
   if (!G.misses.some(m => m.key === it.key)) G.misses.push(it);
-  G.lives--; renderHud();
+  G.lives--; renderHud(); saveProg();
   toast("ng", why, "正確：" + reveal(it), 1000);
   setTimeout(() => {
     if (!G || G.state !== "feedback") return;
@@ -587,6 +722,11 @@ function wrong(basket, why){
     if (G.lives <= 0) return endGame("沒有命了");
     G.state = "play"; nextCard();
   }, 850);
+}
+
+function saveProg(){
+  if (!G || !G.room) return; const my = roomGet(G.room.pin); if (!my) return;
+  my.prog = {score:G.score, level:G.level, correct:G.correct, answered:G.answered}; roomSet(G.room.pin, my);
 }
 
 /* ---------- end ---------- */
@@ -597,7 +737,7 @@ async function endGame(reason){
   await new Promise(r => setTimeout(r, 1000));
   const g = G;
   $("resMode").textContent = stageName(g.stage) + (g.room ? " · " + g.room.name : " · 練習");
-  $("resScore").textContent = g.score; $("resLvl").textContent = g.level; $("resCorrect").textContent = g.correct;
+  $("resScore").textContent = g.score; $("resLvl").textContent = g.answered; $("resCorrect").textContent = g.correct;
   $("resAcc").textContent = g.answered ? Math.round(g.correct/g.answered*100) + "%" : "—";
   const rv = $("resReview"); rv.textContent = "";
   if (!g.misses.length) { const li = document.createElement("li"); li.textContent = "全部答對，厲害！"; rv.appendChild(li); }
@@ -606,14 +746,12 @@ async function endGame(reason){
   show("scResults");
   const st = $("resStatus"); clearInterval(pollRes);
   if (g.room) {
-    st.className = "status"; st.textContent = "上傳分數中…"; $("resTopTitle").textContent = "房間排行榜 · PIN " + g.room.pin;
-    try {
-      await api({a:"finish", pin:g.room.pin, pid:g.room.pid, name:g.room.name, score:g.score, level:g.level, correct:g.correct, answered:g.answered});
-      st.className = "status ok"; st.textContent = "已上排行榜。";
-    } catch { st.className = "status warn"; st.textContent = "分數未能上傳，請告訴老師你的分數。"; }
-    const refresh = async () => { try { const r = await api({a:"board", pin:g.room.pin}); showRoomRank(r.rows, g); } catch {} };
-    refresh(); let n = 0; pollRes = setInterval(() => { if (++n > 20 || $("scResults").hidden) clearInterval(pollRes); else refresh(); }, 6000);
+    const my = roomGet(g.room.pin) || {pin:g.room.pin, pid:g.room.pid, name:g.room.name, stage:g.stage};
+    my.phase = "done"; my.prog = {score:g.score, level:g.level, correct:g.correct, answered:g.answered}; my.misses = g.misses.slice(0,10).map(m => m.key); roomSet(g.room.pin, my);
+    $("againBtn").hidden = true;
+    sendResult(my);
   } else {
+    $("againBtn").hidden = false;
     const best = store.get("sounddrop.best", {}); const k = g.stage; const prev = best[k] || 0;
     if (g.score > prev) { best[k] = g.score; store.set("sounddrop.best", best); }
     st.className = "status"; st.textContent = g.score > prev ? "新的個人最佳！" : `個人最佳：${prev}`;
@@ -621,19 +759,53 @@ async function endGame(reason){
     const p = document.createElement("p"); p.className = "empty"; p.textContent = "練習分數只儲存在這部裝置。想比賽，請用老師畫面上的 PIN 加入。"; $("resTop").replaceChildren(p);
   }
 }
-function showRoomRank(rows, g){
-  const sorted = rows.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
-  const i = sorted.findIndex(r => r.pid === g.room.pid); $("resRank").textContent = i >= 0 ? `${i+1}/${sorted.length}` : "—";
-  renderTable($("resTop"), rows, g.room.pid, 8, false, "");
+// Upload the single result (retrying for ~half a minute, spread out so 35 iPads don't all hit the server in the same second), then follow the room ranking.
+async function sendResult(my){
+  const st = $("resStatus"), pin = my.pin, p = my.prog || {score:0, level:1, correct:0, answered:0};
+  $("resTopTitle").textContent = "房間排行榜 · PIN " + pin;
+  if (!my.sent) {
+    st.className = "status"; st.textContent = "上傳分數中…";
+    await sleep(Math.random()*2500);
+    try {
+      await api({a:"finish", pin, pid:my.pid, name:my.name, score:p.score, level:p.level, correct:p.correct, answered:p.answered}, 9,
+                n => { st.textContent = `上傳分數中…（再試第 ${n} 次）`; });
+      my.sent = true; roomSet(pin, my);
+    } catch {
+      st.className = "status warn"; st.textContent = `分數未能上傳（${p.score} 分）。請保持喺呢版，或者告訴老師你嘅分數。`;
+      setTimeout(() => { if (!$("scResults").hidden) sendResult(my); }, 8000); return;
+    }
+  }
+  st.className = "status ok"; st.textContent = (my.again ? "呢部機已經玩過呢一局（每人只有一次機會），分數已上排行榜。" : "已上排行榜。") + "等老師公布最後排名…";
+  const refresh = async () => { try { const r = await api({a:"board", pin}); const ended = isEnded(r.rows); showRoomRank(cleanRows(r.rows), my, ended);
+      if (ended) { clearInterval(pollRes); st.textContent = "老師已公布最後排名。"; } } catch {} };
+  refresh(); let n = 0; clearInterval(pollRes); pollRes = setInterval(() => { if (++n > 150 || $("scResults").hidden) clearInterval(pollRes); else refresh(); }, 4000);
 }
-$("againBtn").onclick = async () => {
-  unlockAudio();
-  if (G.room) { const pid = pidMake(); try { await api({a:"join", pin:G.room.pin, pid, name:G.room.name}); startGame({stage:G.stage, room:{...G.room, pid}}); } catch { startGame({stage:G.stage, room:null}); } }
-  else startGame({stage:G.stage, room:null});
-};
+// Device already played this room: show its saved result (and send it if it never reached the server).
+function showRoomResult(my){
+  const p = my.prog || {score:0, level:1, correct:0, answered:0};
+  $("resMode").textContent = stageName(my.stage) + " · " + my.name + " · 已玩過";
+  $("resScore").textContent = p.score; $("resLvl").textContent = p.answered; $("resCorrect").textContent = p.correct;
+  $("resAcc").textContent = p.answered ? Math.round(p.correct/p.answered*100) + "%" : "—"; $("resRank").textContent = "—";
+  const rv = $("resReview"); rv.textContent = ""; const all = [...terms, ...fam];
+  const ms = (my.misses || []).map(k => all.find(x => x.key === k)).filter(Boolean);
+  if (!ms.length) { const li = document.createElement("li"); li.textContent = "—"; rv.appendChild(li); }
+  for (const it of ms) { const li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
+    a.textContent = it.kind==="sound" ? "♪ " + it.name : it.card; b.textContent = ansName(it); li.append(a, b); rv.appendChild(li); }
+  $("againBtn").hidden = true; show("scResults");
+  $("resStatus").className = "status"; $("resStatus").textContent = "呢部機已經玩過呢一局（每人只有一次機會）。";
+  sendResult({...my, again:true});
+}
+function showRoomRank(rows, my, ended){
+  const fin = rows.filter(r => r.status === "done");
+  const sorted = fin.slice().sort((a,b) => b.score - a.score || a.updated - b.updated);
+  const i = sorted.findIndex(r => r.pid === my.pid); $("resRank").textContent = i >= 0 ? `${i+1}/${sorted.length}` : "—";
+  renderTable($("resTop"), fin, my.pid, ended ? 10 : 8, false, ended ? "最後排名" : `${fin.length} 人完成`);
+}
+$("againBtn").onclick = () => { unlockAudio(); startGame({stage:G ? G.stage : practiceStage, room:null}); };   // practice only; a room has one attempt
 $("homeBtn").onclick = () => { clearInterval(pollRes); show("scHome"); };
 document.addEventListener("keydown", e => { if (!G || G.state !== "play") return; const b = basketsEl.children[parseInt(e.key,10)-1]; if (b) answer(b.dataset.key, b); });
-document.addEventListener("visibilitychange", () => { if (!G) return; if (document.hidden) pauseGame(); else G.last = performance.now(); });
+document.addEventListener("visibilitychange", () => { if (!G) return; if (document.hidden) { if (!G.room) pauseGame(); else saveProg(); } else G.last = performance.now(); });
+window.addEventListener("pagehide", () => saveProg());
 
 /* ---------- pause ---------- */
 let pausedFrom = null;
@@ -641,7 +813,7 @@ function pauseGame(){
   if (!G || (G.state !== "play" && G.state !== "feedback")) return;
   pausedFrom = G.state; G.state = "paused"; stopClip(.05);
   if (G.card) G.card.el.classList.remove("playing");
-  $("pInfo").textContent = `LEVEL ${G.level}/${LEVELS} · ${G.score} 分`;
+  $("pInfo").textContent = `剩 ${timeLeft()} 秒 · ${G.score} 分`;
   $("pauseBox").hidden = false;
 }
 function resumeGame(){
@@ -663,8 +835,9 @@ $("resumeBtn").onclick = resumeGame;
 $("restartBtn").onclick = () => { const g = G; quitGame(); unlockAudio(); startGame({stage:g.stage, room:g.room}); };
 $("quitBtn").onclick = quitGame;
 
+window.__sd = { get G(){ return G; } };   // test hook
 /* ================= BOOT ================= */
-if (ctx) loadAudio().then(() => { audioReady = true; checkHome(); });
+if (ctx) loadAudio().then(() => { audioReady = true; checkHome(); updateReady(); });
 else { $("loadMsg").textContent = "這個瀏覽器不支援網頁音訊"; audioReady = true; checkHome(); }
 checkHome();
 })();
