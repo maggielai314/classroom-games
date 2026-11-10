@@ -148,6 +148,96 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   #scP2 .cell .ch{font-size:clamp(20px,4.2vh,34px)}
   #scP2 .cell .w{font-size:clamp(26px,6.4vh,52px)}
 }
+
+/* ===== 和弦對決 (teacher) ===== */
+.gscr{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;padding:12px max(18px,2.5vw) 16px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:12px}
+.gtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gtop h2{font-family:var(--f-hud);font-size:clamp(22px,2.6vw,32px)}
+.gtop .btn{min-height:44px;font-size:16px;padding:0 14px}
+.gtop .rnd{font-weight:900;font-size:clamp(16px,1.8vw,22px);color:var(--hot)}
+.gtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.gt{background:#fff;border:3px solid var(--rule);border-radius:18px;padding:10px 12px;display:grid;gap:6px;align-content:start;position:relative;min-width:0}
+.gt.perf{border-color:var(--hot);box-shadow:0 0 0 4px #FFD9E8}
+.gt.claim{border-color:#E9A21A;box-shadow:0 0 0 5px #FFE7A8}
+.gt .gn{font-weight:900;font-size:clamp(16px,1.7vw,22px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt .no{font-family:var(--f-hud);color:var(--muted);font-size:14px;font-weight:700}
+.gt .tagp{position:absolute;top:-12px;right:10px;background:var(--hot);color:#fff;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:900}
+.gt .sc{display:flex;align-items:baseline;gap:14px}
+.gt .sc b{font-family:var(--f-hud);font-size:clamp(34px,4vw,54px);color:var(--plum);line-height:1}
+.gt .sc small{font-size:13px;color:var(--muted);font-weight:700}
+.gt .sc span{font-size:clamp(18px,2vw,24px);font-weight:900;color:#B7791F}
+.gt .cards{display:flex;gap:5px;flex-wrap:wrap}
+.mini{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;font-weight:900;font-size:14px}
+.mini.z{opacity:.28}
+.cI{background:#FFE1E7;color:#B4234A}.cG{background:#FFF1C9;color:#8A5A00}.cO{background:#DDEBFF;color:#1E4FA8}.cM{background:#ECE6F8;color:#4B3A80}
+.mutedb{display:inline-block;background:#3B2F5A;color:#fff;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:900;width:max-content}
+.gt .adj{display:flex;flex-wrap:wrap;gap:4px}
+.gt .adj button{min-height:34px;min-width:34px;padding:0 8px;border-radius:8px;background:#F3EFFC;border:1px solid #D9CFF2;font-weight:900;font-size:13px}
+.gstage{display:grid;justify-items:center;align-content:center;text-align:center;gap:12px;min-height:0;background:#fff;border-radius:22px;border:1px solid var(--rule);padding:16px;overflow:auto}
+.gclock{font-family:var(--f-hud);font-weight:700;font-size:clamp(90px,15vw,220px);line-height:1;color:var(--plum);font-variant-numeric:tabular-nums}
+.gclock.f3{color:#E11D48;animation:pop .6s ease-out}
+.gclock.up{color:#E11D48;font-size:clamp(64px,9vw,140px)}
+.gclock.paused{opacity:.45}
+@keyframes pop{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+.gscr.f3::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:41;box-shadow:inset 0 0 0 16px rgba(225,29,72,.85);animation:veil .5s ease-in-out infinite alternate}
+@keyframes veil{from{opacity:.25}to{opacity:1}}
+.gbig{font-weight:900;font-size:clamp(28px,3.8vw,54px);color:var(--ink);line-height:1.25}
+.gbig em{font-style:normal;color:var(--hot)}
+.gsub{font-size:clamp(18px,2vw,26px);color:var(--muted);font-weight:700;line-height:1.5}
+.gcrit{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.gcrit span{background:#F3EFFC;border-radius:999px;padding:6px 14px;font-weight:900;font-size:clamp(16px,1.6vw,20px)}
+.gcard{display:inline-grid;place-items:center;width:clamp(110px,12vw,160px);aspect-ratio:3/4;border-radius:20px;border:5px solid currentColor;font-weight:900;font-size:clamp(26px,3vw,40px);line-height:1.15}
+.gcard i{font-style:normal;font-size:1.4em}
+.gctl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.gctl .btn{min-height:58px;font-size:19px}
+.btn-red{background:#D63C5E;color:#fff}.btn-green{background:#1F9D62;color:#fff}
+.gflash{position:fixed;inset:0;z-index:46;display:grid;place-items:center;pointer-events:none}
+.gflash div{background:var(--plum);color:#fff;font-weight:900;font-size:clamp(34px,5.5vw,76px);padding:26px 46px;border-radius:28px;text-align:center;line-height:1.3;max-width:90vw;animation:flash 2.6s ease forwards;box-shadow:0 12px 0 rgba(59,47,90,.25)}
+.gflash div.good{background:#1F9D62}.gflash div.bad{background:#D63C5E}
+@keyframes flash{0%{transform:scale(.6);opacity:0}10%{transform:scale(1.06);opacity:1}18%{transform:scale(1)}82%{opacity:1}100%{opacity:0}}
+#gLyr{width:100%;text-align:left}
+#gLyr .line{border-bottom:2px solid var(--rule);padding:10px 0;gap:4px}
+#gLyr .cell{background:transparent;border:0;min-width:clamp(50px,6vw,84px);grid-template-rows:clamp(40px,5vw,62px) auto auto}
+#gLyr .cell .sf{font-size:clamp(13px,1.6vw,20px)}
+#gLyr .cell .ch{font-size:clamp(26px,4vw,46px)}
+#gLyr .cell .w{font-size:clamp(32px,5vw,62px)}
+#gLyr .cell.now{background:#FFF1D2;border-radius:14px}
+#gLyr .cell.now .ch{color:var(--bad)}
+#gLyr .cell.strong::after{font-size:clamp(18px,2.2vw,26px);top:-4px;right:2px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;width:100%}
+.podium .pc{display:grid;gap:6px;justify-items:center;width:min(26vw,240px);opacity:0;transform:translateY(30px);animation:rise .7s ease forwards}
+.podium .pc .bk{width:100%;border-radius:16px 16px 0 0;display:grid;place-items:center;font-family:var(--f-hud);font-weight:700;font-size:clamp(40px,5vw,72px);color:#fff}
+.podium .pc .nm{font-weight:900;font-size:clamp(20px,2.4vw,32px)}
+.podium .pc .pt{font-weight:900;font-size:clamp(16px,1.8vw,22px);color:var(--muted)}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (max-width:820px){.gtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* ===== 和弦對決 (student iPad) ===== */
+.sg{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,3vw) max(12px,env(safe-area-inset-bottom,0px));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:12px}
+.sgwho{font-weight:900;font-size:clamp(20px,3vw,28px);color:var(--plum)}
+.sgwho small{display:block;font-size:14px;color:var(--muted)}
+.sg .btn{min-height:44px;font-size:16px}
+.sgstat{font-weight:900;font-size:clamp(22px,3.4vw,34px);text-align:center;color:var(--plum);min-height:2.6em;display:grid;place-items:center;background:#fff;border-radius:18px;padding:12px;border:2px solid var(--rule);line-height:1.35}
+.sgstat.hot{background:#FFF1D2;border-color:#E9B949}
+.sgcards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-content:center}
+@media (orientation:landscape){.sgcards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.sgc{border-radius:24px;border:5px solid currentColor;min-height:clamp(150px,30vh,280px);display:grid;place-items:center;align-content:center;gap:6px;padding:10px;transition:transform .08s;touch-action:manipulation}
+.sgc:active:not(:disabled){transform:scale(.95)}
+.sgc:disabled{opacity:.25;filter:grayscale(.7)}
+.sgc .ic{font-size:clamp(44px,8vh,70px);line-height:1}
+.sgc .nm{font-weight:900;font-size:clamp(30px,5.5vh,48px);line-height:1.1}
+.sgc .left{display:flex;gap:6px}
+.sgc .left i{width:16px;height:16px;border-radius:50%;background:currentColor}
+.sgc .left i.u{background:transparent;border:2px solid currentColor;opacity:.5}
+.sgc.go:not(:disabled){animation:sgpulse 1s ease-in-out infinite}
+@keyframes sgpulse{50%{transform:scale(1.04);box-shadow:0 0 0 10px rgba(30,79,168,.18)}}
+.sgpick{display:grid;gap:12px;align-content:center}
+.sgpick h3{margin:0;text-align:center;font-size:clamp(22px,3vw,30px);color:var(--plum)}
+.sgpick .row{justify-content:center}
+.sgpick .tgt{min-height:90px;min-width:min(40vw,240px);border-radius:20px;background:#fff;border:4px solid #4B3A80;color:#4B3A80;font-weight:900;font-size:clamp(22px,3vw,30px)}
+.sgtoast{text-align:center;font-weight:900;font-size:clamp(20px,3vw,28px);min-height:1.4em;color:var(--plum)}
+.sgtoast.good{color:var(--good)}.sgtoast.bad{color:var(--bad)}
+.sgfab{position:fixed;right:16px;bottom:16px;z-index:59;min-height:60px;padding:0 22px;border-radius:999px;background:var(--plum);color:#fff;font-weight:900;font-size:20px;box-shadow:0 6px 0 rgba(59,47,90,.25)}
 </style>
 </head>
 <body>
@@ -241,12 +331,38 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
-    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hTeacher">🎵 老師版本</button><button class="btn btn-soft" id="hExit">結束</button><span class="note" id="hMsg"></span></div>
+    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hTeacher">🎵 老師版本</button><button class="btn btn-main" id="hDuel">⚔️ 和弦對決</button><button class="btn btn-soft" id="hExit">結束</button><span class="note" id="hMsg"></span></div>
     <table class="lb"><thead><tr><th>組</th><th>① 砌和弦</th><th>② 歌詞和弦</th><th></th></tr></thead><tbody id="hTable"></tbody></table>
   </div>
 </section>
 
 </div>
+
+
+<!-- 和弦對決：老師畫面 -->
+<div class="gscr" id="gScr" hidden>
+  <div class="gtop">
+    <h2>⚔️ 和弦對決</h2><span class="rnd" id="gRound"></span>
+    <span style="flex:1"></span><span class="note" id="gNet"></span>
+    <button class="btn btn-soft" data-act="bgm" id="gBgm">🔊 音樂</button>
+    <button class="btn btn-soft" data-act="edit" id="gEdit">⚙ 調整</button>
+    <button class="btn btn-soft" data-act="back">返工作紙</button>
+    <button class="btn btn-soft" data-act="quit" id="gQuit">結束對決</button>
+  </div>
+  <div class="gtiles" id="gTiles"></div>
+  <div class="gstage" id="gStage"></div>
+  <div class="gctl" id="gCtl"></div>
+</div>
+<div class="gflash" id="gFlash" hidden></div>
+
+<!-- 和弦對決：學生 iPad -->
+<div class="sg" id="sg" hidden>
+  <div class="row" style="justify-content:space-between"><div class="sgwho" id="sgWho"></div><div class="row"><span class="note" id="sgNet"></span><button class="btn btn-soft" id="sgHide">睇工作紙</button></div></div>
+  <div class="sgstat" id="sgStat"></div>
+  <div class="sgcards" id="sgCards"></div>
+  <div class="sgtoast" id="sgToast"></div>
+</div>
+<button class="sgfab" id="sgFab" hidden>⚔️ 功能卡</button>
 
 <!-- projection -->
 <div class="show" id="show" hidden>
@@ -340,9 +456,14 @@ const show = id => { for (const s of ["scHome","scP1","scP2","scHost"]) $(s).hid
 const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
 async function api(params){
   const qs = new URLSearchParams(params).toString(); let last;
-  for (let i = 0; i < 3; i++) {
-    try { const r = await fetch(API + "?" + qs, {redirect:"follow"}); const j = await r.json(); if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j; }
-    catch (e) { last = e; if (e.server) break; await new Promise(r => setTimeout(r, 500 + Math.random()*700)); }
+  // retries network errors and busy-backend errors (e.g. "Lock timeout"); stops at once on real answers like "noroom"
+  for (let i = 0; i < 4; i++) {
+    try {
+      const ac = window.AbortController ? new AbortController() : null, to = ac && setTimeout(() => ac.abort(), 15000);
+      const r = await fetch(API + "?" + qs, {redirect:"follow", signal: ac ? ac.signal : undefined}); if (to) clearTimeout(to);
+      const j = await r.json(); if (!j.ok) throw Object.assign(new Error(j.error || "server"), {server:true}); return j;
+    }
+    catch (e) { last = e; if (e.server && /^(noroom|nopid|badaction)$/.test(e.message)) break; await new Promise(r => setTimeout(r, 400 + i * 400 + Math.random()*600)); }
   }
   throw last;
 }
@@ -376,7 +497,7 @@ $("joinBtn").onclick = async () => {
   const pin = $("pinIn").value, name = $("nameIn").value.trim().slice(0,12);
   const old = store.get("chordsheet.v1", {});
   const gid = old.pin === pin && old.gid ? old.gid : pidMake().slice(0,10);
-  try { await api({a:"join", pin, pid: gid + "g", name}); me = {pin, gid, name}; store.set("chordsheet.v1", {pin, gid, name}); startP1(); }
+  try { await api({a:"join", pin, pid: gid + "g", name}); me = {pin, gid, name}; store.set("chordsheet.v1", {pin, gid, name}); startP1(); sgStart(); }
   catch (e) { $("joinErr").textContent = e.message === "noroom" ? "搵唔到呢個 PIN，請再檢查。" : "連線失敗，請再試。"; }
   finally { checkJoin(); }
 };
@@ -751,7 +872,7 @@ fillSongSelects();
     fillSongSelects(); $("hostNote").textContent = `已由老師連結載入 ${n} 首歌。揀歌，再撳「開局」。`; history.replaceState(null, "", location.pathname);
   } catch {} })();
 async function poll(){
-  if (!H || $("scHost").hidden) return;
+  if (!H || $("scHost").hidden || !$("gScr").hidden) return;
   try { const r = await api({a:"board", pin:H.pin}); H.rows = r.rows; renderHost(); $("hStatus").textContent = "即時更新中"; }
   catch { $("hStatus").textContent = "連線不穩定，稍後自動重試"; }
 }
@@ -780,7 +901,7 @@ function pickRandom(){
   showGroup(pool[Math.floor(Math.random() * pool.length)]);
 }
 $("hRand").onclick = () => { unlock(); pickRandom(); };
-$("hExit").onclick = () => { clearInterval(H.iv); H = null; show("scHome"); };
+$("hExit").onclick = () => { if (D) dQuit(); clearInterval(H.iv); H = null; show("scHome"); };
 
 /* projection: play a group's version (melody + their chords at the real rhythm) for the class to listen, then sing along */
 let S = null;
@@ -857,7 +978,562 @@ if (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen) {
   const upd = () => $("fsBtn").textContent = fsOn() ? "✕ 離開全螢幕" : "⛶ 全螢幕";
   document.addEventListener("fullscreenchange", upd); document.addEventListener("webkitfullscreenchange", upd);
 }
-window.__cs = {get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
+
+/* =====================================================================
+   和弦對決（功能卡遊戲）
+   老師電腦係「評判機」：所有分數、功能卡數目、倒數都喺老師機計。
+   老師狀態寫入排行榜一行 h0stG（name 10 字：階段、表演組、用卡組、目標組、禁言、窗口編號…；
+   score／correct 欄放四組剩低嘅功能卡）；h0stP1–P4 = 第 1–4 組嘅組 id。
+   學生撳卡 = 寫自己一行 <組id>k，name = 窗口編號(2) + 卡(I/G/O/M) + 目標組；
+   老師機以後台收到嘅時間（updated）揀最快嗰組。
+   ===================================================================== */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const CRIT = ["音準", "節奏", "和弦配搭", "合奏整齊度", "團隊精神"];
+const CARD = {
+  I: {n: "改善", ic: "↓", sec: 20, cls: "cI"},
+  G: {n: "做得好", ic: "★", sec: 10, cls: "cG"},
+  O: {n: "反對", ic: "✋", sec: 10, cls: "cO"},
+  M: {n: "禁言", ic: "🔇", sec: 10, cls: "cM"}
+};
+const CARD_MAX = {I: 3, G: 3, O: 1, M: 1};
+const TIAO_MS = 120000;
+const GRACE = 3500;   // objection windows stay open this long after showing 0 (iPad → Google → teacher takes a few seconds)
+const PH_OPEN = "PTOM";            // phases in which iPads may press
+const b36 = (n, w) => Math.max(0, n).toString(36).padStart(w, "0").slice(-w);
+const packCards = c => (c.I & 3) * 16 + (c.G & 3) * 4 + (c.O & 1) * 2 + (c.M & 1);
+const unpackCards = v => ({I: (v >> 4) & 3, G: (v >> 2) & 3, O: (v >> 1) & 1, M: v & 1});
+const gLabel = k => `第 ${k} 組`;   // k is 1-based
+
+/* ---------- sound: original synth BGM + effects (no files to load) ---------- */
+const BG = {on: false, mode: "", next: 0, step: 0, iv: null, bus: null, sfx: null, noise: null};
+function busInit(){
+  if (!ctx || BG.bus) return !!ctx;
+  const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4; comp.connect(ctx.destination);
+  BG.bus = ctx.createGain(); BG.bus.gain.value = 0; BG.bus.connect(comp);
+  BG.sfx = ctx.createGain(); BG.sfx.gain.value = .9; BG.sfx.connect(comp);
+  const n = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = n.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  BG.noise = n; return true;
+}
+const mf = m => 440 * Math.pow(2, (m - 69) / 12);
+function tone(type, f0, f1, t, dur, vol, dest, lp){
+  const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type;
+  o.frequency.setValueAtTime(f0, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  let last = o; if (lp) { const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = lp; o.connect(f); last = f; }
+  last.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + .05);
+}
+function hiss(t, dur, vol, type, freq, dest){
+  const s = ctx.createBufferSource(); s.buffer = BG.noise; const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+  const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(dest); s.start(t, Math.random() * .5); s.stop(t + dur + .02);
+}
+// Am – F – C – G, 128 bpm, four-on-the-floor (game-show energy)
+const PROG = [{r: 45, c: [57, 60, 64]}, {r: 41, c: [57, 60, 65]}, {r: 48, c: [55, 60, 64]}, {r: 43, c: [55, 59, 62]}];
+function bgStep(mode, s, t, out){
+  const i = s & 15, st = 60 / (mode === "tense" ? 150 : 128) / 4;
+  if (mode === "norm") {
+    const ch = PROG[(s >> 4) & 3];
+    if (i % 4 === 0) tone("sine", 150, 42, t, .3, .95, out);
+    if (i === 4 || i === 12) hiss(t, .16, .45, "bandpass", 1600, out);
+    if (i % 4 === 2) hiss(t, .09, .22, "highpass", 7000, out); else if (i % 2) hiss(t, .03, .08, "highpass", 9000, out);
+    if ([0, 3, 6, 8, 10, 11, 14].includes(i)) tone("sawtooth", mf(ch.r + (i === 6 || i === 14 ? 12 : 0)), 0, t, st * 1.5, .28, out, 700);
+    if (i % 2 === 0) tone("square", mf(ch.c[(i >> 1) % 3] + 12), 0, t, st * .9, .05, out, 2600);
+    if (i === 0 && (s >> 4) % 2 === 0) ch.c.forEach(m => tone("sawtooth", mf(m + 12), 0, t, st * 3, .035, out, 3000));
+  } else {   // tense: heartbeat kick, ticking hats, pulsing low A, semitone siren
+    if (i === 0 || i === 3 || i === 8 || i === 11) tone("sine", 120, 40, t, .25, i % 8 === 0 ? .95 : .6, out);
+    hiss(t, .025, i % 2 ? .06 : .14, "highpass", 8500, out);
+    if (i % 2 === 0) tone("sawtooth", mf(33), 0, t, st * 1.2, .26, out, 300 + 40 * i);
+    if (i % 4 === 0) tone("square", mf(s & 16 ? 82 : 81), 0, t, st * 2.5, .035, out, 3000);
+  }
+}
+function bgTick(){
+  if (!BG.on || !ctx) return;
+  if (BG.next < ctx.currentTime - .5) BG.next = ctx.currentTime + .05;   // tab was asleep: don't burst
+  while (BG.next < ctx.currentTime + .15) {
+    bgStep(BG.mode, BG.step, BG.next, BG.bus);
+    BG.next += 60 / (BG.mode === "tense" ? 150 : 128) / 4; BG.step = (BG.step + 1) % 64;
+  }
+}
+function bgSet(mode){
+  if (!busInit()) return;
+  const want = D && D.bgm ? mode : "";
+  if (!want) { if (BG.on) { BG.on = false; BG.mode = ""; BG.bus.gain.setTargetAtTime(0, ctx.currentTime, .06); } return; }
+  try { ctx.resume(); } catch {}
+  if (!BG.on) { BG.next = ctx.currentTime + .08; BG.step = 0; }
+  if (BG.mode !== want) BG.step = 0;
+  BG.on = true; BG.mode = want; BG.bus.gain.setTargetAtTime(want === "tense" ? .55 : .42, ctx.currentTime, .05);
+  if (!BG.iv) BG.iv = setInterval(bgTick, 30);
+}
+function sfx(kind){
+  if (!busInit()) return; try { ctx.resume(); } catch {}
+  const t = ctx.currentTime + .01, o = BG.sfx;
+  if (kind === "claim") { hiss(t, .35, .35, "bandpass", 2500, o); tone("square", 988, 0, t + .05, .12, .25, o, 4000); tone("square", 1319, 0, t + .17, .3, .25, o, 4000); }
+  else if (kind === "tick") { tone("sine", 1250, 0, t, .12, .7, o); tone("square", 1250, 0, t, .05, .12, o, 3000); }
+  else if (kind === "buzz") { [110, 116, 165].forEach(f => tone("sawtooth", f, 0, t, .9, .22, o, 1400)); }
+  else if (kind === "good") { [72, 76, 79, 84].forEach((m, k) => tone("triangle", mf(m), 0, t + k * .08, .4, .3, o)); }
+  else if (kind === "bad") { tone("square", mf(55), 0, t, .22, .18, o, 1500); tone("square", mf(50), 0, t + .22, .4, .18, o, 1500); }
+  else if (kind === "fan") { [60, 64, 67, 72, 67, 72].forEach((m, k) => tone("sawtooth", mf(m + 12), 0, t + k * .14, k === 5 ? .9 : .2, .14, o, 3500)); }
+  else if (kind === "tap") { tone("triangle", 880, 0, t, .08, .35, o); }
+}
+
+/* ---------- teacher: duel state ---------- */
+let D = null;
+const isMuted = k => !!(D.grp[k] && D.grp[k].mutedUntil && D.grp[k].mutedUntil >= D.round);
+const dScore = k => D.grp[k].own.filter(Boolean).length + D.grp[k].won;
+function dNew(){
+  const gs = groups().slice(0, 4);
+  D = {slots: gs.map(g => ({gid: g.gid, name: g.name})), grp: gs.map(() => ({own: [1, 1, 1, 1, 1], won: 0, star: 0, cards: {I: 3, G: 3, O: 1, M: 1}, mutedUntil: 0})),
+       round: 0, perf: 0, done: [], phase: "L", epoch: 1, claim: null, tLeft: TIAO_MS, tEnd: 0, paused: false, cdEnd: 0, prev: "", ded: null,
+       last: {k: 0, c: "-", n: 0}, bgm: true, ui: {edit: false, pick: null}, stageKey: "", slotsSent: false};
+}
+function encState(){
+  const mask = D.slots.reduce((m, _, k) => m | (isMuted(k) ? 1 << k : 0), 0), c = D.claim || {};
+  return D.phase + (D.perf || 0) + (c.slot || 0) + (c.target || 0) + mask.toString(16) + b36(D.epoch % 1296, 2) + b36(D.round % 36, 1)
+       + (D.last.k || 0) + D.last.c + b36(D.last.n % 36, 1);
+}
+const W = {busy: false, dirty: false};
+async function dPush(){
+  if (!H || !D) return; if (W.busy) { W.dirty = true; return; }
+  W.busy = true;
+  try {
+    for (let n = 0; D && H && n < 200; n++) {
+      W.dirty = false;
+      try {
+        if (!D.slotsSent) {
+          await Promise.all([0, 1, 2, 3].map(k => api({a: "finish", pin: H.pin, pid: "h0stP" + (k + 1), name: D.slots[k] ? D.slots[k].gid : "—", score: 0, level: 1, correct: 0, answered: 0})));
+          D.slotsSent = true;
+        }
+        const c = [0, 1, 2, 3].map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
+        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: 0});
+        dNet(true); if (!W.dirty) break;
+      } catch { dNet(false); await sleep(700 + Math.random() * 700); }
+    }
+  } finally { W.busy = false; }
+}
+function dNet(ok){ const el = $("gNet"); if (el) el.textContent = ok ? "" : "⚠ 網絡慢，自動重試中…"; }
+function dCommit(){ dPush(); dRender(); }
+function setPhase(ph){
+  D.phase = ph; D.epoch++; D.ui.pick = null;
+  if (ph !== "P") gStop();
+  bgSet(ph === "P" ? "" : "IGOMR".includes(ph) ? "tense" : ph === "X" ? "" : "norm");
+  dCommit();
+}
+function dFlash(text, kind){
+  const f = $("gFlash"); f.innerHTML = `<div class="${kind || ""}">${text}</div>`; f.hidden = false;
+  clearTimeout(dFlash.t); dFlash.t = setTimeout(() => { f.hidden = true; }, 2600);
+}
+
+/* rules: may group k (0-based) use this card now? tg = target group (1-based) for 禁言 */
+function dAllowed(k, card, tg){
+  const g = D.grp[k]; if (!g || isMuted(k) || !(g.cards[card] > 0)) return false;
+  const perf = D.perf - 1, tgOk = tg >= 1 && tg <= D.slots.length && tg - 1 !== k && !isMuted(tg - 1);
+  switch (D.phase) {
+    case "P": return card === "M" && tgOk;
+    case "T": return card === "M" ? tgOk : (card === "I" || card === "G") && perf >= 0 && k !== perf;
+    case "O": return card === "O" && k === perf;
+    case "M": return card === "O" && !!D.claim && k === D.claim.target - 1;
+  }
+  return false;
+}
+function pauseTiao(){ if (D.phase === "T" && !D.paused) D.tLeft = Math.max(0, D.tEnd - Date.now()); }
+function dAccept(k, card, tg){
+  const g = D.grp[k]; g.cards[card]--; D.last = {k: k + 1, c: card, n: D.last.n + 1}; sfx("claim");
+  if (card === "I" || card === "G") {
+    pauseTiao(); D.prev = "T"; D.claim = {slot: k + 1, card, target: D.perf};
+    D.cdEnd = Date.now() + CARD[card].sec * 1000;
+    dFlash(`${gLabel(k + 1)}　${CARD[card].ic} ${CARD[card].n}！`); setPhase(card);
+  } else if (card === "M") {
+    if (D.phase === "T") pauseTiao(); D.prev = D.phase; D.claim = {slot: k + 1, card, target: tg};
+    const t = D.grp[tg - 1];
+    if (t.cards.O > 0) { D.cdEnd = Date.now() + 10000; dFlash(`${gLabel(k + 1)} 🔇 禁言 ${gLabel(tg)}！`); setPhase("M"); }
+    else { dFlash(`${gLabel(k + 1)} 🔇 禁言 ${gLabel(tg)}！`); applyMute(); backToPrev(); }
+  } else if (card === "O" && D.phase === "O") {
+    D.claim.obj = true; D.cdEnd = Date.now() + 10000; dFlash(`${gLabel(k + 1)} ✋ 反對！`); setPhase("R");
+  } else if (card === "O" && D.phase === "M") {
+    dFlash(`✋ 反對成功！<br>${gLabel(k + 1)} 唔使禁言`, "good"); sfx("good"); backToPrev();
+  }
+}
+function applyMute(){ const tg = D.claim && D.claim.target; if (!tg) return; D.grp[tg - 1].mutedUntil = D.round + 1; }
+function applyDeduct(crit){
+  const p = D.perf - 1, c = D.claim.slot - 1;
+  if (crit == null || !D.grp[p].own[crit]) return;
+  D.grp[p].own[crit] = 0; D.grp[c].won++; sfx("bad");
+  dFlash(`${gLabel(p + 1)}「${CRIT[crit]}」分數卡<br>→ ${gLabel(c + 1)}`, "bad");
+}
+function backToPrev(){
+  D.claim = null; D.ded = null;
+  if (D.prev === "T") { if (D.tLeft <= 0) return roundEnd(); D.tEnd = Date.now() + D.tLeft; }
+  setPhase(D.prev || "T");
+}
+function roundEnd(){
+  D.tLeft = 0; D.paused = false; D.claim = null; sfx("buzz");
+  D.grp.forEach(g => { if (g.mutedUntil && g.mutedUntil <= D.round) g.mutedUntil = 0; });
+  dFlash("⏰ 時間到！"); setPhase("E");
+}
+function dPick(k){
+  D.round++; D.perf = k + 1; if (!D.done.includes(k)) D.done.push(k);
+  D.tLeft = TIAO_MS; D.paused = false;
+  D.grp.forEach(g => { if (g.mutedUntil && g.mutedUntil < D.round) g.mutedUntil = 0; });
+  setPhase("P");
+}
+function dRandom(){
+  const sent = new Set(groups().filter(g => g.sent).map(g => g.gid));
+  let pool = D.slots.map((s, k) => k).filter(k => !D.done.includes(k) && sent.has(D.slots[k].gid));
+  if (!pool.length) pool = D.slots.map((s, k) => k).filter(k => !D.done.includes(k));
+  if (!pool.length) pool = D.slots.map((s, k) => k);
+  dPick(pool[Math.floor(Math.random() * pool.length)]);
+}
+
+/* ---------- teacher: polling ---------- */
+let dPT = null, dPolling = false;
+function dLoop(){
+  clearTimeout(dPT); if (!D || !H) return;
+  dPollOnce().finally(() => { if (D && H) dPT = setTimeout(dLoop, "OM".includes(D.phase) ? 550 : PH_OPEN.includes(D.phase) ? 750 : 2500); });
+}
+async function dPollOnce(){
+  if (dPolling) return; dPolling = true;
+  try { const r = await api({a: "board", pin: H.pin}); if (!D || !H) return; H.rows = r.rows; dNet(true); dProcess(r.rows); if (D) dTiles(); if (D && D.phase === "L") dStage(true); }
+  catch { dNet(false); }
+  finally { dPolling = false; }
+}
+function dProcess(rows){
+  if (!D || !PH_OPEN.includes(D.phase)) return;
+  const ep = b36(D.epoch % 1296, 2), cands = [];
+  for (const r of rows) {
+    const m = /^([a-z0-9]+)k$/.exec(r.pid); if (!m || r.pid.startsWith("h0st")) continue;
+    const k = D.slots.findIndex(s => s.gid === m[1]); if (k < 0) continue;
+    const s = String(r.name); if (s.slice(0, 2) !== ep) continue;
+    const card = s[2], tg = parseInt(s[3], 10) || 0;
+    if (CARD[card] && dAllowed(k, card, tg)) cands.push({k, card, tg, at: Number(r.updated) || 0});
+  }
+  if (!cands.length) return;
+  cands.sort((a, b) => a.at - b.at); const w = cands[0]; dAccept(w.k, w.card, w.tg);
+}
+
+/* ---------- teacher: timers ---------- */
+let dTI = null;
+function dTick(){
+  if (!D || $("gScr").hidden) return;
+  const now = Date.now(); let left = null;
+  if (D.phase === "T") { left = D.paused ? D.tLeft : D.tEnd - now; if (!D.paused && left <= 0) return roundEnd(); }
+  else if ("IGOMR".includes(D.phase)) {
+    left = D.cdEnd - now;
+    if (left <= -GRACE && D.phase === "O") { applyDeduct(D.ded); return backToPrev(); }
+    if (left <= -GRACE && D.phase === "M") { applyMute(); dFlash(`🔇 ${gLabel(D.claim.target)} 被禁言`, "bad"); return backToPrev(); }
+  }
+  const el = $("gClock"), scr = $("gScr");
+  if (!el || left == null) { scr.classList.remove("f3"); return; }
+  const s = Math.max(0, Math.ceil(left / 1000)), f3 = s > 0 && s <= 3 && !(D.phase === "T" && D.paused);
+  el.textContent = D.phase === "T" ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : s ? String(s) : "OM".includes(D.phase) ? "確認中…" : "時間到！";
+  el.classList.toggle("up", s === 0); el.classList.toggle("paused", D.phase === "T" && D.paused); scr.classList.toggle("f3", f3);
+  const key = D.epoch + ":" + s;
+  if (f3 && D.beep !== key) { D.beep = key; sfx("tick"); el.classList.remove("f3"); void el.offsetWidth; el.classList.add("f3"); }
+  if (!f3) el.classList.remove("f3");
+  if (s === 0 && D.buzzed !== D.epoch && "IGROM".includes(D.phase)) { D.buzzed = D.epoch; sfx("buzz"); }
+}
+
+/* ---------- teacher: rendering ---------- */
+function dRender(){ if (!D) return; dTiles(); dStage(false); $("gBgm").textContent = D.bgm ? "🔊 音樂" : "🔇 音樂"; $("gEdit").classList.toggle("btn-main", D.ui.edit);
+  $("gRound").textContent = D.round && D.perf ? `第 ${D.round} 輪・表演：${gLabel(D.perf)}` : ""; }
+function dTiles(){
+  if (!D) return; const box = $("gTiles"), gs = groups(), sent = new Set(gs.filter(g => g.sent).map(g => g.gid));
+  if (D.phase === "L") { box.innerHTML = ""; return; }
+  box.innerHTML = D.slots.map((s, k) => {
+    const g = D.grp[k], cl = D.claim && D.claim.slot === k + 1;
+    const cards = Object.keys(CARD).map(c => `<span class="mini ${CARD[c].cls}${g.cards[c] ? "" : " z"}">${CARD[c].ic} ${CARD[c].n} ${g.cards[c]}</span>`).join("");
+    const adj = D.ui.edit ? `<div class="adj">
+        <button data-act="adj" data-k="${k}" data-w="s-">分−</button><button data-act="adj" data-k="${k}" data-w="s+">分＋</button>
+        <button data-act="adj" data-k="${k}" data-w="t-">★−</button><button data-act="adj" data-k="${k}" data-w="t+">★＋</button>
+        ${Object.keys(CARD).map(c => `<button data-act="adj" data-k="${k}" data-w="${c}-">${CARD[c].n}−</button><button data-act="adj" data-k="${k}" data-w="${c}+">${CARD[c].n}＋</button>`).join("")}
+        <button data-act="adj" data-k="${k}" data-w="mute">${isMuted(k) ? "解除禁言" : "禁言"}</button>
+      </div><div class="adj">${Object.keys(CARD).map(c => `<button data-act="proxy" data-k="${k}" data-c="${c}">代撳${CARD[c].n}</button>`).join("")}</div>` : "";
+    return `<div class="gt${D.perf === k + 1 ? " perf" : ""}${cl ? " claim" : ""}">${D.perf === k + 1 ? '<span class="tagp">表演中</span>' : ""}
+      <div class="no">${gLabel(k + 1)}${sent.has(s.gid) ? "" : "・未交工作紙"}</div><div class="gn">${esc(s.name)}</div>
+      <div class="sc"><b>${dScore(k)}</b><small>分</small><span>★ ${g.star}</span></div>
+      <div class="cards">${cards}</div>${isMuted(k) ? '<span class="mutedb">🔇 禁言中</span>' : ""}${adj}</div>`;
+  }).join("");
+}
+const cardBig = c => `<span class="gcard ${CARD[c].cls}"><i>${CARD[c].ic}</i>${CARD[c].n}</span>`;
+function dStage(lobbyRefresh){
+  const key = D.phase + D.epoch + (D.ui.pick ? "p" + D.ui.pick.k : "") + (D.ui.edit ? "e" : "");
+  if (!lobbyRefresh && key === D.stageKey) return; D.stageKey = key;
+  const st = $("gStage"), ctl = $("gCtl"), cl = D.claim, P = D.perf;
+  let s = "", c = "";
+  if (D.ui.pick) {
+    const k = D.ui.pick.k;
+    s = `<div class="gbig">${gLabel(k + 1)} 代撳禁言：禁邊組？</div>`;
+    c = D.slots.map((_, t) => t === k ? "" : `<button class="btn btn-main" data-act="pickt" data-t="${t + 1}">${gLabel(t + 1)}</button>`).join("") + `<button class="btn btn-soft" data-act="pickx">取消</button>`;
+  } else switch (D.phase) {
+    case "L": {
+      const gs = groups();
+      s = `<div class="gbig">⚔️ 和弦對決</div>
+        <div class="gsub">${gs.length ? `已加入：${gs.slice(0, 4).map((g, k) => `${gLabel(k + 1)} ${esc(g.name)}${g.sent ? " ✓" : "（未交）"}`).join("　")}` : "等各組用 iPad 加入工作紙…"}</div>
+        ${gs.length > 4 ? `<div class="gsub" style="color:var(--bad)">有 ${gs.length} 組加入，只會用頭 4 組（${gs.slice(4).map(g => esc(g.name)).join("、")} 唔計）。</div>` : ""}
+        <div class="gcrit">${["I", "G", "O", "M"].map(cardBig).join("")}</div>
+        <div class="gsub">每組 5 分（五項準則）＋功能卡：改善 3・做得好 3・反對 1・禁言 1</div>`;
+      c = `<button class="btn btn-main" data-act="start"${gs.length >= 2 ? "" : " disabled"}>▶ 開始對決</button>`;
+      break;
+    }
+    case "P": {
+      s = `<div class="gbig"><em>${gLabel(P)}</em> ${esc(D.slots[P - 1].name)} 表演</div><div class="gsub">表演組跟住播放一齊唱；其他組留心聽，準備挑機。</div><div id="gLyr"></div>`;
+      c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
+        <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
+        <button class="btn btn-green" data-act="tiao">⏱ 開始挑機時間（2 分鐘）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
+      break;
+    }
+    case "T":
+      s = `<div class="gsub">挑機時間・${gLabel(P)} 表演</div><div class="gclock" id="gClock">2:00</div>
+        <div class="gcrit">${CRIT.map(x => `<span>${x}</span>`).join("")}</div><div class="gsub">撳 iPad 用功能卡，最快嗰組先講！</div>`;
+      c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結挑機時間</button>`;
+      break;
+    case "I":
+      s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> 用 ${cardBig("I")} → ${gLabel(P)}</div><div class="gclock" id="gClock">20</div>
+        <div class="gsub">${gLabel(cl.slot)}：講邊項準則＋邊度唔好　｜　${gLabel(P)}：可以反駁</div>`;
+      c = CRIT.map((x, i) => `<button class="btn btn-red" data-act="ded" data-i="${i}"${D.grp[P - 1].own[i] ? "" : " disabled"}>扣「${x}」</button>`).join("") + `<button class="btn btn-soft" data-act="noded">唔扣分</button>`;
+      break;
+    case "G":
+      s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> 用 ${cardBig("G")} 讚 ${gLabel(P)}</div><div class="gclock" id="gClock">10</div><div class="gsub">講出邊度做得好</div>`;
+      c = `<button class="btn btn-green" data-act="good">合理：兩組各加 ★</button><button class="btn btn-soft" data-act="nogood">唔合理</button>`;
+      break;
+    case "O":
+      s = `<div class="gbig">老師判：扣${gLabel(P)}「${CRIT[D.ded]}」</div><div class="gclock" id="gClock">10</div><div class="gsub">${gLabel(P)}：要唔要用 ✋ 反對卡？（10 秒）</div>`;
+      c = `<button class="btn btn-red" data-act="dednow">唔等，即刻扣</button>`;
+      break;
+    case "R":
+      s = `<div class="gbig"><em>${gLabel(P)}</em> ${cardBig("O")} 反對扣「${CRIT[D.ded]}」</div><div class="gclock" id="gClock">10</div><div class="gsub">講反對理由</div>`;
+      c = `<button class="btn btn-green" data-act="objok">反對成功：唔扣分</button><button class="btn btn-red" data-act="objno">反對失敗：照扣</button>`;
+      break;
+    case "M":
+      s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> ${cardBig("M")} 禁言 ${gLabel(cl.target)}</div><div class="gclock" id="gClock">10</div><div class="gsub">${gLabel(cl.target)}：10 秒內撳 ✋ 反對卡可以取消</div>`;
+      c = `<button class="btn btn-soft" data-act="mutenow">唔等，即刻禁言</button><button class="btn btn-soft" data-act="mutecancel">取消禁言</button>`;
+      break;
+    case "E": {
+      const left = D.slots.map((_, k) => k).filter(k => !D.done.includes(k));
+      s = `<div class="gbig">${D.round ? `第 ${D.round} 輪完` : "揀第一組表演"}</div><div class="gsub">${left.length ? `未表演：${left.map(k => gLabel(k + 1)).join("、")}` : "全部組別表演完！"}</div>`;
+      c = (left.length ? `<button class="btn btn-main" data-act="next">🎲 抽下一組</button>` : "") + D.slots.map((_, k) => `<button class="btn btn-soft" data-act="pick" data-k="${k}">${gLabel(k + 1)} 表演</button>`).join("")
+        + `<button class="btn btn-green" data-act="final">🏆 頒獎</button>`;
+      break;
+    }
+    case "F": {
+      const order = D.slots.map((_, k) => k).sort((a, b) => dScore(b) - dScore(a) || D.grp[b].star - D.grp[a].star);
+      const col = ["#E9B949", "#A8A3B8", "#C98A5A"], h = [220, 160, 120], at = [1, 0, 2];
+      s = `<div class="gbig">🏆 和弦對決結果</div><div class="podium">${at.filter(r => order[r] != null).map((r, n) => { const k = order[r];
+          return `<div class="pc" style="animation-delay:${[0.6, 1.4, 0][n] + 0.2}s"><div class="nm">${esc(D.slots[k].name)}</div><div class="pt">${dScore(k)} 分・★ ${D.grp[k].star}</div><div class="bk" style="height:${h[r]}px;background:${col[r]}">${r + 1}</div></div>`; }).join("")}</div>
+        ${order.length > 3 ? `<div class="gsub">第 4 名：${esc(D.slots[order[3]].name)}（${dScore(order[3])} 分・★ ${D.grp[order[3]].star}）</div>` : ""}<div class="note">同分睇 ★ 數</div>`;
+      c = `<button class="btn btn-soft" data-act="unfinal">返回</button>`;
+      break;
+    }
+  }
+  st.innerHTML = s; ctl.innerHTML = c;
+  if (D.phase === "P" && !D.ui.pick) dShowSheet();
+  dTick();
+}
+/* the performing group's sheet, with playback (melody + their chords) */
+let gData = null, gTimers = [];
+function dShowSheet(){
+  const k = D.perf - 1, g = groups().find(x => x.gid === D.slots[k].gid);
+  ({lines, bars, sol} = hostSongFromRows());
+  const box = $("gLyr"); if (!box) return;
+  if (!lines.length) { box.innerHTML = `<p class="gsub">未有歌詞（喺工作紙畫面撳「傳俾學生」）。</p>`; gData = null; return; }
+  if (!g || !g.sent) { box.innerHTML = `<p class="gsub">呢組未交工作紙。</p>`; gData = null; return; }
+  gData = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
+  renderLyrics(box, gData, {big: true});
+}
+function gStop(){ stopAudio(); gTimers.forEach(clearTimeout); gTimers = []; for (const x of document.querySelectorAll("#gLyr .cell.now")) x.classList.remove("now"); const b = $("gPlayBtn"); if (b) b.textContent = "▶ 播放"; }
+function gPlay(){
+  if (!gData) return; unlock(); if (gTimers.length) return gStop(); gStop();
+  const b = $("gPlayBtn"); if (b) b.textContent = "■ 停"; const spb = .8, noMel = $("gMel") && !$("gMel").checked;
+  const light = (i, j) => { for (const x of document.querySelectorAll("#gLyr .cell.now")) x.classList.remove("now"); const c = document.querySelector(`#gLyr .cell[data-i="${i}"][data-j="${j}"]`); if (c) { c.classList.add("now"); c.scrollIntoView({block: "nearest", behavior: "smooth"}); } };
+  if (sol.some(r => (r || []).some(ev => evNotes(ev).length))) {
+    const {starts, total} = scheduleSong(lines.map((_, i) => ({i, evs: sol[i] || []})), spb, (i, j) => gData[i][j], noMel);
+    starts.forEach(x => gTimers.push(setTimeout(() => light(x.i, x.j), x.at * 1000))); gTimers.push(setTimeout(gStop, total * 1000 + 600));
+  } else {
+    const seq = []; gData.forEach((row, i) => row.forEach((c, j) => { if (c) seq.push({i, j, c}); }));
+    seq.forEach((x, k) => gTimers.push(setTimeout(() => { light(x.i, x.j); chord(CH[x.c], 0, 1.5); }, k * 1600))); gTimers.push(setTimeout(gStop, seq.length * 1600 + 300));
+  }
+}
+
+/* ---------- teacher: buttons ---------- */
+function dOpen(){
+  unlock(); busInit();
+  if (!D) dNew();
+  $("gScr").hidden = false; D.stageKey = ""; dRender();
+  if (!dTI) dTI = setInterval(dTick, 150);
+  bgSet(D.phase === "L" || D.phase === "P" ? "" : "IGOMR".includes(D.phase) ? "tense" : "norm");
+  dLoop();
+}
+function dClose(){ $("gScr").hidden = true; gStop(); bgSet(""); $("gScr").classList.remove("f3"); }
+function dQuit(){
+  if (D) { D.phase = "X"; D.epoch++; dPush(); }
+  dClose(); clearTimeout(dPT);
+  setTimeout(() => { D = null; }, 3000);   // let the final push go out
+}
+$("gScr").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b || !D || b.disabled) return; unlock();
+  const a = b.dataset.act, k = +b.dataset.k;
+  switch (a) {
+    case "bgm": D.bgm = !D.bgm; bgSet(D.phase === "P" ? "" : "IGOMR".includes(D.phase) ? "tense" : "norm"); dRender(); break;
+    case "edit": D.ui.edit = !D.ui.edit; dRender(); break;
+    case "back": dClose(); break;
+    case "quit": if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "再撳一下確認結束"; setTimeout(() => { delete b.dataset.arm; b.textContent = "結束對決"; }, 2500); } else dQuit(); break;
+    case "start": {
+      const gs = groups().slice(0, 4); D.slots = gs.map(g => ({gid: g.gid, name: g.name}));
+      D.grp = gs.map(() => ({own: [1, 1, 1, 1, 1], won: 0, star: 0, cards: {I: 3, G: 3, O: 1, M: 1}, mutedUntil: 0}));
+      D.slotsSent = false; setPhase("E"); dFlash("⚔️ 對決開始！"); sfx("fan"); break;
+    }
+    case "play": gPlay(); break;
+    case "tiao": D.tLeft = TIAO_MS; D.tEnd = Date.now() + TIAO_MS; D.paused = false; setPhase("T"); break;
+    case "repick": D.round--; D.done = D.done.filter(x => x !== D.perf - 1); D.perf = 0; setPhase("E"); break;
+    case "pause":
+      if (D.paused) { D.tEnd = Date.now() + D.tLeft; D.paused = false; } else { D.tLeft = Math.max(0, D.tEnd - Date.now()); D.paused = true; }
+      D.stageKey = ""; dRender(); break;
+    case "endtiao": roundEnd(); break;
+    case "ded": {
+      const i = +b.dataset.i, p = D.perf - 1;
+      if (D.grp[p].cards.O > 0 && !isMuted(p)) { D.ded = i; D.cdEnd = Date.now() + 10000; setPhase("O"); }
+      else { applyDeduct(i); backToPrev(); }
+      break;
+    }
+    case "noded": dFlash("唔扣分", "good"); sfx("good"); backToPrev(); break;
+    case "good": D.grp[D.claim.slot - 1].star++; D.grp[D.perf - 1].star++; dFlash(`★ ${gLabel(D.claim.slot)} 同 ${gLabel(D.perf)} 各加一粒 ★`, "good"); sfx("good"); backToPrev(); break;
+    case "nogood": dFlash("唔合理，冇 ★"); backToPrev(); break;
+    case "dednow": applyDeduct(D.ded); backToPrev(); break;
+    case "objok": dFlash("✋ 反對成功，唔扣分", "good"); sfx("good"); backToPrev(); break;
+    case "objno": applyDeduct(D.ded); backToPrev(); break;
+    case "mutenow": applyMute(); dFlash(`🔇 ${gLabel(D.claim.target)} 被禁言`, "bad"); backToPrev(); break;
+    case "mutecancel": dFlash("取消禁言"); backToPrev(); break;
+    case "next": dRandom(); break;
+    case "pick": dPick(k); break;
+    case "final": setPhase("F"); sfx("fan"); break;
+    case "unfinal": setPhase("E"); break;
+    case "adj": {
+      const g = D.grp[k], w = b.dataset.w;
+      if (w === "s+") g.won++;
+      else if (w === "s-") { if (g.won > 0) g.won--; else { const i = g.own.findIndex(Boolean); if (i >= 0) g.own[i] = 0; } }
+      else if (w === "t+") g.star++; else if (w === "t-") g.star = Math.max(0, g.star - 1);
+      else if (w === "mute") g.mutedUntil = isMuted(k) ? 0 : D.round + 1;
+      else { const c = w[0], d = w[1] === "+" ? 1 : -1; g.cards[c] = Math.max(0, Math.min(CARD_MAX[c], g.cards[c] + d)); }
+      dCommit(); break;
+    }
+    case "proxy": {
+      const c = b.dataset.c;
+      if (c === "M") { if (!"PT".includes(D.phase)) { dFlash("而家用唔到禁言卡"); break; } D.ui.pick = {k}; D.stageKey = ""; dRender(); break; }
+      if (dAllowed(k, c, 0)) dAccept(k, c, 0); else dFlash(`${gLabel(k + 1)} 而家用唔到${CARD[c].n}卡`);
+      break;
+    }
+    case "pickt": { const kk = D.ui.pick.k, t = +b.dataset.t; D.ui.pick = null; if (dAllowed(kk, "M", t)) dAccept(kk, "M", t); else { dFlash("而家用唔到禁言卡"); D.stageKey = ""; dRender(); } break; }
+    case "pickx": D.ui.pick = null; D.stageKey = ""; dRender(); break;
+  }
+});
+$("hDuel").onclick = () => { if (!H) return; dOpen(); };
+addEventListener("keydown", e => { if (D && !$("gScr").hidden && D.phase === "P" && e.code === "Space" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); gPlay(); } });
+
+/* ---------- student iPad ---------- */
+const SG = {timer: null, st: null, slot: 0, names: {}, pressEp: null, pressCard: "", pressN: -1, pick: false, hidden: false, toast: "", toastKind: "", toastT: null, lastKey: ""};
+function sgStart(){ if (SG.timer || !me) return; const loop = async () => { await sgPoll(); SG.timer = setTimeout(loop, !SG.st ? 3000 + Math.random() * 1000 : PH_OPEN.includes(SG.st.ph) ? 800 + Math.random() * 400 : 1800 + Math.random() * 600); }; loop(); }
+async function sgPoll(){
+  if (!me) return;
+  try { const r = await api({a: "board", pin: me.pin}); $("sgNet").textContent = ""; sgApply(r.rows); }
+  catch { $("sgNet").textContent = "⚠ 網絡慢，重試中"; }
+}
+function sgApply(rows){
+  const gRow = rows.find(r => r.pid === "h0stG");
+  let slot = 0; for (let k = 1; k <= 4; k++) { const r = rows.find(x => x.pid === "h0stP" + k); if (r && String(r.name) === me.gid) slot = k; }
+  SG.names = {}; for (let k = 1; k <= 4; k++) { const r = rows.find(x => x.pid === "h0stP" + k); const g = r && rows.find(x => x.pid === String(r.name) + "g"); if (g) SG.names[k] = String(g.name); }
+  const s = gRow ? String(gRow.name) : "";
+  if (!gRow || s.length < 8 || s[0] === "X") { SG.st = null; $("sg").hidden = true; $("sgFab").hidden = true; return; }
+  const v1 = Number(gRow.score) || 0, v2 = Number(gRow.correct) || 0;
+  const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: parseInt(s[4], 16) || 0, ep: s.slice(5, 7),
+              lk: +s[8] || 0, lc: s[9] || "-", ln: parseInt(s[10], 36) || 0,
+              cards: [unpackCards(v1 >> 6), unpackCards(v1 & 63), unpackCards(v2 >> 6), unpackCards(v2 & 63)]};
+  // outcome of our last press
+  if (SG.pressEp && st.ep !== SG.pressEp) {
+    if (st.ln !== SG.pressN && st.lk === slot && st.lc === SG.pressCard) { sgToast(SG.pressCard === "O" ? "✅ 用咗反對卡！" : "✅ 你哋最快！", "good"); sfx("good"); }
+    else if (st.ln !== SG.pressN && st.lk) sgToast(`慢咗少少，${gLabel(st.lk)} 快咗`, "bad");
+    SG.pressEp = null;
+  }
+  if (SG.st && SG.st.ep !== st.ep) SG.pick = false;
+  SG.st = st; SG.slot = slot;
+  if (!SG.hidden) $("sg").hidden = false; $("sgFab").hidden = !SG.hidden;
+  sgRender();
+}
+function sgToast(t, kind){ SG.toast = t; SG.toastKind = kind || ""; clearTimeout(SG.toastT); SG.toastT = setTimeout(() => { SG.toast = ""; sgRender(); }, 3500); sgRender(); }
+function sgCan(card){
+  const st = SG.st, k = SG.slot - 1; if (!st || k < 0) return false;
+  if ((st.mask >> k) & 1) return false; if (!(st.cards[k][card] > 0)) return false; if (SG.pressEp === st.ep) return false;
+  switch (st.ph) {
+    case "P": return card === "M";
+    case "T": return card === "M" || ((card === "I" || card === "G") && st.perf > 0 && st.perf !== SG.slot);
+    case "O": return card === "O" && st.perf === SG.slot;
+    case "M": return card === "O" && st.tg === SG.slot;
+  }
+  return false;
+}
+function sgStatus(){
+  const st = SG.st, me1 = SG.slot, P = st.perf, C = st.cl, T = st.tg;
+  if (!me1) return ["今次對決用頭 4 組，你哋唔喺入面。睇大螢幕！", false];
+  if ((st.mask >> (me1 - 1)) & 1) return ["🔇 你哋被禁言，暫時唔可以用卡", false];
+  switch (st.ph) {
+    case "L": return ["對決就快開始！", false];
+    case "E": return ["呢輪完咗，等老師抽下一組", false];
+    case "F": return ["🏆 睇大螢幕公布結果！", true];
+    case "P": return [P === me1 ? "到你哋表演！跟住播放一齊唱 🎤" : `${gLabel(P)} 表演中，留心聽！`, P === me1];
+    case "T": return [P === me1 ? "其他組挑機中…你哋可以用 ✋ 反對 或 🔇 禁言" : "挑機時間！撳卡，最快嗰組先講", P !== me1];
+    case "I": return [C === me1 ? "到你哋講：邊項準則＋邊度（20 秒）" : P === me1 ? `${gLabel(C)} 話要改善，準備反駁！` : `${gLabel(C)} 用咗改善卡`, C === me1 || P === me1];
+    case "G": return [C === me1 ? "到你哋講：邊度做得好（10 秒）" : `${gLabel(C)} 用咗做得好卡`, C === me1];
+    case "O": return [P === me1 ? "老師判扣分！要唔要撳 ✋ 反對？（10 秒）" : `等 ${gLabel(P)} 決定用唔用反對卡`, P === me1];
+    case "R": return [P === me1 ? "講反對理由！" : `${gLabel(P)} 反對中`, P === me1];
+    case "M": return [T === me1 ? `${gLabel(C)} 禁言你哋！10 秒內撳 ✋ 反對可以取消` : `${gLabel(C)} 禁言 ${gLabel(T)}`, T === me1];
+  }
+  return ["", false];
+}
+function sgRender(){
+  const st = SG.st; if (!st) return;
+  $("sgWho").innerHTML = SG.slot ? `${gLabel(SG.slot)}<small>${esc(SG.names[SG.slot] || me.name)}</small>` : esc(me.name);
+  const [txt, hot] = sgStatus(); $("sgStat").textContent = SG.pressEp === st.ep ? "已撳！睇大螢幕…" : txt; $("sgStat").classList.toggle("hot", hot || SG.pressEp === st.ep);
+  const t = $("sgToast"); t.textContent = SG.toast; t.className = "sgtoast " + SG.toastKind;
+  const box = $("sgCards");
+  if (SG.pick && sgCan("M")) {
+    const opts = [1, 2, 3, 4].filter(k => k !== SG.slot && SG.names[k] && !((st.mask >> (k - 1)) & 1));
+    const key = "pick" + st.ep + opts.join("");
+    if (SG.lastKey === key) return; SG.lastKey = key;
+    box.innerHTML = `<div class="sgpick" style="grid-column:1/-1"><h3>🔇 禁言邊組？</h3><div class="row">${opts.map(k => `<button class="tgt" data-t="${k}">${gLabel(k)}<br><small>${esc(SG.names[k])}</small></button>`).join("")}</div><div class="row"><button class="btn btn-soft" data-t="0">取消</button></div></div>`;
+    return;
+  }
+  SG.pick = false;
+  const k = SG.slot - 1, cards = k >= 0 ? st.cards[k] : {I: 0, G: 0, O: 0, M: 0};
+  const key = [st.ep, SG.pressEp, k, JSON.stringify(cards), st.mask, ...["I", "G", "O", "M"].map(sgCan)].join("|");
+  if (SG.lastKey === key) return; SG.lastKey = key;
+  box.innerHTML = ["I", "G", "O", "M"].map(c => {
+    const can = sgCan(c), n = cards[c], go = can && (st.ph === "O" || st.ph === "M");
+    return `<button class="sgc ${CARD[c].cls}${go ? " go" : ""}" data-c="${c}"${can ? "" : " disabled"}><span class="ic">${CARD[c].ic}</span><span class="nm">${CARD[c].n}</span>
+      <span class="left">${Array.from({length: CARD_MAX[c]}, (_, i) => `<i class="${i < n ? "" : "u"}"></i>`).join("")}</span></button>`;
+  }).join("");
+}
+async function sgPress(card, tg){
+  const st = SG.st; if (!st || !sgCan(card)) return;
+  SG.pressEp = st.ep; SG.pressCard = card; SG.pressN = st.ln; SG.pick = false; SG.lastKey = ""; sfx("tap"); sgRender();
+  const name = st.ep + card + (tg || 0);
+  for (let n = 0; n < 3; n++) {
+    try { await api({a: "finish", pin: me.pin, pid: me.gid + "k", name, score: 0, level: 1, correct: 0, answered: 0}); return; }
+    catch { if (!SG.st || SG.st.ep !== st.ep) return; await sleep(300 + Math.random() * 300); }
+  }
+  if (SG.pressEp === st.ep) { SG.pressEp = null; SG.lastKey = ""; sgToast("撳唔到（網絡），再撳一次", "bad"); }
+}
+$("sgCards").addEventListener("click", e => {
+  unlock();
+  const t = e.target.closest("[data-t]");
+  if (t) { const v = +t.dataset.t; SG.pick = false; SG.lastKey = ""; if (v) sgPress("M", v); else sgRender(); return; }
+  const b = e.target.closest(".sgc"); if (!b || b.disabled) return;
+  const c = b.dataset.c;
+  if (c === "M") { SG.pick = true; SG.lastKey = ""; sgRender(); return; }
+  sgPress(c, 0);
+});
+$("sgHide").onclick = () => { SG.hidden = true; $("sg").hidden = true; $("sgFab").hidden = false; };
+$("sgFab").onclick = () => { unlock(); SG.hidden = false; $("sg").hidden = false; $("sgFab").hidden = true; SG.lastKey = ""; sgRender(); };
+
+window.__cs = {get D(){return D;}, get SG(){return SG;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
 })();
 </script>
 </body>
