@@ -150,6 +150,16 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   #scP2 .cell .w{font-size:clamp(26px,6.4vh,52px)}
 }
 
+/* ===== worksheet stage timers ===== */
+.wtimer{position:fixed;top:max(10px,env(safe-area-inset-top,0px));right:14px;z-index:50;background:#fff;border:3px solid var(--plum);border-radius:16px;padding:6px 14px;display:grid;justify-items:center;box-shadow:0 6px 0 rgba(59,47,90,.15)}
+.wtimer small{font-size:13px;font-weight:900;color:var(--muted)}
+.wtimer b{font-family:var(--f-hud);font-size:34px;line-height:1.05;color:var(--plum);font-variant-numeric:tabular-nums}
+.wtimer.warn{border-color:var(--bad)}.wtimer.warn b{color:var(--bad)}
+.wtimer.f3 b{animation:pop .6s ease-out}
+.wtimer.up{background:var(--bad);border-color:var(--bad)}.wtimer.up b,.wtimer.up small{color:#fff}
+#lyrics.locked{pointer-events:none;opacity:.6}
+.wfull{position:fixed;inset:0;z-index:55;display:grid;place-items:center;pointer-events:none}
+.wfull div{background:var(--plum);color:#fff;font-weight:900;font-size:clamp(30px,6vw,60px);padding:24px 40px;border-radius:26px;text-align:center;animation:flash 2.2s ease forwards}
 /* ===== 和弦對決 (teacher) ===== */
 .gscr{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;padding:12px max(18px,2.5vw) 16px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:12px}
 .gtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -296,6 +306,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
 </section>
 
+<div class="wtimer" id="wTimer" hidden><small id="wTimerL"></small><b id="wTimerN"></b></div>
 <!-- part 1 -->
 <section id="scP1" hidden class="app" style="padding:0">
   <div class="steps"><span class="on">① 砌和弦</span><span>② 和弦放落歌詞</span><span>③ 提交</span></div>
@@ -554,8 +565,31 @@ function paintKb(){
 let p1 = {i:0, ans:[[],[],[],[]], first:null};
 function startP1(){
   const st = store.get("chordsheet.p1." + me.gid, null); if (st) p1 = st;
+  const tm = wtGet(); if (tm.p2Go) return startP2();          // already moved on (e.g. page reloaded)
   show("scP1"); buildKb(); $("p1res").hidden = true; loadQ();
+  if (!tm.p1End) { tm.p1End = Date.now() + P1_MS; wtSet(tm); }
+  wtRun("① 砌和弦", tm.p1End, () => { if (p1.first == null) checkP1(); wtBig("時間到！去第 ② 關"); setTimeout(startP2, 1200); });
 }
+/* ---------- stage timers: ① 1 minute, ② 4 minutes (kept per group, survive a reload) ---------- */
+const P1_MS = 60000, P2_MS = 240000;
+const wtKey = () => "chordsheet.t." + me.gid;
+const wtGet = () => store.get(wtKey(), {}) || {};
+const wtSet = v => store.set(wtKey(), v);
+let WT = {iv: null, end: 0, done: null, beep: ""};
+function wtRun(label, end, onDone){
+  clearInterval(WT.iv); WT = {iv: null, end, done: onDone, fired: false, beep: ""};
+  $("wTimer").hidden = false; $("wTimerL").textContent = label; $("wTimer").className = "wtimer";
+  const tick = () => {
+    const left = WT.end - Date.now(), s = Math.max(0, Math.ceil(left / 1000)), el = $("wTimer");
+    $("wTimerN").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    el.classList.toggle("warn", s <= 10 && s > 0); el.classList.toggle("up", s === 0);
+    if (s > 0 && s <= 3 && WT.beep !== String(s)) { WT.beep = String(s); el.classList.remove("f3"); void el.offsetWidth; el.classList.add("f3"); try { note(84, 0, .25); } catch {} }
+    if (left <= 0 && !WT.fired) { WT.fired = true; clearInterval(WT.iv); try { chord([48, 55, 60, 64], 0, 1.2); } catch {} if (WT.done) WT.done(); }
+  };
+  tick(); WT.iv = setInterval(tick, 250);
+}
+function wtStop(){ clearInterval(WT.iv); $("wTimer").hidden = true; }
+function wtBig(text){ const d = document.createElement("div"); d.className = "wfull"; d.innerHTML = `<div>${text}</div>`; document.body.appendChild(d); setTimeout(() => d.remove(), 2300); }
 function saveAns(){ p1.ans[p1.i] = [...sel]; store.set("chordsheet.p1." + me.gid, p1); }
 function loadQ(){
   const c = P1[p1.i]; $("p1q").innerHTML = `第 ${p1.i+1} 個：砌出 <b>${ROMAN[c]}</b>（${c}）和弦`;
@@ -582,7 +616,10 @@ $("p1go").onclick = () => startP2();
 
 /* ---------- part 2 ---------- */
 let lines = [], bars = [], sol = [], seq = [], place = [], tool = "C", p2sent = false;
+let p2Started = false;
 async function startP2(){
+  if (p2Started) return; p2Started = true;
+  wtStop(); const tm0 = wtGet(); if (!tm0.p2Go) { tm0.p2Go = 1; wtSet(tm0); }
   show("scP2"); const st = store.get("chordsheet.p2." + me.gid, null);
   $("p2msg").textContent = "載入歌詞中…";
   for (let k = 0; k < 40; k++) {
@@ -594,7 +631,15 @@ async function startP2(){
   $("p2msg").textContent = "";
   place = lines.map((l,i) => { const old = st && st.lines && st.lines[i] === l ? st.place[i] : null; return old || Array(l.length).fill(""); });
   renderChips(); renderLyrics();
+  const tm = wtGet(); if (!tm.p2End) { tm.p2End = Date.now() + P2_MS; wtSet(tm); }
+  if (Date.now() >= tm.p2End) { p2Lock(); wtStop(); return; }
+  wtRun("② 和弦放落歌詞", tm.p2End, async () => {
+    p2Lock(); wtBig("時間到！");
+    if (place.flat().some(Boolean)) { await p2Submit(); $("p2msg").textContent = "時間到，已自動提交。"; }
+    else $("p2msg").textContent = "時間到，未有放和弦。";
+  });
 }
+function p2Lock(){ $("lyrics").classList.add("locked"); for (const id of ["chips", "p2clear", "p2send"]) { const e = $(id); if (e) { e.style.pointerEvents = "none"; e.style.opacity = ".5"; } } }
 function hostLines(rows){
   return rows.filter(r => /^h0stL\d$/.test(r.pid)).sort((a,b) => a.pid.localeCompare(b.pid)).map(r => String(r.name)).filter(s => s && s !== "—");
 }
@@ -740,7 +785,8 @@ function startDrag(e, c){
 $("p2all").onclick = () => playLines(lines.map((_, i) => i), $("p2all"));
 $("p2clear").onclick = () => { if (!confirmClear()) return; place = lines.map(l => Array(l.length).fill("")); store.set("chordsheet.p2." + me.gid, {lines, place}); renderLyrics(); renderChips(); };
 function confirmClear(){ const b = $("p2clear"); if (b.dataset.arm) { delete b.dataset.arm; b.textContent = "全部清除"; return true; } b.dataset.arm = "1"; b.textContent = "再撳一下確認清除"; setTimeout(() => { delete b.dataset.arm; b.textContent = "全部清除"; }, 2500); return false; }
-$("p2send").onclick = async () => {
+$("p2send").onclick = () => p2Submit();
+async function p2Submit(){
   const n = place.flat().filter(Boolean).length;
   if (!n) { $("p2msg").textContent = "未放任何和弦。"; return; }
   $("p2send").disabled = true; $("p2msg").textContent = "提交中…";
@@ -754,7 +800,7 @@ $("p2send").onclick = async () => {
     $("p2msg").textContent = `已提交（${n} 個和弦）。想改可以再改再交。`;
   } catch { $("p2msg").textContent = "提交失敗，請再撳一次。"; }
   finally { $("p2send").disabled = false; }
-};
+}
 
 /* ---------- host ---------- */
 let H = null;
@@ -1654,7 +1700,7 @@ function sgFast(m){
   sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0, c5: Number(m.e) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
 }
 
-window.__cs = {get D(){return D;}, get SG(){return SG;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
+window.__cs = {get D(){return D;}, get SG(){return SG;}, get WT(){return WT;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
 })();
 </script>
 </body>
