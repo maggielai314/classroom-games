@@ -372,7 +372,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
       <button class="btn btn-main" id="sPlay">▶ 播放</button>
       <label class="note" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="sMel" checked style="width:20px;height:20px;accent-color:var(--plum)">播埋旋律</label>
       <label class="note" style="display:flex;align-items:center;gap:8px">快<input type="range" id="sSpeed" min="0.8" max="2.6" step="0.2" value="1.6" style="width:110px;accent-color:var(--plum)">慢</label>
-      <button class="btn btn-soft" id="sTimer">⏱ 挑機時間</button>
+      <button class="btn btn-soft" id="sTimer">🎮 Game Start</button>
       <button class="btn btn-soft" id="sTeacher" hidden>🎵 老師版本</button>
       <button class="btn btn-soft" id="sWeak" hidden>🔀 弱拍版本</button>
       <button class="btn btn-soft" id="sNext">🎲 再抽</button>
@@ -380,7 +380,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     </div>
   </div>
   <div class="timer" id="tBox" hidden><b id="tNum">2:00</b><span>音準・節奏・和弦配搭・合奏整齊度・團隊精神</span></div>
-  <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「⏱ 挑機時間」用功能卡。（空白鍵＝播放／停）</p>
+  <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「🎮 Game Start」用功能卡。（空白鍵＝播放／停）</p>
   <span class="legend" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
   <div id="sLyr"></div>
 </div>
@@ -954,9 +954,9 @@ $("hTeacher").onclick = () => { unlock(); ({lines, bars, sol} = hostSongFromRows
 $("sTeacher").onclick = () => { const d = teacherVersion(); if (d) showSheet("老師版本", d); };
 $("sWeak").onclick = () => { const d = weakVersion(); if (d) showSheet("弱拍版本（和弦唔喺 ★）", d); };
 $("sNext").onclick = () => pickRandom();
-/* 2-minute 挑機時間 countdown */
+/* 2-minute Game Start countdown */
 let T = null;
-function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "⏱ 挑機時間"; }
+function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "🎮 Game Start"; }
 function startTimer(){
   if (T) return stopTimer(); unlock(); stopShow();
   const end = Date.now() + 120000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
@@ -1276,16 +1276,16 @@ function dStage(lobbyRefresh){
       break;
     }
     case "P": {
-      s = `<div class="gbig"><em>${gLabel(P)}</em> ${esc(D.slots[P - 1].name)} 表演</div><div class="gsub">表演組跟住播放一齊唱；其他組留心聽，準備挑機。</div><div id="gLyr"></div>`;
+      s = `<div class="gbig"><em>${gLabel(P)}</em> ${esc(D.slots[P - 1].name)} 表演</div><div class="gsub">表演組跟住播放一齊唱；其他組留心聽，準備出卡。</div><div id="gLyr"></div>`;
       c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
         <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
-        <button class="btn btn-green" data-act="tiao">⏱ 開始挑機時間（2 分鐘）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
+        <button class="btn btn-green" data-act="tiao">🎮 Game Start（2 分鐘）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
       break;
     }
     case "T":
-      s = `<div class="gsub">挑機時間・${gLabel(P)} 表演</div><div class="gclock" id="gClock">2:00</div>
+      s = `<div class="gsub">Game Start・${gLabel(P)} 表演</div><div class="gclock" id="gClock">2:00</div>
         <div class="gcrit">${CRIT.map(x => `<span>${x}</span>`).join("")}</div><div class="gsub">撳 iPad 用功能卡，最快嗰組先講！</div>`;
-      c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結挑機時間</button>`;
+      c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結 Game</button>`;
       break;
     case "I":
       s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> 用 ${cardBig("I")} → ${gLabel(P)}</div><div class="gclock" id="gClock">20</div>
@@ -1451,6 +1451,7 @@ function sgApply(rows){
   if (SG.pressEp && st.ep !== SG.pressEp) {
     if (st.ln !== SG.pressN && st.lk === slot && st.lc === SG.pressCard) { sgToast(SG.pressCard === "O" ? "✅ 用咗反對卡！" : "✅ 你哋最快！", "good"); sfx("good"); }
     else if (st.ln !== SG.pressN && st.lk) sgToast(`慢咗少少，${gLabel(st.lk)} 快咗`, "bad");
+    else if (st.ln === SG.pressN && "PT".includes(st.ph)) sgToast("頭先冇計到，可以再撳一次", "bad");
     SG.pressEp = null;
   }
   if (SG.st && SG.st.ep !== st.ep) SG.pick = false;
@@ -1479,7 +1480,7 @@ function sgStatus(){
     case "E": return ["呢輪完咗，等老師抽下一組", false];
     case "F": return ["🏆 睇大螢幕公布結果！", true];
     case "P": return [P === me1 ? "到你哋表演！跟住播放一齊唱 🎤" : `${gLabel(P)} 表演中，留心聽！`, P === me1];
-    case "T": return [P === me1 ? "其他組挑機中…你哋可以用 ✋ 反對 或 🔇 禁言" : "挑機時間！撳卡，最快嗰組先講", P !== me1];
+    case "T": return [P === me1 ? "其他組出卡中…你哋可以用 ✋ 反對 或 🔇 禁言" : "Game Start！撳卡，最快嗰組先講", P !== me1];
     case "I": return [C === me1 ? "到你哋講：邊項準則＋邊度（20 秒）" : P === me1 ? `${gLabel(C)} 話要改善，準備反駁！` : `${gLabel(C)} 用咗改善卡`, C === me1 || P === me1];
     case "G": return [C === me1 ? "到你哋講：邊度做得好（10 秒）" : `${gLabel(C)} 用咗做得好卡`, C === me1];
     case "O": return [P === me1 ? "老師判扣分！要唔要撳 ✋ 反對？（10 秒）" : `等 ${gLabel(P)} 決定用唔用反對卡`, P === me1];
