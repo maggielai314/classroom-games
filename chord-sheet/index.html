@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Noto+Sans+TC:wght@400;700;900&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="vendor/mqtt.min.js" async></script>
 <style>
 :root{
   --bg:#F6F2FF; --card:#FFFFFF; --plum:#3B2F5A; --lilac:#CDB8FF; --pink:#FFC9DE; --sky:#CFE2FF; --mint:#BDEBD6;
@@ -343,7 +344,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 <div class="gscr" id="gScr" hidden>
   <div class="gtop">
     <h2>⚔️ 和弦對決</h2><span class="rnd" id="gRound"></span>
-    <span style="flex:1"></span><span class="note" id="gNet"></span>
+    <span style="flex:1"></span><span class="note" id="gFast"></span><span class="note" id="gNet"></span>
     <button class="btn btn-soft" data-act="bgm" id="gBgm">🔊 音樂</button>
     <button class="btn btn-soft" data-act="edit" id="gEdit">⚙ 調整</button>
     <button class="btn btn-soft" data-act="back">返工作紙</button>
@@ -357,7 +358,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 
 <!-- 和弦對決：學生 iPad -->
 <div class="sg" id="sg" hidden>
-  <div class="row" style="justify-content:space-between"><div class="sgwho" id="sgWho"></div><div class="row"><span class="note" id="sgNet"></span><button class="btn btn-soft" id="sgHide">睇工作紙</button></div></div>
+  <div class="row" style="justify-content:space-between"><div class="sgwho" id="sgWho"></div><div class="row"><span class="note" id="sgFast"></span><span class="note" id="sgNet"></span><button class="btn btn-soft" id="sgHide">睇工作紙</button></div></div>
   <div class="sgstat" id="sgStat"></div>
   <div class="sgcards" id="sgCards"></div>
   <div class="sgtoast" id="sgToast"></div>
@@ -901,7 +902,7 @@ function pickRandom(){
   showGroup(pool[Math.floor(Math.random() * pool.length)]);
 }
 $("hRand").onclick = () => { unlock(); pickRandom(); };
-$("hExit").onclick = () => { if (D) dQuit(); clearInterval(H.iv); H = null; show("scHome"); };
+$("hExit").onclick = () => { if (D) dQuit(); setTimeout(mqStop, 1500); clearInterval(H.iv); H = null; show("scHome"); };
 
 /* projection: play a group's version (melody + their chords at the real rhythm) for the class to listen, then sing along */
 let S = null;
@@ -1078,14 +1079,14 @@ function sfx(kind){
 }
 
 /* ---------- teacher: duel state ---------- */
-let D = null;
+let D = null, dLastVer = 0;
 const isMuted = k => !!(D.grp[k] && D.grp[k].mutedUntil && D.grp[k].mutedUntil >= D.round);
 const dScore = k => D.grp[k].own.filter(Boolean).length + D.grp[k].won;
 function dNew(){
   const gs = groups().slice(0, 4);
   D = {slots: gs.map(g => ({gid: g.gid, name: g.name})), grp: gs.map(() => ({own: [1, 1, 1, 1, 1], won: 0, star: 0, cards: {I: 3, G: 3, O: 1, M: 1}, mutedUntil: 0})),
        round: 0, perf: 0, done: [], phase: "L", epoch: 1, claim: null, tLeft: TIAO_MS, tEnd: 0, paused: false, cdEnd: 0, prev: "", ded: null,
-       last: {k: 0, c: "-", n: 0}, bgm: true, ui: {edit: false, pick: null}, stageKey: "", slotsSent: false};
+       last: {k: 0, c: "-", n: 0}, ver: dLastVer + 1, bgm: true, ui: {edit: false, pick: null}, stageKey: "", slotsSent: false};
 }
 function encState(){
   const mask = D.slots.reduce((m, _, k) => m | (isMuted(k) ? 1 << k : 0), 0), c = D.claim || {};
@@ -1105,14 +1106,14 @@ async function dPush(){
           D.slotsSent = true;
         }
         const c = [0, 1, 2, 3].map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
-        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: 0});
+        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: D.ver % 10000});
         dNet(true); if (!W.dirty) break;
       } catch { dNet(false); await sleep(700 + Math.random() * 700); }
     }
   } finally { W.busy = false; }
 }
 function dNet(ok){ const el = $("gNet"); if (el) el.textContent = ok ? "" : "⚠ 網絡慢，自動重試中…"; }
-function dCommit(){ dPush(); dRender(); }
+function dCommit(){ D.ver++; fastState(); dPush(); dRender(); }
 function setPhase(ph){
   D.phase = ph; D.epoch++; D.ui.pick = null;
   if (ph !== "P") gStop();
@@ -1360,12 +1361,13 @@ function dOpen(){
   if (!D) dNew();
   $("gScr").hidden = false; D.stageKey = ""; dRender();
   if (!dTI) dTI = setInterval(dTick, 150);
+  mqStart(H.pin, "host");
   bgSet(D.phase === "L" || D.phase === "P" ? "" : "IGOMR".includes(D.phase) ? "tense" : "norm");
   dLoop();
 }
 function dClose(){ $("gScr").hidden = true; gStop(); bgSet(""); $("gScr").classList.remove("f3"); }
 function dQuit(){
-  if (D) { D.phase = "X"; D.epoch++; dPush(); }
+  if (D) { D.phase = "X"; D.epoch++; D.ver++; dLastVer = D.ver + 1; fastState(); dPush(); }
   dClose(); clearTimeout(dPT);
   setTimeout(() => { D = null; }, 3000);   // let the final push go out
 }
@@ -1431,7 +1433,7 @@ addEventListener("keydown", e => { if (D && !$("gScr").hidden && D.phase === "P"
 
 /* ---------- student iPad ---------- */
 const SG = {timer: null, st: null, slot: 0, names: {}, pressEp: null, pressCard: "", pressN: -1, pick: false, hidden: false, toast: "", toastKind: "", toastT: null, lastKey: ""};
-function sgStart(){ if (SG.timer || !me) return; const loop = async () => { await sgPoll(); SG.timer = setTimeout(loop, !SG.st ? 3000 + Math.random() * 1000 : PH_OPEN.includes(SG.st.ph) ? 800 + Math.random() * 400 : 1800 + Math.random() * 600); }; loop(); }
+function sgStart(){ if (SG.timer || !me) return; const loop = async () => { await sgPoll(); SG.timer = setTimeout(loop, MQ.ok ? 3000 + Math.random() * 1000 : !SG.st ? 3000 + Math.random() * 1000 : PH_OPEN.includes(SG.st.ph) ? 800 + Math.random() * 400 : 1800 + Math.random() * 600); }; loop(); mqStart(me.pin, "student"); }
 async function sgPoll(){
   if (!me) return;
   try { const r = await api({a: "board", pin: me.pin}); $("sgNet").textContent = ""; sgApply(r.rows); }
@@ -1439,10 +1441,20 @@ async function sgPoll(){
 }
 function sgApply(rows){
   const gRow = rows.find(r => r.pid === "h0stG");
-  let slot = 0; for (let k = 1; k <= 4; k++) { const r = rows.find(x => x.pid === "h0stP" + k); if (r && String(r.name) === me.gid) slot = k; }
-  SG.names = {}; for (let k = 1; k <= 4; k++) { const r = rows.find(x => x.pid === "h0stP" + k); const g = r && rows.find(x => x.pid === String(r.name) + "g"); if (g) SG.names[k] = String(g.name); }
-  const s = gRow ? String(gRow.name) : "";
-  if (!gRow || s.length < 8 || s[0] === "X") { SG.st = null; $("sg").hidden = true; $("sgFab").hidden = true; return; }
+  const gids = [1, 2, 3, 4].map(k => { const r = rows.find(x => x.pid === "h0stP" + k); return r ? String(r.name) : ""; });
+  const names = gids.map(g => { const r = g && rows.find(x => x.pid === g + "g"); return r ? String(r.name) : ""; });
+  sgApplyCore(gRow ? {name: gRow.name, score: gRow.score, correct: gRow.correct, ver: Number(gRow.answered) || 0} : null, gids, names);
+}
+// newer-or-equal check for the teacher's state counter (wraps at 10000)
+const verOlder = (a, b) => { const d = ((b - a) % 10000 + 10000) % 10000; return d > 0 && d < 5000; };
+function sgApplyCore(gRow, gids, nameList){
+  if (!gRow) { if (!SG.st) { $("sg").hidden = true; $("sgFab").hidden = true; } return; }
+  if (SG.ver != null && verOlder(gRow.ver, SG.ver)) return;   // older than what the fast channel already gave us
+  SG.ver = gRow.ver;
+  let slot = 0; gids.forEach((g, i) => { if (g && g === me.gid) slot = i + 1; });
+  SG.names = {}; nameList.forEach((n, i) => { if (n) SG.names[i + 1] = n; });
+  const s = String(gRow.name);
+  if (s.length < 8 || s[0] === "X") { SG.st = null; SG.ver = null; $("sg").hidden = true; $("sgFab").hidden = true; return; }
   const v1 = Number(gRow.score) || 0, v2 = Number(gRow.correct) || 0;
   const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: parseInt(s[4], 16) || 0, ep: s.slice(5, 7),
               lk: +s[8] || 0, lc: s[9] || "-", ln: parseInt(s[10], 36) || 0,
@@ -1516,6 +1528,7 @@ async function sgPress(card, tg){
   const st = SG.st; if (!st || !sgCan(card)) return;
   SG.pressEp = st.ep; SG.pressCard = card; SG.pressN = st.ln; SG.pick = false; SG.lastKey = ""; sfx("tap"); sgRender();
   const name = st.ep + card + (tg || 0);
+  mqPub("press", {g: me.gid, n: name});
   for (let n = 0; n < 3; n++) {
     try { await api({a: "finish", pin: me.pin, pid: me.gid + "k", name, score: 0, level: 1, correct: 0, answered: 0}); return; }
     catch { if (!SG.st || SG.st.ep !== st.ep) return; await sleep(300 + Math.random() * 300); }
@@ -1533,6 +1546,50 @@ $("sgCards").addEventListener("click", e => {
 });
 $("sgHide").onclick = () => { SG.hidden = true; $("sg").hidden = true; $("sgFab").hidden = false; };
 $("sgFab").onclick = () => { unlock(); SG.hidden = false; $("sg").hidden = false; $("sgFab").hidden = true; SG.lastKey = ""; sgRender(); };
+
+/* ---------- fast channel (MQTT over WebSocket, public broker) ----------
+   Teacher publishes its state (retained) to …/state; iPads publish presses to …/press.
+   Google stays the backup: everything still goes through it, so a blocked or broken
+   fast channel only makes things slower, never wrong. */
+const MQ = {c: null, ok: false, pin: "", role: "", tries: 0};
+const BROKERS = (new URLSearchParams(location.search).get("mq") || "wss://broker.emqx.io:8084/mqtt|wss://broker.hivemq.com:8884/mqtt").split("|");
+function mqStart(pin, role){
+  if (MQ.c && MQ.pin === pin && MQ.role === role) return;
+  if (!window.mqtt) { if (MQ.tries++ < 20) setTimeout(() => mqStart(pin, role), 1500); return; }
+  mqStop(); MQ.pin = pin; MQ.role = role; const topic = "bthc-chordsheet/v1/" + pin; let bi = 0, rounds = 0;
+  const connect = () => {
+    if (MQ.pin !== pin) return;
+    let c; try { c = mqtt.connect(BROKERS[bi % BROKERS.length], {clientId: "cs" + role[0] + Math.random().toString(36).slice(2, 10), clean: true, connectTimeout: 5000, reconnectPeriod: 3000, keepalive: 20}); } catch { return; }
+    MQ.c = c; MQ.topic = topic; let opened = false;
+    const giveUp = setTimeout(() => { if (!opened && MQ.c === c) { try { c.end(true); } catch {} bi++; if (bi % BROKERS.length === 0) rounds++; if (rounds < 3) connect(); else { MQ.c = null; mqUi(); } } }, 7000);
+    c.on("connect", () => { opened = true; clearTimeout(giveUp); MQ.ok = true; mqUi();
+      c.subscribe(topic + (role === "host" ? "/press" : "/state"), {qos: 0});
+      if (role === "host" && D) fastState(); });
+    c.on("close", () => { if (MQ.c === c) { MQ.ok = false; mqUi(); } });
+    c.on("offline", () => { if (MQ.c === c) { MQ.ok = false; mqUi(); } });
+    c.on("error", () => {});
+    c.on("message", (tp, payload) => { let m; try { m = JSON.parse(String(payload)); } catch { return; } try { if (role === "host") dFast(m); else sgFast(m); } catch {} });
+  };
+  connect();
+}
+function mqStop(){ if (MQ.c) { try { MQ.c.end(true); } catch {} } MQ.c = null; MQ.ok = false; mqUi(); }
+function mqPub(sub, obj, retain){ if (!MQ.c || !MQ.ok) return false; try { MQ.c.publish(MQ.topic + "/" + sub, JSON.stringify(obj), {qos: 0, retain: !!retain}); return true; } catch { return false; } }
+function mqUi(){ const t = MQ.ok ? "⚡ 即時連線" : MQ.role ? "Google 模式" : ""; for (const id of ["gFast", "sgFast"]) { const el = $(id); if (el) el.textContent = t; } }
+function fastState(){
+  if (!D) return; const c = [0, 1, 2, 3].map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
+  mqPub("state", {v: D.ver % 10000, s: encState(), a: c[0] * 64 + c[1], b: c[2] * 64 + c[3], p: [0, 1, 2, 3].map(k => D.slots[k] ? D.slots[k].gid : ""), n: [0, 1, 2, 3].map(k => D.slots[k] ? D.slots[k].name : "")}, true);
+}
+function dFast(m){
+  if (!D || !PH_OPEN.includes(D.phase) || !m || typeof m.g !== "string") return;
+  const k = D.slots.findIndex(s => s.gid === m.g); if (k < 0) return;
+  const s = String(m.n || ""); if (s.slice(0, 2) !== b36(D.epoch % 1296, 2)) return;
+  const card = s[2], tg = parseInt(s[3], 10) || 0;
+  if (CARD[card] && dAllowed(k, card, tg)) dAccept(k, card, tg);
+}
+function sgFast(m){
+  if (!me || !m || typeof m.s !== "string") return;
+  sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
+}
 
 window.__cs = {get D(){return D;}, get SG(){return SG;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
 })();
