@@ -90,6 +90,13 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .cell{position:relative}
 .cell.strong::after{content:"★";position:absolute;top:2px;right:4px;color:var(--bad);font-size:16px;line-height:1}
 .show .cell.strong::after{font-size:clamp(18px,2.2vw,28px);top:-4px;right:2px}
+.chordhint{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px}
+.chordhint span{background:#fff;border:2px solid var(--plum);border-radius:14px;padding:6px 14px;font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--ink)}
+.chordhint b{color:var(--plum);font-size:1.2em}
+.legend.big{font-size:clamp(18px,2.4vw,24px);padding:8px 18px;border-width:2px}
+.legend.big b{font-size:1.4em;color:var(--hot)}
+.demobar{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:58;background:var(--ink);color:#fff;border-radius:999px;padding:8px 18px;font-weight:900;font-size:16px;display:flex;gap:10px;align-items:center}
+.demobar button{min-height:40px;border-radius:999px;padding:0 14px;background:#fff;color:var(--ink);font-weight:900}
 .legend{display:inline-flex;align-items:center;gap:6px;font-weight:700;color:var(--ink);font-size:15px;background:#FFF4F6;border:1px solid #F7C6D1;border-radius:999px;padding:4px 12px;width:max-content}
 .legend b{color:var(--bad);font-size:18px}
 .lplay{align-self:end;min-width:52px;min-height:52px;border-radius:50%;background:var(--plum);color:#fff;font-size:20px;margin-left:6px}
@@ -212,15 +219,19 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .gflash div{background:var(--plum);color:#fff;font-weight:900;font-size:clamp(34px,5.5vw,76px);padding:26px 46px;border-radius:28px;text-align:center;line-height:1.3;max-width:90vw;animation:flash 1.8s ease forwards;box-shadow:0 12px 0 rgba(59,47,90,.25)}
 .gflash div.good{background:#1F9D62}.gflash div.bad{background:#D63C5E}
 @keyframes flash{0%{transform:scale(.6);opacity:0}10%{transform:scale(1.06);opacity:1}18%{transform:scale(1)}82%{opacity:1}100%{opacity:0}}
-#gLyr{width:100%;text-align:left}
-#gLyr .line{border-bottom:2px solid var(--rule);padding:10px 0;gap:4px}
-#gLyr .cell{background:transparent;border:0;min-width:clamp(50px,6vw,84px);grid-template-rows:clamp(40px,5vw,62px) auto auto}
-#gLyr .cell .sf{font-size:clamp(13px,1.6vw,20px)}
-#gLyr .cell .ch{font-size:clamp(26px,4vw,46px)}
-#gLyr .cell .w{font-size:clamp(32px,5vw,62px)}
+#gLyr{width:100%;text-align:left;--gz:1}
+#gLyr .line{border-bottom:2px solid var(--rule);padding:calc(8px * var(--gz)) 0;gap:calc(4px * var(--gz))}
+#gLyr .cell{background:transparent;border:0;min-width:calc(clamp(50px,6vw,84px) * var(--gz));grid-template-rows:calc(clamp(40px,5vw,62px) * var(--gz)) auto auto}
+#gLyr .cell .sf{font-size:calc(clamp(13px,1.6vw,20px) * var(--gz))}
+#gLyr .cell .ch{font-size:calc(clamp(26px,4vw,46px) * var(--gz))}
+#gLyr .cell .w{font-size:calc(clamp(32px,5vw,62px) * var(--gz))}
+.gscr.compact .gt .cards,.gscr.compact .gt .mutedb,.gscr.compact .gt .no{display:none}
+.gscr.compact .gt{padding:6px 10px;gap:2px}
+.gscr.compact .gt .sc b{font-size:clamp(26px,3vw,36px)}
+.gscr.compact .gstage{padding:10px 16px;gap:6px;align-content:start}
 #gLyr .cell.now{background:#FFF1D2;border-radius:14px}
 #gLyr .cell.now .ch{color:var(--bad)}
-#gLyr .cell.strong::after{font-size:clamp(18px,2.2vw,26px);top:-4px;right:2px}
+#gLyr .cell.strong::after{font-size:calc(clamp(18px,2.2vw,26px) * var(--gz));top:-4px;right:2px}
 .podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;width:100%}
 .podium .pc{display:grid;gap:6px;justify-items:center;width:min(26vw,240px);opacity:0;transform:translateY(30px);animation:rise .7s ease forwards}
 .podium .pc .bk{width:100%;border-radius:16px 16px 0 0;display:grid;place-items:center;font-family:var(--f-hud);font-weight:700;font-size:clamp(40px,5vw,72px);color:#fff}
@@ -336,7 +347,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   <div class="panel">
     <h2>邊隻字轉和弦？</h2>
     <p class="note">每隻字上面有唱名，直線係小節線。將和弦拉落字度（或者撳和弦再撳字）；有和弦次序嘅話，放一個就少一個。撳「擦走」再撳隻字就刪除。全組一齊唱、一齊試，決定咗先提交；提交咗都可以再改再交。</p>
-    <span class="legend" id="strongNote" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
+    <div class="chordhint"><span><b>I</b>（Do・Mi・So）</span><span><b>IV</b>（Fa・La・Do）</span><span><b>V</b>（So・Ti・Re）</span><span><b>vi</b>（La・Do・Mi）</span></div>
+    <span class="legend big" id="strongNote" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
     <div class="chips" id="chips"></div>
     <div id="lyrics"></div>
     <p class="err" id="p2msg"></p>
@@ -372,7 +384,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="panel">
     <div class="row" style="justify-content:space-between"><h2>各組</h2><span class="note" id="hStatus"></span></div>
-    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hTeacher">🎵 老師版本</button><button class="btn btn-main" id="hDuel">⚔️ 和弦對決</button><button class="btn btn-soft" id="hExit">結束</button><span class="note" id="hMsg"></span></div>
+    <div class="row"><button class="btn btn-main" id="hRand">🎲 隨機抽一份</button><button class="btn btn-soft" id="hTeacher">🎵 老師版本</button><button class="btn btn-soft" id="hDemo">🎓 示範</button><button class="btn btn-main" id="hDuel">⚔️ 和弦對決</button><button class="btn btn-soft" id="hExit">結束</button><span class="note" id="hMsg"></span></div>
     <table class="lb"><thead><tr><th>組</th><th>① 砌和弦</th><th>② 歌詞和弦</th><th></th></tr></thead><tbody id="hTable"></tbody></table>
   </div>
 </section>
@@ -496,7 +508,9 @@ function scheduleSong(rows, secPerBeat, chordsOf, noMel){
 const pidMake = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
 const show = id => { for (const s of ["scHome","scP1","scP2","scHost"]) $(s).hidden = s !== id; window.scrollTo(0,0); };
 const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v);}catch{return d;} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} } };
+const DEMO = new URLSearchParams(location.search).get("demo") === "1";   // teacher demo tab: reads the room, never writes
 async function api(params){
+  if (DEMO && (params.a === "join" || params.a === "finish")) return {ok: true};
   const qs = new URLSearchParams(params).toString(); let last;
   // retries network errors and busy-backend errors (e.g. "Lock timeout"); stops at once on real answers like "noroom"
   for (let i = 0; i < 4; i++) {
@@ -577,6 +591,7 @@ const wtGet = () => store.get(wtKey(), {}) || {};
 const wtSet = v => store.set(wtKey(), v);
 let WT = {iv: null, end: 0, done: null, beep: ""};
 function wtRun(label, end, onDone){
+  if (DEMO) { $("wTimer").hidden = true; return; }
   clearInterval(WT.iv); WT = {iv: null, end, done: onDone, fired: false, beep: ""};
   $("wTimer").hidden = false; $("wTimerL").textContent = label; $("wTimer").className = "wtimer";
   const tick = () => {
@@ -1210,7 +1225,6 @@ function dAllowed(k, card, tg){
   if (card === "O" && D.phase === "O" && k === perf) return true;          // objecting to a deduction
   if (card === "O") return !!D.mw && k === D.mw.target - 1;                 // objecting to a 禁言 (any time during its window)
   switch (D.phase) {
-    case "P": return card === "M" && tgOk && !D.mw;
     case "T": return card === "M" ? tgOk && !D.mw : (card === "I" || card === "G") && perf >= 0 && k !== perf;
   }
   return false;
@@ -1339,7 +1353,7 @@ function mwTick(now){
   if (s > 0 && s <= 3 && D.mwBeep !== key) { D.mwBeep = key; el.classList.remove("f3"); void el.offsetWidth; el.classList.add("f3"); if (D.phase !== "T") sfx("tick"); }
 }
 /* ---------- teacher: rendering ---------- */
-function dRender(){ if (!D) return; dTiles(); dStage(false); mwRender(); $("gBgm").textContent = D.bgm ? "🔊 音樂" : "🔇 音樂"; $("gEdit").classList.toggle("btn-main", D.ui.edit);
+function dRender(){ if (!D) return; $("gScr").classList.toggle("compact", D.phase === "P"); dTiles(); dStage(false); mwRender(); $("gBgm").textContent = D.bgm ? "🔊 音樂" : "🔇 音樂"; $("gEdit").classList.toggle("btn-main", D.ui.edit);
   $("gRound").textContent = D.round && D.perf ? `第 ${D.round} 輪・表演：${gLabel(D.perf)}` : ""; }
 function dTiles(){
   if (!D) return; const box = $("gTiles"), gs = groups(), sent = new Set(gs.filter(g => g.sent).map(g => g.gid));
@@ -1381,7 +1395,7 @@ function dStage(lobbyRefresh){
       break;
     }
     case "P": {
-      s = `<div class="gbig"><em>${gLabel(P)}</em> ${esc(D.slots[P - 1].name)} 表演</div><div class="gsub">表演組跟住播放一齊唱；其他組留心聽，準備出卡。</div><div id="gLyr"></div>`;
+      s = `<div class="gsub" style="margin:0"><b style="color:var(--hot)">${gLabel(P)} ${esc(D.slots[P - 1].name)}</b> 表演　・　其他組留心聽，準備出卡</div><div id="gLyr"></div>`;
       c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
         <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
         <button class="btn btn-green" data-act="tiao">⚔️ Battle Time（10 秒）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
@@ -1447,7 +1461,15 @@ function dShowSheet(){
   if (!g || !g.sent) { box.innerHTML = `<p class="gsub">呢組未交工作紙。</p>`; gData = null; return; }
   gData = lines.map((l, i) => [...l].map((_, j) => DECODE[(g.code[i] || "")[j]] || ""));
   renderLyrics(box, gData, {big: true});
+  requestAnimationFrame(fitG); setTimeout(fitG, 300);
 }
+// shrink the performing group's sheet until the whole song fits on the projector without scrolling
+function fitG(){
+  const st = $("gStage"), box = $("gLyr"); if (!box || !D || D.phase !== "P") return;
+  let z = 1; box.style.setProperty("--gz", z);
+  for (let i = 0; i < 20 && st.scrollHeight > st.clientHeight + 2 && z > 0.3; i++) { z -= 0.04; box.style.setProperty("--gz", z.toFixed(2)); }
+}
+addEventListener("resize", () => { if (D && D.phase === "P") fitG(); });
 function gStop(){ stopAudio(); gTimers.forEach(clearTimeout); gTimers = []; for (const x of document.querySelectorAll("#gLyr .cell.now")) x.classList.remove("now"); const b = $("gPlayBtn"); if (b) b.textContent = "▶ 播放"; }
 function gPlay(){
   if (!gData) return; unlock(); if (gTimers.length) return gStop(); gStop();
@@ -1527,7 +1549,7 @@ $("gScr").addEventListener("click", e => {
     }
     case "proxy": {
       const c = b.dataset.c;
-      if (c === "M") { if (!"PT".includes(D.phase)) { dFlash("而家用唔到禁言卡"); break; } D.ui.pick = {k}; D.stageKey = ""; dRender(); break; }
+      if (c === "M") { if (D.phase !== "T") { dFlash("禁言卡只可以喺 Battle Time 用"); break; } D.ui.pick = {k}; D.stageKey = ""; dRender(); break; }
       if (dAllowed(k, c, 0)) dAccept(k, c, 0); else dFlash(`${gLabel(k + 1)} 而家用唔到${CARD[c].n}卡`);
       break;
     }
@@ -1536,6 +1558,7 @@ $("gScr").addEventListener("click", e => {
   }
 });
 $("hDuel").onclick = () => { if (!H) return; dOpen(); };
+$("hDemo").onclick = () => { if (!H) return; window.open(location.pathname + "?demo=1&pin=" + H.pin, "_blank"); };
 addEventListener("keydown", e => { if (D && !$("gScr").hidden && D.phase === "P" && e.code === "Space" && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); gPlay(); } });
 
 /* ---------- student iPad ---------- */
@@ -1586,7 +1609,6 @@ function sgCan(card){
   if ((st.mask >> k) & 1) return false; if (!(st.cards[k][card] > 0)) return false; if (SG.pressEp === st.ep) return false;
   if (card === "O") return (st.ph === "O" && st.perf === SG.slot) || st.mw === SG.slot;
   switch (st.ph) {
-    case "P": return card === "M" && !st.mw;
     case "T": return (card === "M" && !st.mw) || ((card === "I" || card === "G") && st.perf > 0 && st.perf !== SG.slot);
   }
   return false;
@@ -1635,6 +1657,7 @@ function sgRender(){
 }
 async function sgPress(card, tg){
   const st = SG.st; if (!st || !sgCan(card)) return;
+  if (DEMO) { sfx("tap"); sgToast(card === "M" ? `示範：禁言 ${gLabel(tg)}，佢有 10 秒可以用反對卡` : `示範：撳「${CARD[card].n}」，最快嗰組先講`, "good"); return; }
   SG.pressEp = st.ep; SG.pressCard = card; SG.pressN = st.ln; SG.pick = false; SG.lastKey = ""; sfx("tap"); sgRender();
   const name = st.ep + card + (tg || 0);
   mqPub("press", {g: me.gid, n: name});
@@ -1700,6 +1723,25 @@ function sgFast(m){
   sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0, c5: Number(m.e) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
 }
 
+/* ---------- teacher demo tab (?demo=1&pin=…): walk the class through the worksheet and the card screen ---------- */
+function demoCards(){
+  const full = {I: 3, G: 3, O: 1, M: 1};
+  SG.st = {ph: "T", perf: 2, cl: 0, tg: 0, mask: 0, ep: "zz", lk: 0, lc: "-", ln: 0, mw: 0, cards: [full, full, full, full, full]};
+  SG.slot = 1; SG.names = {1: "示範組", 2: "第 2 組", 3: "第 3 組", 4: "第 4 組", 5: "第 5 組"}; SG.pressEp = null; SG.lastKey = ""; SG.hidden = false;
+  $("sg").hidden = false; $("sgFab").hidden = true; sgRender();
+}
+if (DEMO && urlPin && /^\d{6}$/.test(urlPin)) {
+  me = {pin: urlPin, gid: "demo" + pidMake().slice(0, 6), name: "示範組"};
+  const bar = document.createElement("div"); bar.className = "demobar";
+  bar.innerHTML = `🎓 示範模式（唔會提交）<button data-d="1">① 砌和弦</button><button data-d="2">② 配和弦</button><button data-d="3">⚔️ 功能卡畫面</button>`;
+  document.body.appendChild(bar);
+  bar.onclick = e => { const b = e.target.closest("[data-d]"); if (!b) return; unlock();
+    $("sg").hidden = true;
+    if (b.dataset.d === "1") { show("scP1"); buildKb(); $("p1res").hidden = true; loadQ(); }
+    else if (b.dataset.d === "2") { p2Started = false; startP2(); }
+    else demoCards(); };
+  startP1();
+}
 window.__cs = {get D(){return D;}, get SG(){return SG;}, get WT(){return WT;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
 })();
 </script>
