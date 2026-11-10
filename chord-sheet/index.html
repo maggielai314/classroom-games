@@ -156,7 +156,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .gtop h2{font-family:var(--f-hud);font-size:clamp(22px,2.6vw,32px)}
 .gtop .btn{min-height:44px;font-size:16px;padding:0 14px}
 .gtop .rnd{font-weight:900;font-size:clamp(16px,1.8vw,22px);color:var(--hot)}
-.gtiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.gtiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
 .gt{background:#fff;border:3px solid var(--rule);border-radius:18px;padding:10px 12px;display:grid;gap:6px;align-content:start;position:relative;min-width:0}
 .gt.perf{border-color:var(--hot);box-shadow:0 0 0 4px #FFD9E8}
 .gt.claim{border-color:#E9A21A;box-shadow:0 0 0 5px #FFE7A8}
@@ -189,11 +189,17 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .gcrit span{background:#F3EFFC;border-radius:999px;padding:6px 14px;font-weight:900;font-size:clamp(16px,1.6vw,20px)}
 .gcard{display:inline-grid;place-items:center;width:clamp(110px,12vw,160px);aspect-ratio:3/4;border-radius:20px;border:5px solid currentColor;font-weight:900;font-size:clamp(26px,3vw,40px);line-height:1.15}
 .gcard i{font-style:normal;font-size:1.4em}
+.gmw{position:fixed;right:max(18px,2.5vw);top:42%;z-index:42;width:min(30vw,340px);background:#fff;border:5px solid #4B3A80;border-radius:22px;padding:14px 16px;display:grid;gap:6px;justify-items:center;text-align:center;box-shadow:0 10px 0 rgba(75,58,128,.2)}
+.gmw .t{font-weight:900;font-size:clamp(18px,2vw,26px);color:#4B3A80}
+.gmw .n{font-family:var(--f-hud);font-weight:700;font-size:clamp(56px,7vw,96px);line-height:1;color:#4B3A80;font-variant-numeric:tabular-nums}
+.gmw .n.f3{color:#E11D48;animation:pop .6s ease-out}
+.gmw small{font-size:15px;font-weight:700;color:var(--muted)}
+.gmw .row{justify-content:center}.gmw .btn{min-height:44px;font-size:15px;padding:0 12px}
 .gctl{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .gctl .btn{min-height:58px;font-size:19px}
 .btn-red{background:#D63C5E;color:#fff}.btn-green{background:#1F9D62;color:#fff}
 .gflash{position:fixed;inset:0;z-index:46;display:grid;place-items:center;pointer-events:none}
-.gflash div{background:var(--plum);color:#fff;font-weight:900;font-size:clamp(34px,5.5vw,76px);padding:26px 46px;border-radius:28px;text-align:center;line-height:1.3;max-width:90vw;animation:flash 2.6s ease forwards;box-shadow:0 12px 0 rgba(59,47,90,.25)}
+.gflash div{background:var(--plum);color:#fff;font-weight:900;font-size:clamp(34px,5.5vw,76px);padding:26px 46px;border-radius:28px;text-align:center;line-height:1.3;max-width:90vw;animation:flash 1.8s ease forwards;box-shadow:0 12px 0 rgba(59,47,90,.25)}
 .gflash div.good{background:#1F9D62}.gflash div.bad{background:#D63C5E}
 @keyframes flash{0%{transform:scale(.6);opacity:0}10%{transform:scale(1.06);opacity:1}18%{transform:scale(1)}82%{opacity:1}100%{opacity:0}}
 #gLyr{width:100%;text-align:left}
@@ -213,7 +219,30 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 @keyframes rise{to{opacity:1;transform:none}}
 @media (max-width:820px){.gtiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+/* --- calm look: white + plum; colour only for the key thing --- */
+.gscr{background:#FAF8FF}
+.gt{border:2px solid #E4DCF7}
+.gt.perf{border-color:var(--plum);box-shadow:none;background:#F5F1FF}
+.gt.claim{border-color:var(--hot);box-shadow:0 0 0 3px #FFD9E8}
+.gt .tagp{background:var(--plum)}
+.gt .sc span{color:var(--ink)}
+.gscr .mini{background:none!important;color:var(--muted)!important;padding:0 4px;font-weight:700}
+.gscr .mini.z{opacity:.35;text-decoration:line-through}
+.gscr .gcard{color:var(--plum)!important;background:#fff!important;border-width:4px}
+.gscr .btn-red,.gscr .btn-green{background:var(--plum);color:#fff}
+.gbig b{color:var(--hot)}
+.gclock.sm{font-size:clamp(64px,8vw,120px)}
+.gcritbig{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;width:100%;max-width:1200px}
+.gcritbig button,.gcritbig span{min-height:clamp(96px,15vh,150px);border-radius:20px;border:3px solid var(--plum);background:#fff;color:var(--plum);font-weight:900;font-size:clamp(24px,3vw,42px);display:grid;place-items:center;align-content:center;gap:4px;line-height:1.15}
+.gcritbig button small{font-size:clamp(13px,1.2vw,16px);color:var(--muted);font-weight:700}
+.gcritbig button:hover:not(:disabled){background:var(--plum);color:#fff}
+.gcritbig button:hover:not(:disabled) small{color:#E9E2FF}
+.gcritbig button:disabled{opacity:.3;border-style:dashed}
+.gcritbig.disp span{border-color:#E4DCF7}
+.gcrit span{background:none;border:2px solid #E4DCF7}
+
 /* ===== 和弦對決 (student iPad) ===== */
+.sg .sgc{color:var(--plum)!important;background:#fff!important}
 .sg{position:fixed;inset:0;z-index:60;background:var(--bg);overflow:auto;padding:max(12px,env(safe-area-inset-top,0px)) max(16px,3vw) max(12px,env(safe-area-inset-bottom,0px));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:12px}
 .sgwho{font-weight:900;font-size:clamp(20px,3vw,28px);color:var(--plum)}
 .sgwho small{display:block;font-size:14px;color:var(--muted)}
@@ -352,6 +381,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="gtiles" id="gTiles"></div>
   <div class="gstage" id="gStage"></div>
+  <div class="gmw" id="gMw" hidden></div>
   <div class="gctl" id="gCtl"></div>
 </div>
 <div class="gflash" id="gFlash" hidden></div>
@@ -373,7 +403,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
       <button class="btn btn-main" id="sPlay">▶ 播放</button>
       <label class="note" style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="sMel" checked style="width:20px;height:20px;accent-color:var(--plum)">播埋旋律</label>
       <label class="note" style="display:flex;align-items:center;gap:8px">快<input type="range" id="sSpeed" min="0.8" max="2.6" step="0.2" value="1.6" style="width:110px;accent-color:var(--plum)">慢</label>
-      <button class="btn btn-soft" id="sTimer">🎮 Game Start</button>
+      <button class="btn btn-soft" id="sTimer">⚔️ Battle Time</button>
       <button class="btn btn-soft" id="sTeacher" hidden>🎵 老師版本</button>
       <button class="btn btn-soft" id="sWeak" hidden>🔀 弱拍版本</button>
       <button class="btn btn-soft" id="sNext">🎲 再抽</button>
@@ -381,7 +411,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     </div>
   </div>
   <div class="timer" id="tBox" hidden><b id="tNum">2:00</b><span>音準・節奏・和弦配搭・合奏整齊度・團隊精神</span></div>
-  <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「🎮 Game Start」用功能卡。（空白鍵＝播放／停）</p>
+  <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「⚔️ Battle Time」用功能卡。（空白鍵＝播放／停）</p>
   <span class="legend" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
   <div id="sLyr"></div>
 </div>
@@ -955,12 +985,12 @@ $("hTeacher").onclick = () => { unlock(); ({lines, bars, sol} = hostSongFromRows
 $("sTeacher").onclick = () => { const d = teacherVersion(); if (d) showSheet("老師版本", d); };
 $("sWeak").onclick = () => { const d = weakVersion(); if (d) showSheet("弱拍版本（和弦唔喺 ★）", d); };
 $("sNext").onclick = () => pickRandom();
-/* 2-minute Game Start countdown */
+/* Battle Time countdown on the projection */
 let T = null;
-function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "🎮 Game Start"; }
+function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "⚔️ Battle Time"; }
 function startTimer(){
   if (T) return stopTimer(); unlock(); stopShow();
-  const end = Date.now() + 120000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
+  const end = Date.now() + 20000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
   const tick = () => { const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
     $("tNum").textContent = left ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "時間到";
     if (!left) { clearInterval(T.id); $("tBox").classList.add("end"); chord(CH.C, 0, 1.2); } };
@@ -997,7 +1027,9 @@ const CARD = {
   M: {n: "禁言", ic: "🔇", sec: 10, cls: "cM"}
 };
 const CARD_MAX = {I: 3, G: 3, O: 1, M: 1};
-const TIAO_MS = 120000;
+const MAXG = 5;   // at most 5 groups
+const G5 = [0, 1, 2, 3, 4];
+const TIAO_MS = 20000;   // Battle Time per round (each card has its own timer)
 const GRACE = 3500;   // objection windows stay open this long after showing 0 (iPad → Google → teacher takes a few seconds)
 const PH_OPEN = "PTOM";            // phases in which iPads may press
 const b36 = (n, w) => Math.max(0, n).toString(36).padStart(w, "0").slice(-w);
@@ -1083,15 +1115,15 @@ let D = null, dLastVer = 0;
 const isMuted = k => !!(D.grp[k] && D.grp[k].mutedUntil && D.grp[k].mutedUntil >= D.round);
 const dScore = k => D.grp[k].own.filter(Boolean).length + D.grp[k].won;
 function dNew(){
-  const gs = groups().slice(0, 4);
+  const gs = groups().slice(0, MAXG);
   D = {slots: gs.map(g => ({gid: g.gid, name: g.name})), grp: gs.map(() => ({own: [1, 1, 1, 1, 1], won: 0, star: 0, cards: {I: 3, G: 3, O: 1, M: 1}, mutedUntil: 0})),
-       round: 0, perf: 0, done: [], phase: "L", epoch: 1, claim: null, tLeft: TIAO_MS, tEnd: 0, paused: false, cdEnd: 0, prev: "", ded: null,
+       round: 0, perf: 0, done: [], mw: null, phase: "L", epoch: 1, claim: null, tLeft: TIAO_MS, tEnd: 0, paused: false, cdEnd: 0, prev: "", ded: null,
        last: {k: 0, c: "-", n: 0}, ver: dLastVer + 1, bgm: true, ui: {edit: false, pick: null}, stageKey: "", slotsSent: false};
 }
 function encState(){
   const mask = D.slots.reduce((m, _, k) => m | (isMuted(k) ? 1 << k : 0), 0), c = D.claim || {};
-  return D.phase + (D.perf || 0) + (c.slot || 0) + (c.target || 0) + mask.toString(16) + b36(D.epoch % 1296, 2) + b36(D.round % 36, 1)
-       + (D.last.k || 0) + D.last.c + b36(D.last.n % 36, 1);
+  return D.phase + (D.perf || 0) + (c.slot || 0) + (c.target || 0) + mask.toString(36) + b36(D.epoch % 1296, 2) + b36(D.round % 36, 1)
+       + (D.last.k || 0) + D.last.c + b36(D.last.n % 36, 1) + (D.mw ? D.mw.target : 0);
 }
 const W = {busy: false, dirty: false};
 async function dPush(){
@@ -1102,11 +1134,11 @@ async function dPush(){
       W.dirty = false;
       try {
         if (!D.slotsSent) {
-          await Promise.all([0, 1, 2, 3].map(k => api({a: "finish", pin: H.pin, pid: "h0stP" + (k + 1), name: D.slots[k] ? D.slots[k].gid : "—", score: 0, level: 1, correct: 0, answered: 0})));
+          await Promise.all(G5.map(k => api({a: "finish", pin: H.pin, pid: "h0stP" + (k + 1), name: D.slots[k] ? D.slots[k].gid : "—", score: 0, level: 1, correct: 0, answered: 0})));
           D.slotsSent = true;
         }
-        const c = [0, 1, 2, 3].map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
-        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: D.ver % 10000});
+        const c = G5.map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
+        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: (D.ver % VMOD) * 64 + c[4]});
         dNet(true); if (!W.dirty) break;
       } catch { dNet(false); await sleep(700 + Math.random() * 700); }
     }
@@ -1122,18 +1154,18 @@ function setPhase(ph){
 }
 function dFlash(text, kind){
   const f = $("gFlash"); f.innerHTML = `<div class="${kind || ""}">${text}</div>`; f.hidden = false;
-  clearTimeout(dFlash.t); dFlash.t = setTimeout(() => { f.hidden = true; }, 2600);
+  clearTimeout(dFlash.t); dFlash.t = setTimeout(() => { f.hidden = true; }, 1800);
 }
 
 /* rules: may group k (0-based) use this card now? tg = target group (1-based) for 禁言 */
 function dAllowed(k, card, tg){
   const g = D.grp[k]; if (!g || isMuted(k) || !(g.cards[card] > 0)) return false;
   const perf = D.perf - 1, tgOk = tg >= 1 && tg <= D.slots.length && tg - 1 !== k && !isMuted(tg - 1);
+  if (card === "O" && D.phase === "O" && k === perf) return true;          // objecting to a deduction
+  if (card === "O") return !!D.mw && k === D.mw.target - 1;                 // objecting to a 禁言 (any time during its window)
   switch (D.phase) {
-    case "P": return card === "M" && tgOk;
-    case "T": return card === "M" ? tgOk : (card === "I" || card === "G") && perf >= 0 && k !== perf;
-    case "O": return card === "O" && k === perf;
-    case "M": return card === "O" && !!D.claim && k === D.claim.target - 1;
+    case "P": return card === "M" && tgOk && !D.mw;
+    case "T": return card === "M" ? tgOk && !D.mw : (card === "I" || card === "G") && perf >= 0 && k !== perf;
   }
   return false;
 }
@@ -1145,17 +1177,19 @@ function dAccept(k, card, tg){
     D.cdEnd = Date.now() + CARD[card].sec * 1000;
     dFlash(`${gLabel(k + 1)}　${CARD[card].ic} ${CARD[card].n}！`); setPhase(card);
   } else if (card === "M") {
-    if (D.phase === "T") pauseTiao(); D.prev = D.phase; D.claim = {slot: k + 1, card, target: tg};
-    const t = D.grp[tg - 1];
-    if (t.cards.O > 0) { D.cdEnd = Date.now() + 10000; dFlash(`${gLabel(k + 1)} 🔇 禁言 ${gLabel(tg)}！`); setPhase("M"); }
-    else { dFlash(`${gLabel(k + 1)} 🔇 禁言 ${gLabel(tg)}！`); applyMute(); backToPrev(); }
-  } else if (card === "O" && D.phase === "O") {
+    // 禁言 runs beside the round: Battle Time keeps going, the target gets 10 s to object
+    dFlash(`${gLabel(k + 1)} 🔇 禁言 ${gLabel(tg)}！`);
+    D.epoch++;   // other presses made before this one no longer count
+    if (D.grp[tg - 1].cards.O > 0) D.mw = {slot: k + 1, target: tg, end: Date.now() + 10000, ep0: D.epoch};
+    else applyMute(tg);
+    dCommit();
+  } else if (card === "O" && D.phase === "O" && k === D.perf - 1) {
     D.claim.obj = true; D.cdEnd = Date.now() + 10000; dFlash(`${gLabel(k + 1)} ✋ 反對！`); setPhase("R");
-  } else if (card === "O" && D.phase === "M") {
-    dFlash(`✋ 反對成功！<br>${gLabel(k + 1)} 唔使禁言`, "good"); sfx("good"); backToPrev();
+  } else if (card === "O" && D.mw) {
+    dFlash(`✋ 反對成功！<br>${gLabel(k + 1)} 唔使禁言`, "good"); sfx("good"); D.mw = null; D.epoch++; dCommit();
   }
 }
-function applyMute(){ const tg = D.claim && D.claim.target; if (!tg) return; D.grp[tg - 1].mutedUntil = D.round + 1; }
+function applyMute(tg){ if (!tg || !D.grp[tg - 1]) return; D.grp[tg - 1].mutedUntil = D.round + 1; }
 function applyDeduct(crit){
   const p = D.perf - 1, c = D.claim.slot - 1;
   if (crit == null || !D.grp[p].own[crit]) return;
@@ -1190,7 +1224,7 @@ function dRandom(){
 let dPT = null, dPolling = false;
 function dLoop(){
   clearTimeout(dPT); if (!D || !H) return;
-  dPollOnce().finally(() => { if (D && H) dPT = setTimeout(dLoop, "OM".includes(D.phase) ? 550 : PH_OPEN.includes(D.phase) ? 750 : 2500); });
+  dPollOnce().finally(() => { if (D && H) dPT = setTimeout(dLoop, "OM".includes(D.phase) || D.mw ? 550 : PH_OPEN.includes(D.phase) ? 750 : 2500); });
 }
 async function dPollOnce(){
   if (dPolling) return; dPolling = true;
@@ -1198,13 +1232,20 @@ async function dPollOnce(){
   catch { dNet(false); }
   finally { dPolling = false; }
 }
+// a press counts if it was made in the current window, or (for a 禁言 objection) any time since the 禁言
+function epOk(s, ep){
+  if (s.slice(0, 2) === ep) return true;
+  if (!D.mw || s[2] !== "O") return false;
+  const e = parseInt(s.slice(0, 2), 36); if (!isFinite(e)) return false;
+  return ((e - D.mw.ep0) % 1296 + 1296) % 1296 <= ((D.epoch - D.mw.ep0) % 1296 + 1296) % 1296;
+}
 function dProcess(rows){
-  if (!D || !PH_OPEN.includes(D.phase)) return;
+  if (!D || !(PH_OPEN.includes(D.phase) || D.mw)) return;
   const ep = b36(D.epoch % 1296, 2), cands = [];
   for (const r of rows) {
     const m = /^([a-z0-9]+)k$/.exec(r.pid); if (!m || r.pid.startsWith("h0st")) continue;
     const k = D.slots.findIndex(s => s.gid === m[1]); if (k < 0) continue;
-    const s = String(r.name); if (s.slice(0, 2) !== ep) continue;
+    const s = String(r.name); if (!epOk(s, ep)) continue;
     const card = s[2], tg = parseInt(s[3], 10) || 0;
     if (CARD[card] && dAllowed(k, card, tg)) cands.push({k, card, tg, at: Number(r.updated) || 0});
   }
@@ -1217,16 +1258,18 @@ let dTI = null;
 function dTick(){
   if (!D || $("gScr").hidden) return;
   const now = Date.now(); let left = null;
+  if (D.mw && now > D.mw.end + GRACE) { const tg = D.mw.target; D.mw = null; applyMute(tg); dFlash(`🔇 ${gLabel(tg)} 被禁言`, "bad"); dCommit(); return; }
+  mwTick(now);
   if (D.phase === "T") { left = D.paused ? D.tLeft : D.tEnd - now; if (!D.paused && left <= 0) return roundEnd(); }
   else if ("IGOMR".includes(D.phase)) {
     left = D.cdEnd - now;
     if (left <= -GRACE && D.phase === "O") { applyDeduct(D.ded); return backToPrev(); }
-    if (left <= -GRACE && D.phase === "M") { applyMute(); dFlash(`🔇 ${gLabel(D.claim.target)} 被禁言`, "bad"); return backToPrev(); }
+
   }
   const el = $("gClock"), scr = $("gScr");
   if (!el || left == null) { scr.classList.remove("f3"); return; }
   const s = Math.max(0, Math.ceil(left / 1000)), f3 = s > 0 && s <= 3 && !(D.phase === "T" && D.paused);
-  el.textContent = D.phase === "T" ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : s ? String(s) : "OM".includes(D.phase) ? "確認中…" : "時間到！";
+  el.textContent = D.phase === "T" ? String(s) : s ? String(s) : "OM".includes(D.phase) ? "確認中…" : "時間到！";
   el.classList.toggle("up", s === 0); el.classList.toggle("paused", D.phase === "T" && D.paused); scr.classList.toggle("f3", f3);
   const key = D.epoch + ":" + s;
   if (f3 && D.beep !== key) { D.beep = key; sfx("tick"); el.classList.remove("f3"); void el.offsetWidth; el.classList.add("f3"); }
@@ -1234,8 +1277,23 @@ function dTick(){
   if (s === 0 && D.buzzed !== D.epoch && "IGROM".includes(D.phase)) { D.buzzed = D.epoch; sfx("buzz"); }
 }
 
+/* the 禁言 window shown beside the round clock */
+function mwRender(){
+  const box = $("gMw"); if (!D || !D.mw) { box.hidden = true; box.innerHTML = ""; return; }
+  box.hidden = false;
+  box.innerHTML = `<div class="t">🔇 ${gLabel(D.mw.slot)} 禁言 ${gLabel(D.mw.target)}</div><div class="n" id="gMwClock">10</div>
+    <small>${gLabel(D.mw.target)} 可以撳 ✋ 反對取消</small>
+    <div class="row"><button class="btn btn-soft" data-act="mutenow">即刻禁言</button><button class="btn btn-soft" data-act="mutecancel">取消禁言</button></div>`;
+  mwTick(Date.now());
+}
+function mwTick(now){
+  const el = $("gMwClock"); if (!el || !D.mw) return;
+  const s = Math.max(0, Math.ceil((D.mw.end - now) / 1000)); el.textContent = s ? String(s) : "確認中…";
+  const key = "mw" + D.mw.end + ":" + s;
+  if (s > 0 && s <= 3 && D.mwBeep !== key) { D.mwBeep = key; el.classList.remove("f3"); void el.offsetWidth; el.classList.add("f3"); if (D.phase !== "T") sfx("tick"); }
+}
 /* ---------- teacher: rendering ---------- */
-function dRender(){ if (!D) return; dTiles(); dStage(false); $("gBgm").textContent = D.bgm ? "🔊 音樂" : "🔇 音樂"; $("gEdit").classList.toggle("btn-main", D.ui.edit);
+function dRender(){ if (!D) return; dTiles(); dStage(false); mwRender(); $("gBgm").textContent = D.bgm ? "🔊 音樂" : "🔇 音樂"; $("gEdit").classList.toggle("btn-main", D.ui.edit);
   $("gRound").textContent = D.round && D.perf ? `第 ${D.round} 輪・表演：${gLabel(D.perf)}` : ""; }
 function dTiles(){
   if (!D) return; const box = $("gTiles"), gs = groups(), sent = new Set(gs.filter(g => g.sent).map(g => g.gid));
@@ -1269,8 +1327,8 @@ function dStage(lobbyRefresh){
     case "L": {
       const gs = groups();
       s = `<div class="gbig">⚔️ 和弦對決</div>
-        <div class="gsub">${gs.length ? `已加入：${gs.slice(0, 4).map((g, k) => `${gLabel(k + 1)} ${esc(g.name)}${g.sent ? " ✓" : "（未交）"}`).join("　")}` : "等各組用 iPad 加入工作紙…"}</div>
-        ${gs.length > 4 ? `<div class="gsub" style="color:var(--bad)">有 ${gs.length} 組加入，只會用頭 4 組（${gs.slice(4).map(g => esc(g.name)).join("、")} 唔計）。</div>` : ""}
+        <div class="gsub">${gs.length ? `已加入：${gs.slice(0, MAXG).map((g, k) => `${gLabel(k + 1)} ${esc(g.name)}${g.sent ? " ✓" : "（未交）"}`).join("　")}` : "等各組用 iPad 加入工作紙…"}</div>
+        ${gs.length > MAXG ? `<div class="gsub" style="color:var(--bad)">有 ${gs.length} 組加入，只會用頭 ${MAXG} 組（${gs.slice(MAXG).map(g => esc(g.name)).join("、")} 唔計）。</div>` : ""}
         <div class="gcrit">${["I", "G", "O", "M"].map(cardBig).join("")}</div>
         <div class="gsub">每組 5 分（五項準則）＋功能卡：改善 3・做得好 3・反對 1・禁言 1</div>`;
       c = `<button class="btn btn-main" data-act="start"${gs.length >= 2 ? "" : " disabled"}>▶ 開始對決</button>`;
@@ -1280,22 +1338,25 @@ function dStage(lobbyRefresh){
       s = `<div class="gbig"><em>${gLabel(P)}</em> ${esc(D.slots[P - 1].name)} 表演</div><div class="gsub">表演組跟住播放一齊唱；其他組留心聽，準備出卡。</div><div id="gLyr"></div>`;
       c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
         <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
-        <button class="btn btn-green" data-act="tiao">🎮 Game Start（2 分鐘）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
+        <button class="btn btn-green" data-act="tiao">⚔️ Battle Time（20 秒）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
       break;
     }
     case "T":
-      s = `<div class="gsub">Game Start・${gLabel(P)} 表演</div><div class="gclock" id="gClock">2:00</div>
+      s = `<div class="gsub">Battle Time・${gLabel(P)} 表演</div><div class="gclock" id="gClock">20</div>
         <div class="gcrit">${CRIT.map(x => `<span>${x}</span>`).join("")}</div><div class="gsub">撳 iPad 用功能卡，最快嗰組先講！</div>`;
-      c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結 Game</button>`;
+      c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結 Battle Time</button>`;
       break;
     case "I":
-      s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> 用 ${cardBig("I")} → ${gLabel(P)}</div><div class="gclock" id="gClock">20</div>
-        <div class="gsub">${gLabel(cl.slot)}：講邊項準則＋邊度唔好　｜　${gLabel(P)}：可以反駁</div>`;
-      c = CRIT.map((x, i) => `<button class="btn btn-red" data-act="ded" data-i="${i}"${D.grp[P - 1].own[i] ? "" : " disabled"}>扣「${x}」</button>`).join("") + `<button class="btn btn-soft" data-act="noded">唔扣分</button>`;
+      s = `<div class="gbig"><b>${gLabel(cl.slot)}</b>　改善　→　<b>${gLabel(P)}</b></div><div class="gclock sm" id="gClock">20</div>
+        <div class="gsub">${gLabel(cl.slot)} 講：邊項＋邊度　｜　${gLabel(P)} 可以反駁</div>
+        <div class="gcritbig">${CRIT.map((x, i) => `<button data-act="ded" data-i="${i}"${D.grp[P - 1].own[i] ? "" : " disabled"}>${x}<small>${D.grp[P - 1].own[i] ? "撳＝扣呢項" : "已扣"}</small></button>`).join("")}</div>`;
+      c = `<button class="btn btn-soft" data-act="noded">唔扣分</button>`;
       break;
     case "G":
-      s = `<div class="gbig"><em>${gLabel(cl.slot)}</em> 用 ${cardBig("G")} 讚 ${gLabel(P)}</div><div class="gclock" id="gClock">10</div><div class="gsub">講出邊度做得好</div>`;
-      c = `<button class="btn btn-green" data-act="good">合理：兩組各加 ★</button><button class="btn btn-soft" data-act="nogood">唔合理</button>`;
+      s = `<div class="gbig"><b>${gLabel(cl.slot)}</b>　做得好　→　<b>${gLabel(P)}</b></div><div class="gclock sm" id="gClock">10</div>
+        <div class="gsub">講：邊項＋邊度做得好</div>
+        <div class="gcritbig disp">${CRIT.map(x => `<span>${x}</span>`).join("")}</div>`;
+      c = `<button class="btn btn-main" data-act="good">合理：兩組各 +1 ★</button><button class="btn btn-soft" data-act="nogood">唔合理</button>`;
       break;
     case "O":
       s = `<div class="gbig">老師判：扣${gLabel(P)}「${CRIT[D.ded]}」</div><div class="gclock" id="gClock">10</div><div class="gsub">${gLabel(P)}：要唔要用 ✋ 反對卡？（10 秒）</div>`;
@@ -1380,7 +1441,7 @@ $("gScr").addEventListener("click", e => {
     case "back": dClose(); break;
     case "quit": if (!b.dataset.arm) { b.dataset.arm = "1"; b.textContent = "再撳一下確認結束"; setTimeout(() => { delete b.dataset.arm; b.textContent = "結束對決"; }, 2500); } else dQuit(); break;
     case "start": {
-      const gs = groups().slice(0, 4); D.slots = gs.map(g => ({gid: g.gid, name: g.name}));
+      const gs = groups().slice(0, MAXG); D.slots = gs.map(g => ({gid: g.gid, name: g.name}));
       D.grp = gs.map(() => ({own: [1, 1, 1, 1, 1], won: 0, star: 0, cards: {I: 3, G: 3, O: 1, M: 1}, mutedUntil: 0}));
       D.slotsSent = false; setPhase("E"); dFlash("⚔️ 對決開始！"); sfx("fan"); break;
     }
@@ -1403,8 +1464,8 @@ $("gScr").addEventListener("click", e => {
     case "dednow": applyDeduct(D.ded); backToPrev(); break;
     case "objok": dFlash("✋ 反對成功，唔扣分", "good"); sfx("good"); backToPrev(); break;
     case "objno": applyDeduct(D.ded); backToPrev(); break;
-    case "mutenow": applyMute(); dFlash(`🔇 ${gLabel(D.claim.target)} 被禁言`, "bad"); backToPrev(); break;
-    case "mutecancel": dFlash("取消禁言"); backToPrev(); break;
+    case "mutenow": if (D.mw) { const tg = D.mw.target; D.mw = null; applyMute(tg); dFlash(`🔇 ${gLabel(tg)} 被禁言`, "bad"); dCommit(); } break;
+    case "mutecancel": if (D.mw) { D.mw = null; dFlash("取消禁言"); dCommit(); } break;
     case "next": dRandom(); break;
     case "pick": dPick(k); break;
     case "final": setPhase("F"); sfx("fan"); break;
@@ -1441,12 +1502,14 @@ async function sgPoll(){
 }
 function sgApply(rows){
   const gRow = rows.find(r => r.pid === "h0stG");
-  const gids = [1, 2, 3, 4].map(k => { const r = rows.find(x => x.pid === "h0stP" + k); return r ? String(r.name) : ""; });
+  const gids = [1, 2, 3, 4, 5].map(k => { const r = rows.find(x => x.pid === "h0stP" + k); return r ? String(r.name) : ""; });
   const names = gids.map(g => { const r = g && rows.find(x => x.pid === g + "g"); return r ? String(r.name) : ""; });
-  sgApplyCore(gRow ? {name: gRow.name, score: gRow.score, correct: gRow.correct, ver: Number(gRow.answered) || 0} : null, gids, names);
+  const ans = Number(gRow && gRow.answered) || 0;
+  sgApplyCore(gRow ? {name: gRow.name, score: gRow.score, correct: gRow.correct, ver: Math.floor(ans / 64), c5: ans % 64} : null, gids, names);
 }
 // newer-or-equal check for the teacher's state counter (wraps at 10000)
-const verOlder = (a, b) => { const d = ((b - a) % 10000 + 10000) % 10000; return d > 0 && d < 5000; };
+const VMOD = 150;   // state counter wraps here (Google field space)
+const verOlder = (a, b) => { const d = ((b - a) % VMOD + VMOD) % VMOD; return d > 0 && d < VMOD / 2; };
 function sgApplyCore(gRow, gids, nameList){
   if (!gRow) { if (!SG.st) { $("sg").hidden = true; $("sgFab").hidden = true; } return; }
   if (SG.ver != null && verOlder(gRow.ver, SG.ver)) return;   // older than what the fast channel already gave us
@@ -1456,9 +1519,9 @@ function sgApplyCore(gRow, gids, nameList){
   const s = String(gRow.name);
   if (s.length < 8 || s[0] === "X") { SG.st = null; SG.ver = null; $("sg").hidden = true; $("sgFab").hidden = true; return; }
   const v1 = Number(gRow.score) || 0, v2 = Number(gRow.correct) || 0;
-  const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: parseInt(s[4], 16) || 0, ep: s.slice(5, 7),
-              lk: +s[8] || 0, lc: s[9] || "-", ln: parseInt(s[10], 36) || 0,
-              cards: [unpackCards(v1 >> 6), unpackCards(v1 & 63), unpackCards(v2 >> 6), unpackCards(v2 & 63)]};
+  const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: parseInt(s[4], 36) || 0, ep: s.slice(5, 7),
+              lk: +s[8] || 0, lc: s[9] || "-", ln: parseInt(s[10], 36) || 0, mw: +s[11] || 0,
+              cards: [unpackCards(v1 >> 6), unpackCards(v1 & 63), unpackCards(v2 >> 6), unpackCards(v2 & 63), unpackCards(Number(gRow.c5) || 0)]};
   // outcome of our last press
   if (SG.pressEp && st.ep !== SG.pressEp) {
     if (st.ln !== SG.pressN && st.lk === slot && st.lc === SG.pressCard) { sgToast(SG.pressCard === "O" ? "✅ 用咗反對卡！" : "✅ 你哋最快！", "good"); sfx("good"); }
@@ -1475,24 +1538,24 @@ function sgToast(t, kind){ SG.toast = t; SG.toastKind = kind || ""; clearTimeout
 function sgCan(card){
   const st = SG.st, k = SG.slot - 1; if (!st || k < 0) return false;
   if ((st.mask >> k) & 1) return false; if (!(st.cards[k][card] > 0)) return false; if (SG.pressEp === st.ep) return false;
+  if (card === "O") return (st.ph === "O" && st.perf === SG.slot) || st.mw === SG.slot;
   switch (st.ph) {
-    case "P": return card === "M";
-    case "T": return card === "M" || ((card === "I" || card === "G") && st.perf > 0 && st.perf !== SG.slot);
-    case "O": return card === "O" && st.perf === SG.slot;
-    case "M": return card === "O" && st.tg === SG.slot;
+    case "P": return card === "M" && !st.mw;
+    case "T": return (card === "M" && !st.mw) || ((card === "I" || card === "G") && st.perf > 0 && st.perf !== SG.slot);
   }
   return false;
 }
 function sgStatus(){
   const st = SG.st, me1 = SG.slot, P = st.perf, C = st.cl, T = st.tg;
-  if (!me1) return ["今次對決用頭 4 組，你哋唔喺入面。睇大螢幕！", false];
+  if (!me1) return ["今次對決用頭 5 組，你哋唔喺入面。睇大螢幕！", false];
   if ((st.mask >> (me1 - 1)) & 1) return ["🔇 你哋被禁言，暫時唔可以用卡", false];
+  if (st.mw === me1) return ["🔇 有組禁言你哋！10 秒內撳 ✋ 反對可以取消", true];
   switch (st.ph) {
     case "L": return ["對決就快開始！", false];
     case "E": return ["呢輪完咗，等老師抽下一組", false];
     case "F": return ["🏆 睇大螢幕公布結果！", true];
     case "P": return [P === me1 ? "到你哋表演！跟住播放一齊唱 🎤" : `${gLabel(P)} 表演中，留心聽！`, P === me1];
-    case "T": return [P === me1 ? "其他組出卡中…你哋可以用 ✋ 反對 或 🔇 禁言" : "Game Start！撳卡，最快嗰組先講", P !== me1];
+    case "T": return [P === me1 ? "其他組出卡中…你哋可以用 ✋ 反對 或 🔇 禁言" : "Battle Time！撳卡，最快嗰組先講", P !== me1];
     case "I": return [C === me1 ? "到你哋講：邊項準則＋邊度（20 秒）" : P === me1 ? `${gLabel(C)} 話要改善，準備反駁！` : `${gLabel(C)} 用咗改善卡`, C === me1 || P === me1];
     case "G": return [C === me1 ? "到你哋講：邊度做得好（10 秒）" : `${gLabel(C)} 用咗做得好卡`, C === me1];
     case "O": return [P === me1 ? "老師判扣分！要唔要撳 ✋ 反對？（10 秒）" : `等 ${gLabel(P)} 決定用唔用反對卡`, P === me1];
@@ -1508,7 +1571,7 @@ function sgRender(){
   const t = $("sgToast"); t.textContent = SG.toast; t.className = "sgtoast " + SG.toastKind;
   const box = $("sgCards");
   if (SG.pick && sgCan("M")) {
-    const opts = [1, 2, 3, 4].filter(k => k !== SG.slot && SG.names[k] && !((st.mask >> (k - 1)) & 1));
+    const opts = [1, 2, 3, 4, 5].filter(k => k !== SG.slot && SG.names[k] && !((st.mask >> (k - 1)) & 1));
     const key = "pick" + st.ep + opts.join("");
     if (SG.lastKey === key) return; SG.lastKey = key;
     box.innerHTML = `<div class="sgpick" style="grid-column:1/-1"><h3>🔇 禁言邊組？</h3><div class="row">${opts.map(k => `<button class="tgt" data-t="${k}">${gLabel(k)}<br><small>${esc(SG.names[k])}</small></button>`).join("")}</div><div class="row"><button class="btn btn-soft" data-t="0">取消</button></div></div>`;
@@ -1516,10 +1579,10 @@ function sgRender(){
   }
   SG.pick = false;
   const k = SG.slot - 1, cards = k >= 0 ? st.cards[k] : {I: 0, G: 0, O: 0, M: 0};
-  const key = [st.ep, SG.pressEp, k, JSON.stringify(cards), st.mask, ...["I", "G", "O", "M"].map(sgCan)].join("|");
+  const key = [st.ep, SG.pressEp, k, JSON.stringify(cards), st.mask, st.mw, ...["I", "G", "O", "M"].map(sgCan)].join("|");
   if (SG.lastKey === key) return; SG.lastKey = key;
   box.innerHTML = ["I", "G", "O", "M"].map(c => {
-    const can = sgCan(c), n = cards[c], go = can && (st.ph === "O" || st.ph === "M");
+    const can = sgCan(c), n = cards[c], go = can && c === "O";
     return `<button class="sgc ${CARD[c].cls}${go ? " go" : ""}" data-c="${c}"${can ? "" : " disabled"}><span class="ic">${CARD[c].ic}</span><span class="nm">${CARD[c].n}</span>
       <span class="left">${Array.from({length: CARD_MAX[c]}, (_, i) => `<i class="${i < n ? "" : "u"}"></i>`).join("")}</span></button>`;
   }).join("");
@@ -1576,19 +1639,19 @@ function mqStop(){ if (MQ.c) { try { MQ.c.end(true); } catch {} } MQ.c = null; M
 function mqPub(sub, obj, retain){ if (!MQ.c || !MQ.ok) return false; try { MQ.c.publish(MQ.topic + "/" + sub, JSON.stringify(obj), {qos: 0, retain: !!retain}); return true; } catch { return false; } }
 function mqUi(){ const t = MQ.ok ? "⚡ 即時連線" : MQ.role ? "Google 模式" : ""; for (const id of ["gFast", "sgFast"]) { const el = $(id); if (el) el.textContent = t; } }
 function fastState(){
-  if (!D) return; const c = [0, 1, 2, 3].map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
-  mqPub("state", {v: D.ver % 10000, s: encState(), a: c[0] * 64 + c[1], b: c[2] * 64 + c[3], p: [0, 1, 2, 3].map(k => D.slots[k] ? D.slots[k].gid : ""), n: [0, 1, 2, 3].map(k => D.slots[k] ? D.slots[k].name : "")}, true);
+  if (!D) return; const c = G5.map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
+  mqPub("state", {v: D.ver % VMOD, s: encState(), a: c[0] * 64 + c[1], b: c[2] * 64 + c[3], e: c[4], p: G5.map(k => D.slots[k] ? D.slots[k].gid : ""), n: G5.map(k => D.slots[k] ? D.slots[k].name : "")}, true);
 }
 function dFast(m){
-  if (!D || !PH_OPEN.includes(D.phase) || !m || typeof m.g !== "string") return;
+  if (!D || !(PH_OPEN.includes(D.phase) || D.mw) || !m || typeof m.g !== "string") return;
   const k = D.slots.findIndex(s => s.gid === m.g); if (k < 0) return;
-  const s = String(m.n || ""); if (s.slice(0, 2) !== b36(D.epoch % 1296, 2)) return;
+  const s = String(m.n || ""); if (!epOk(s, b36(D.epoch % 1296, 2))) return;
   const card = s[2], tg = parseInt(s[3], 10) || 0;
   if (CARD[card] && dAllowed(k, card, tg)) dAccept(k, card, tg);
 }
 function sgFast(m){
   if (!me || !m || typeof m.s !== "string") return;
-  sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
+  sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0, c5: Number(m.e) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
 }
 
 window.__cs = {get D(){return D;}, get SG(){return SG;}, get me(){return me;}, get place(){return place;}, get lines(){return lines;}, setSel:v => { sel = new Set(v); paintKb(); saveAns(); }};
