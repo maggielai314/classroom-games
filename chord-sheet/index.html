@@ -173,7 +173,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .gtop h2{font-family:var(--f-hud);font-size:clamp(22px,2.6vw,32px)}
 .gtop .btn{min-height:44px;font-size:16px;padding:0 14px}
 .gtop .rnd{font-weight:900;font-size:clamp(16px,1.8vw,22px);color:var(--hot)}
-.gtiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.gtiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
 .gt{background:#fff;border:3px solid var(--rule);border-radius:18px;padding:10px 12px;display:grid;gap:6px;align-content:start;position:relative;min-width:0}
 .gt.perf{border-color:var(--hot);box-shadow:0 0 0 4px #FFD9E8}
 .gt.claim{border-color:#E9A21A;box-shadow:0 0 0 5px #FFE7A8}
@@ -1088,8 +1088,9 @@ const CARD = {
   M: {n: "禁言", ic: "🔇", sec: 10, cls: "cM"}
 };
 const CARD_MAX = {I: 3, G: 3, O: 1, M: 1};
-const MAXG = 5;   // at most 5 groups
-const G5 = [0, 1, 2, 3, 4];
+const MAXG = 6;   // at most 6 groups
+const G5 = [0, 1, 2, 3, 4, 5];
+const M64 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.";   // one char for a 6-bit 禁言 mask
 const TIAO_MS = 10000;   // Battle Time per round (each card has its own timer)
 const GRACE = 3500;   // objection windows stay open this long after showing 0 (iPad → Google → teacher takes a few seconds)
 const PH_OPEN = "PTOM";            // phases in which iPads may press
@@ -1183,7 +1184,7 @@ function dNew(){
 }
 function encState(){
   const mask = D.slots.reduce((m, _, k) => m | (isMuted(k) ? 1 << k : 0), 0), c = D.claim || {};
-  return D.phase + (D.perf || 0) + (c.slot || 0) + (c.target || 0) + mask.toString(36) + b36(D.epoch % 1296, 2) + b36(D.round % 36, 1)
+  return D.phase + (D.perf || 0) + (c.slot || 0) + (c.target || 0) + M64[mask & 63] + b36(D.epoch % 1296, 2) + b36(D.ver % VMOD, 1)
        + (D.last.k || 0) + D.last.c + b36(D.last.n % 36, 1) + (D.mw ? D.mw.target : 0);
 }
 const W = {busy: false, dirty: false};
@@ -1199,7 +1200,7 @@ async function dPush(){
           D.slotsSent = true;
         }
         const c = G5.map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
-        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: (D.ver % VMOD) * 64 + c[4]});
+        await api({a: "finish", pin: H.pin, pid: "h0stG", name: encState(), score: c[0] * 64 + c[1], level: 1, correct: c[2] * 64 + c[3], answered: c[4] * 64 + c[5]});
         dNet(true); if (!W.dirty) break;
       } catch { dNet(false); await sleep(700 + Math.random() * 700); }
     }
@@ -1444,7 +1445,8 @@ function dStage(lobbyRefresh){
       const col = ["#E9B949", "#A8A3B8", "#C98A5A"], h = [220, 160, 120], at = [1, 0, 2];
       s = `<div class="gbig">🏆 和弦對決結果</div><div class="podium">${at.filter(r => order[r] != null).map((r, n) => { const k = order[r];
           return `<div class="pc" style="animation-delay:${[0.6, 1.4, 0][n] + 0.2}s"><div class="nm">${esc(D.slots[k].name)}</div><div class="pt">${dScore(k)} 分・★ ${D.grp[k].star}</div><div class="bk" style="height:${h[r]}px;background:${col[r]}">${r + 1}</div></div>`; }).join("")}</div>
-        ${order.length > 3 ? `<div class="gsub">第 4 名：${esc(D.slots[order[3]].name)}（${dScore(order[3])} 分・★ ${D.grp[order[3]].star}）</div>` : ""}<div class="note">同分睇 ★ 數</div>`;
+        ${order.length > 3 ? `<div class="gsub">${order.slice(3).map((k, i) => `第 ${i + 4} 名：${esc(D.slots[k].name)}（${dScore(k)} 分・★ ${D.grp[k].star}）`).join("　")}</div>` : ""}<div class="note">同分睇 ★ 數</div>
+        ${(() => { const rest = D.slots.map((_, k) => k).filter(k => !D.done.includes(k)); return rest.length ? `<div class="gbig" style="font-size:clamp(20px,2.4vw,30px)">📌 ${rest.map(k => `${gLabel(k + 1)} ${esc(D.slots[k].name)}`).join("、")}：下一堂根據今日學到嘅嘢，表演改正版！</div>` : ""; })()}`;
       c = `<button class="btn btn-soft" data-act="unfinal">返回</button>`;
       break;
     }
@@ -1573,13 +1575,13 @@ async function sgPoll(){
 }
 function sgApply(rows){
   const gRow = rows.find(r => r.pid === "h0stG");
-  const gids = [1, 2, 3, 4, 5].map(k => { const r = rows.find(x => x.pid === "h0stP" + k); return r ? String(r.name) : ""; });
+  const gids = [1, 2, 3, 4, 5, 6].map(k => { const r = rows.find(x => x.pid === "h0stP" + k); return r ? String(r.name) : ""; });
   const names = gids.map(g => { const r = g && rows.find(x => x.pid === g + "g"); return r ? String(r.name) : ""; });
   const ans = Number(gRow && gRow.answered) || 0;
-  sgApplyCore(gRow ? {name: gRow.name, score: gRow.score, correct: gRow.correct, ver: Math.floor(ans / 64), c5: ans % 64} : null, gids, names);
+  sgApplyCore(gRow ? {name: gRow.name, score: gRow.score, correct: gRow.correct, ver: parseInt(String(gRow.name)[7], 36) || 0, c5: ans >> 6, c6: ans & 63} : null, gids, names);
 }
 // newer-or-equal check for the teacher's state counter (wraps at 10000)
-const VMOD = 150;   // state counter wraps here (Google field space)
+const VMOD = 36;   // state counter wraps here (one base-36 char in the state name)
 const verOlder = (a, b) => { const d = ((b - a) % VMOD + VMOD) % VMOD; return d > 0 && d < VMOD / 2; };
 function sgApplyCore(gRow, gids, nameList){
   if (!gRow) { if (!SG.st) { $("sg").hidden = true; $("sgFab").hidden = true; } return; }
@@ -1590,9 +1592,9 @@ function sgApplyCore(gRow, gids, nameList){
   const s = String(gRow.name);
   if (s.length < 8 || s[0] === "X") { SG.st = null; SG.ver = null; $("sg").hidden = true; $("sgFab").hidden = true; return; }
   const v1 = Number(gRow.score) || 0, v2 = Number(gRow.correct) || 0;
-  const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: parseInt(s[4], 36) || 0, ep: s.slice(5, 7),
+  const st = {ph: s[0], perf: +s[1] || 0, cl: +s[2] || 0, tg: +s[3] || 0, mask: Math.max(0, M64.indexOf(s[4])), ep: s.slice(5, 7),
               lk: +s[8] || 0, lc: s[9] || "-", ln: parseInt(s[10], 36) || 0, mw: +s[11] || 0,
-              cards: [unpackCards(v1 >> 6), unpackCards(v1 & 63), unpackCards(v2 >> 6), unpackCards(v2 & 63), unpackCards(Number(gRow.c5) || 0)]};
+              cards: [unpackCards(v1 >> 6), unpackCards(v1 & 63), unpackCards(v2 >> 6), unpackCards(v2 & 63), unpackCards(Number(gRow.c5) || 0), unpackCards(Number(gRow.c6) || 0)]};
   // outcome of our last press
   if (SG.pressEp && st.ep !== SG.pressEp) {
     if (st.ln !== SG.pressN && st.lk === slot && st.lc === SG.pressCard) { sgToast(SG.pressCard === "O" ? "✅ 用咗反對卡！" : "✅ 你哋最快！", "good"); sfx("good"); }
@@ -1617,7 +1619,7 @@ function sgCan(card){
 }
 function sgStatus(){
   const st = SG.st, me1 = SG.slot, P = st.perf, C = st.cl, T = st.tg;
-  if (!me1) return ["今次對決用頭 5 組，你哋唔喺入面。睇大螢幕！", false];
+  if (!me1) return ["今次對決用頭 6 組，你哋唔喺入面。睇大螢幕！", false];
   if ((st.mask >> (me1 - 1)) & 1) return ["🔇 你哋被禁言，暫時唔可以用卡", false];
   if (st.mw === me1) return ["🔇 有組禁言你哋！10 秒內撳 ✋ 反對可以取消", true];
   switch (st.ph) {
@@ -1641,7 +1643,7 @@ function sgRender(){
   const t = $("sgToast"); t.textContent = SG.toast; t.className = "sgtoast " + SG.toastKind;
   const box = $("sgCards");
   if (SG.pick && sgCan("M")) {
-    const opts = [1, 2, 3, 4, 5].filter(k => k !== SG.slot && SG.names[k] && !((st.mask >> (k - 1)) & 1));
+    const opts = [1, 2, 3, 4, 5, 6].filter(k => k !== SG.slot && SG.names[k] && !((st.mask >> (k - 1)) & 1));
     const key = "pick" + st.ep + opts.join("");
     if (SG.lastKey === key) return; SG.lastKey = key;
     box.innerHTML = `<div class="sgpick" style="grid-column:1/-1"><h3>🔇 禁言邊組？</h3><div class="row">${opts.map(k => `<button class="tgt" data-t="${k}">${gLabel(k)}<br><small>${esc(SG.names[k])}</small></button>`).join("")}</div><div class="row"><button class="btn btn-soft" data-t="0">取消</button></div></div>`;
@@ -1711,7 +1713,7 @@ function mqPub(sub, obj, retain){ if (!MQ.c || !MQ.ok) return false; try { MQ.c.
 function mqUi(){ const t = MQ.ok ? "⚡ 即時連線" : MQ.role ? "Google 模式" : ""; for (const id of ["gFast", "sgFast"]) { const el = $(id); if (el) el.textContent = t; } }
 function fastState(){
   if (!D) return; const c = G5.map(k => D.grp[k] ? packCards(D.grp[k].cards) : 0);
-  mqPub("state", {v: D.ver % VMOD, s: encState(), a: c[0] * 64 + c[1], b: c[2] * 64 + c[3], e: c[4], p: G5.map(k => D.slots[k] ? D.slots[k].gid : ""), n: G5.map(k => D.slots[k] ? D.slots[k].name : "")}, true);
+  mqPub("state", {v: D.ver % VMOD, s: encState(), a: c[0] * 64 + c[1], b: c[2] * 64 + c[3], e: c[4], f: c[5], p: G5.map(k => D.slots[k] ? D.slots[k].gid : ""), n: G5.map(k => D.slots[k] ? D.slots[k].name : "")}, true);
 }
 function dFast(m){
   if (!D || !(PH_OPEN.includes(D.phase) || D.mw) || !m || typeof m.g !== "string") return;
@@ -1722,14 +1724,14 @@ function dFast(m){
 }
 function sgFast(m){
   if (!me || !m || typeof m.s !== "string") return;
-  sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0, c5: Number(m.e) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
+  sgApplyCore({name: m.s, score: m.a, correct: m.b, ver: Number(m.v) || 0, c5: Number(m.e) || 0, c6: Number(m.f) || 0}, Array.isArray(m.p) ? m.p.map(String) : [], Array.isArray(m.n) ? m.n.map(String) : []);
 }
 
 /* ---------- teacher demo tab (?demo=1&pin=…): walk the class through the worksheet and the card screen ---------- */
 function demoCards(){
   const full = {I: 3, G: 3, O: 1, M: 1};
-  SG.st = {ph: "T", perf: 2, cl: 0, tg: 0, mask: 0, ep: "zz", lk: 0, lc: "-", ln: 0, mw: 0, cards: [full, full, full, full, full]};
-  SG.slot = 1; SG.names = {1: "示範組", 2: "第 2 組", 3: "第 3 組", 4: "第 4 組", 5: "第 5 組"}; SG.pressEp = null; SG.lastKey = ""; SG.hidden = false;
+  SG.st = {ph: "T", perf: 2, cl: 0, tg: 0, mask: 0, ep: "zz", lk: 0, lc: "-", ln: 0, mw: 0, cards: [full, full, full, full, full, full]};
+  SG.slot = 1; SG.names = {1: "示範組", 2: "第 2 組", 3: "第 3 組", 4: "第 4 組", 5: "第 5 組", 6: "第 6 組"}; SG.pressEp = null; SG.lastKey = ""; SG.hidden = false;
   $("sg").hidden = false; $("sgFab").hidden = true; sgRender();
 }
 if (DEMO && urlPin && /^\d{6}$/.test(urlPin)) {
