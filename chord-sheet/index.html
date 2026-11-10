@@ -90,7 +90,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .cell{position:relative}
 .cell.strong::after{content:"★";position:absolute;top:2px;right:4px;color:var(--bad);font-size:16px;line-height:1}
 .show .cell.strong::after{font-size:clamp(18px,2.2vw,28px);top:-4px;right:2px}
-.chordhint{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px}
+.chordhint{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px;padding-right:150px}
+@media (max-width:700px){.chordhint{padding-right:0;margin-top:70px}}
 .chordhint span{background:#fff;border:2px solid var(--plum);border-radius:14px;padding:6px 14px;font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--ink)}
 .chordhint b{color:var(--plum);font-size:1.2em}
 .legend.big{font-size:clamp(18px,2.4vw,24px);padding:8px 18px;border-width:2px}
