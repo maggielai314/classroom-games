@@ -1288,7 +1288,9 @@ function dLoop(){
 }
 async function dPollOnce(){
   if (dPolling) return; dPolling = true;
-  try { const r = await api({a: "board", pin: H.pin}); if (!D || !H) return; H.rows = r.rows; dNet(true); dProcess(r.rows); if (D) dTiles(); if (D && D.phase === "L") dStage(true); }
+  try { const r = await api({a: "board", pin: H.pin}); if (!D || !H) return; H.rows = r.rows; dNet(true); dProcess(r.rows); if (D) dTiles();
+    if (D && D.phase === "P" && !gTimers.length && $("gLyr") && !$("gLyr").querySelector(".cell")) dShowSheet();   // group submitted after it was picked
+    if (D && D.phase === "L") dStage(true); }
   catch { dNet(false); }
   finally { dPolling = false; }
 }
