@@ -1052,7 +1052,7 @@ let T = null;
 function stopTimer(){ if (T) clearInterval(T.id); T = null; $("tBox").hidden = true; $("tBox").classList.remove("end"); $("sTimer").textContent = "⚔️ Battle Time"; }
 function startTimer(){
   if (T) return stopTimer(); unlock(); stopShow();
-  const end = Date.now() + 10000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
+  const end = Date.now() + 20000; $("tBox").hidden = false; $("sTimer").textContent = "■ 停計時";
   const tick = () => { const left = Math.max(0, Math.ceil((end - Date.now()) / 1000));
     $("tNum").textContent = left ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "時間到";
     if (!left) { clearInterval(T.id); $("tBox").classList.add("end"); chord(CH.C, 0, 1.2); } };
@@ -1092,7 +1092,7 @@ const CARD_MAX = {I: 3, G: 3, O: 1, M: 1};
 const MAXG = 6;   // at most 6 groups
 const G5 = [0, 1, 2, 3, 4, 5];
 const M64 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.";   // one char for a 6-bit 禁言 mask
-const TIAO_MS = 10000;   // Battle Time per round (each card has its own timer)
+const TIAO_MS = 20000;   // Battle Time per round (each card has its own timer)
 const GRACE = 3500;   // objection windows stay open this long after showing 0 (iPad → Google → teacher takes a few seconds)
 const PH_OPEN = "PTOM";            // phases in which iPads may press
 const b36 = (n, w) => Math.max(0, n).toString(36).padStart(w, "0").slice(-w);
@@ -1402,11 +1402,11 @@ function dStage(lobbyRefresh){
       s = `<div class="gsub" style="margin:0"><b style="color:var(--hot)">${gLabel(P)} ${esc(D.slots[P - 1].name)}</b> 表演　・　其他組留心聽，準備出卡</div><div id="gLyr"></div>`;
       c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
         <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
-        <button class="btn btn-green" data-act="tiao">⚔️ Battle Time（10 秒）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
+        <button class="btn btn-green" data-act="tiao">⚔️ Battle Time（20 秒）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
       break;
     }
     case "T":
-      s = `<div class="gsub">Battle Time・${gLabel(P)} 表演</div><div class="gclock" id="gClock">10</div>
+      s = `<div class="gsub">Battle Time・${gLabel(P)} 表演</div><div class="gclock" id="gClock">20</div>
         <div class="gcrit">${CRIT.map(x => `<span>${x}</span>`).join("")}</div><div class="gsub">撳 iPad 用功能卡，最快嗰組先講！</div>`;
       c = `<button class="btn btn-soft" data-act="pause">${D.paused ? "▶ 繼續" : "⏸ 暫停"}</button><button class="btn btn-soft" data-act="endtiao">⏭ 完結 Battle Time</button>`;
       break;
