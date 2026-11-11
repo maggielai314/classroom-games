@@ -384,6 +384,7 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
     <h2>和弦次序（可以唔填）</h2>
     <p class="note">填咗之後，學生畫面會將呢啲和弦按次序排好，拉一個落字度就少一個，減少入錯。用空格分開，例如：I V vi IV I V I（亦可以打 C G Am F C G C），最多 12 個。</p>
     <input class="txt" id="hSeq" placeholder="I V vi IV I V I">
+    <label class="note" style="display:flex;align-items:center;gap:8px;font-size:16px"><input type="checkbox" id="hFree" style="width:22px;height:22px;accent-color:var(--plum)">學生自由揀和弦（I、IV、V、vi 任用；和弦次序只用嚟做「老師版本」）</label>
     <div class="row"><button class="btn btn-main" id="hLyrSend">傳俾學生</button><button class="btn btn-soft" id="hLyrTest">▶ 試聽旋律</button><button class="btn btn-soft" id="hLyrStop">■ 停</button><button class="btn btn-soft" id="hLink">🔗 複製老師連結（成個歌曲庫）</button><span class="note" id="hLyrMsg"></span></div>
     <div id="hLinkBox" hidden style="display:grid;gap:6px"><textarea class="txt" id="hLinkTxt" readonly style="min-height:80px;font-size:13px;font-weight:400"></textarea><p class="note" id="hLinkMsg"></p></div>
   </div>
@@ -644,7 +645,7 @@ async function startP2(){
   show("scP2"); const st = store.get("chordsheet.p2." + me.gid, null);
   $("p2msg").textContent = "載入歌詞中…";
   for (let k = 0; k < 40; k++) {
-    try { const r = await api({a:"board", pin:me.pin}); ({lines, bars, sol, seq} = hostSong(r.rows)); } catch {}
+    try { const r = await api({a:"board", pin:me.pin}); ({lines, bars, sol, seq} = hostSong(r.rows)); if (hostFree(r.rows)) seq = []; } catch {}
     if (lines.length) break;
     $("p2msg").textContent = "等老師傳歌詞過嚟…"; await new Promise(r => setTimeout(r, 3000));
   }
@@ -664,6 +665,7 @@ function p2Lock(){ $("lyrics").classList.add("locked"); for (const id of ["chips
 function hostLines(rows){
   return rows.filter(r => /^h0stL\d$/.test(r.pid)).sort((a,b) => a.pid.localeCompare(b.pid)).map(r => String(r.name)).filter(s => s && s !== "—");
 }
+function hostFree(rows){ const r = rows.find(x => x.pid === "h0stF"); return !!r && String(r.name) === "1"; }
 function hostSong(rows){
   const ls = hostLines(rows), get = pid => { const r = rows.find(x => x.pid === pid); return r && r.name !== "—" ? String(r.name) : ""; };
   const bs = ls.map((_, i) => new Set([...get("h0stB" + i)].map(c => parseInt(c, 36))));
@@ -861,7 +863,7 @@ function readTeacher(){
   const seq = parseSeq($("hSeq").value);
   const enc = ss.map(encSol);
   if (enc.some(e => e.length > 12 * SCHUNKS)) throw new Error("唱名太長。");
-  return {ls, bs, ss, enc, seq};
+  return {ls, bs, ss, enc, seq, free: $("hFree").checked};
 }
 // chord order typed by the teacher: roman numerals or letter names
 const FROM_ROMAN = {"I":"C", "ii":"Dm", "iii":"Em", "IV":"F", "V":"G", "vi":"Am"};
@@ -898,6 +900,7 @@ async function sendSong(auto){
     }
     // a fresh room is empty, so only non-empty rows (and rows this room already holds) need sending
     want["h0stQ"] = t.seq.map(c => CODE[c]).join("");
+    want["h0stF"] = t.free ? "1" : "";
     const jobs = Object.entries(want).filter(([pid, v]) => v || H.sent.has(pid));
     // bars and solfa first (in small parallel batches), lyric lines last so students never see lyrics without their solfa
     for (let k = 0; k < jobs.length; k += 7) { await Promise.all(jobs.slice(k, k + 7).map(([pid, v]) => fin(pid, v))); $("hLyrMsg").textContent = `傳送中… ${Math.min(100, Math.round(100 * (k + 7) / (jobs.length + 4)))}%`; }
@@ -929,17 +932,17 @@ function fillSongSelects(){
 }
 function loadSong(id){
   const x = songs().find(y => y.id === id); curSong = x ? x.id : null; store.set("chordsheet.cur", curSong);
-  $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSeq").value = x ? (x.q || "") : ""; $("hSongName").value = x ? x.name : ""; fillSongSelects();
+  $("hLyr").value = x ? x.l : ""; $("hSol").value = x ? x.s : ""; $("hSeq").value = x ? (x.q || "") : ""; $("hFree").checked = !!(x && x.f); $("hSongName").value = x ? x.name : ""; fillSongSelects();
 }
 function saveSong(asNew, auto){
   const name = $("hSongName").value.trim() || ($("hLyr").value.split(/\n/)[0] || "").replace(/[|｜\s]/g, "").slice(0, 12) || "未命名歌曲";
   const list = songs(); let x = !asNew && list.find(y => y.id === curSong);
-  if (x) Object.assign(x, {name: auto ? x.name : name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}; list.push(x); }
+  if (x) Object.assign(x, {name: auto ? x.name : name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value, f:$("hFree").checked ? 1 : 0}); else { x = {id:pidMake(), name, l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value, f:$("hFree").checked ? 1 : 0}; list.push(x); }
   const ok = setSongs(list); curSong = x.id; store.set("chordsheet.cur", curSong); $("hSongName").value = x.name; fillSongSelects(); x.ok = ok; return x;
 }
 // auto-save while typing, so nothing is lost when leaving the room
 let autoT = null;
-for (const id of ["hLyr", "hSol", "hSeq"]) $(id).addEventListener("input", () => {
+for (const id of ["hLyr", "hSol", "hSeq", "hFree"]) $(id).addEventListener(id === "hFree" ? "change" : "input", () => {
   clearTimeout(autoT); autoT = setTimeout(() => { if (!$("hLyr").value.trim()) return; const x = saveSong(false, true); $("hSaved").textContent = x.ok ? `已自動儲存「${x.name}」` : NOSTORE; }, 700);
 });
 $("hSong").onchange = () => { loadSong($("hSong").value); if (H && $("hLyr").value.trim()) sendSong(true); };
@@ -951,10 +954,10 @@ $("hDel").onclick = () => { const b = $("hDel"); if (!curSong) return;
   delete b.dataset.arm; b.textContent = "🗑 刪除呢首"; setSongs(songs().filter(y => y.id !== curSong)); loadSong(null); $("hLyrMsg").textContent = "已刪除。"; };
 const b64 = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const unb64 = str => decodeURIComponent(escape(atob(str.replace(/-/g, "+").replace(/_/g, "/"))));
-function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s, q:x.q || ""})))); }
+function libLink(){ return location.origin + location.pathname + "#lib=" + b64(JSON.stringify(songs().map(x => ({n:x.name, l:x.l, s:x.s, q:x.q || "", f:x.f ? 1 : 0})))); }
 $("hLink").onclick = async () => {
   if ($("hLyr").value.trim()) saveSong(false);
-  const n = songs().length || 0, url = n ? libLink() : location.origin + location.pathname + "#lib=" + b64(JSON.stringify([{n:$("hSongName").value || "未命名歌曲", l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value}]));
+  const n = songs().length || 0, url = n ? libLink() : location.origin + location.pathname + "#lib=" + b64(JSON.stringify([{n:$("hSongName").value || "未命名歌曲", l:$("hLyr").value, s:$("hSol").value, q:$("hSeq").value, f:$("hFree").checked ? 1 : 0}]));
   const box = $("hLinkTxt"); box.value = url; $("hLinkBox").hidden = false; box.focus(); box.select();
   let ok = false;
   try { await navigator.clipboard.writeText(url); ok = true; } catch {}
@@ -965,7 +968,7 @@ $("hLink").onclick = async () => {
 fillSongSelects();
 (() => { const m = /#lib=([\w-]+)/.exec(location.hash); if (!m) return;
   try { const inc = JSON.parse(unb64(m[1])); const list = songs(); let n = 0;
-    for (const o of inc) { const ex = list.find(y => y.name === o.n); if (ex) Object.assign(ex, {l:o.l, s:o.s, q:o.q || ex.q || ""}); else list.push({id:pidMake(), name:o.n, l:o.l, s:o.s, q:o.q || ""}); n++; }
+    for (const o of inc) { const ex = list.find(y => y.name === o.n); if (ex) Object.assign(ex, {l:o.l, s:o.s, q:o.q || ex.q || "", f:o.f ? 1 : 0}); else list.push({id:pidMake(), name:o.n, l:o.l, s:o.s, q:o.q || "", f:o.f ? 1 : 0}); n++; }
     setSongs(list); if (!curSong && list.length) { curSong = list[0].id; store.set("chordsheet.cur", curSong); }
     fillSongSelects(); $("hostNote").textContent = `已由老師連結載入 ${n} 首歌。揀歌，再撳「開局」。`; history.replaceState(null, "", location.pathname);
   } catch {} })();
