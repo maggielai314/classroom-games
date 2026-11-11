@@ -92,6 +92,10 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
 .show .cell.strong::after{font-size:clamp(18px,2.2vw,28px);top:-4px;right:2px}
 .chordhint{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px;padding-right:150px}
 @media (max-width:700px){.chordhint{padding-right:0;margin-top:70px}}
+.chordhint.pj{padding-right:0;margin:6px 0 12px}
+.chordhint.pj span{font-size:clamp(20px,2.6vw,30px);padding:8px 18px}
+.chordhint.sm{padding-right:0;margin:0;justify-content:center;gap:8px}
+.chordhint.sm span{font-size:clamp(15px,1.7vw,22px);padding:4px 12px}
 .chordhint span{background:#fff;border:2px solid var(--plum);border-radius:14px;padding:6px 14px;font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--ink)}
 .chordhint b{color:var(--plum);font-size:1.2em}
 .legend.big{font-size:clamp(18px,2.4vw,24px);padding:8px 18px;border-width:2px}
@@ -436,7 +440,8 @@ textarea.txt{padding:12px 14px;min-height:170px;line-height:1.7;font-size:20px;r
   </div>
   <div class="timer" id="tBox" hidden><b id="tNum">2:00</b><span>音準・節奏・和弦配搭・合奏整齊度・團隊精神</span></div>
   <p class="note">表演組跟住播放一齊唱；其他組留心聽，諗吓和弦放得啱唔啱位、用得啱唔啱，之後「⚔️ Battle Time」用功能卡。（空白鍵＝播放／停）</p>
-  <span class="legend" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
+  <div class="chordhint pj"><span><b>I</b>（Do・Mi・So）</span><span><b>IV</b>（Fa・La・Do）</span><span><b>V</b>（So・Ti・Re）</span><span><b>vi</b>（La・Do・Mi）</span></div>
+  <span class="legend big" id="sStrong" hidden><b>★</b> ＝ 強拍（每小節第 1、3 拍）</span>
   <div id="sLyr"></div>
 </div>
 
@@ -1399,7 +1404,7 @@ function dStage(lobbyRefresh){
       break;
     }
     case "P": {
-      s = `<div class="gsub" style="margin:0"><b style="color:var(--hot)">${gLabel(P)} ${esc(D.slots[P - 1].name)}</b> 表演　・　其他組留心聽，準備出卡</div><div id="gLyr"></div>`;
+      s = `<div class="gsub" style="margin:0"><b style="color:var(--hot)">${gLabel(P)} ${esc(D.slots[P - 1].name)}</b> 表演　・　其他組留心聽，準備出卡</div><div class="chordhint sm"><span><b>I</b>（Do・Mi・So）</span><span><b>IV</b>（Fa・La・Do）</span><span><b>V</b>（So・Ti・Re）</span><span><b>vi</b>（La・Do・Mi）</span></div><div id="gLyr"></div>`;
       c = `<button class="btn btn-main" data-act="play" id="gPlayBtn">▶ 播放</button>
         <label class="note" style="display:flex;align-items:center;gap:6px;font-size:18px"><input type="checkbox" id="gMel" checked style="width:22px;height:22px;accent-color:var(--plum)">播埋旋律</label>
         <button class="btn btn-green" data-act="tiao">⚔️ Battle Time（20 秒）</button><button class="btn btn-soft" data-act="repick">換一組</button>`;
